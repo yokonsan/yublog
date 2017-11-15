@@ -1,4 +1,5 @@
-from flask import render_template, redirect, url_for, request
+from flask import render_template, redirect, url_for, request, current_app
+from functools import wraps
 
 from .. import db
 from . import main
@@ -7,9 +8,18 @@ from ..models import *
 
 
 @main.route('/')
+@main.route('/index')
 def index():
-
-    return render_template('index.html')
+    page = request.args.get('page', 1, type=int)
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+        page, per_page=current_app.config['POSTS_PER_PAGE'],
+        error_out=False
+    )
+    posts = [post for post in pagination.items if post.draft == False]
+    return render_template('index.html',
+                           title='首页',
+                           posts=posts,
+                           pagination=pagination)
 
 @main.route('/<int:year>/<int:month>/<article_name>/')
 def post(year, month, article_name):

@@ -36,14 +36,31 @@ class Admin(UserMixin, db.Model):
     def __repr__(self):
         return '<Admin %r>' % (self.name)
 
+class Page(db.Model):
+    __tablename__ = 'pages'
+    id = db.Column(db.Integer, primary_key=True)
+    page = db.Column(db.String())
+    canComment = db.Column(db.Boolean, default=False)
+    body = db.Column(db.Text)
+    body_html = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.utcnow)
+
+    def __init__(self, page, body, body_html, canComment):
+        self.page = page
+        self.body = body
+        self.body_html = body_html
+        self.canComment = canComment
+
+    def __repr__(self):
+        return '<Page %r>' % (self.page)
+
 class Post(db.Model):
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
     url_name = db.Column(db.DateTime)
     body = db.Column(db.Text)
-    datetime = db.Column(db.String)
-    disabled = db.Column(db.Boolean)
+    timestamp = db.Column(db.Integer)
     view_num = db.Column(db.Integer, default=0)
     body_html = db.Column(db.Text)
     draft = db.Column(db.Boolean, default=False)
@@ -79,7 +96,7 @@ class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String, index=True)
-    datetime = db.Column(db.DateTime, default=datetime.datetime.utcnow())
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
 
@@ -95,7 +112,7 @@ class Category(db.Model):
     __tablename__ = 'category'
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String, index=True)
-    datetime = db.Column(db.DateTime, default=datetime.datetime.utcnow())
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
     def __init__(self, category, datetime):
         self.category = category

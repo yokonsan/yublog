@@ -7,6 +7,7 @@ from flask_pagedown.fields import PageDownField
 class AdminLogin(FlaskForm):
     username = StringField('username', validators=[DataRequired()])
     password = PasswordField('password', validators=[DataRequired()])
+    remember_me = BooleanField('remember', default=False)
 
 class AdminWrite(FlaskForm):
     title = StringField('title', validators=[DataRequired()])

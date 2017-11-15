@@ -10,6 +10,7 @@ class Config(object):
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
 
     POSTS_PER_PAGE = 10
+    ADMIN_POSTS_PER_PAGE = 20
 
     @staticmethod
     def init_app(app):
