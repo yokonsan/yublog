@@ -1,0 +1,6 @@
+# Python:
+.idea
+dist
+build
+__pycache__
+whooshee
