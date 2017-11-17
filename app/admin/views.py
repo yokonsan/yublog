@@ -25,6 +25,11 @@ def login():
                            title='登录',
                            form=form)
 
+@admin.route('/edit-site')
+@login_required
+def edit_site():
+    pass
+
 def save_post(form, draft=False):
     """
     封装保存文章到数据库的重复操作

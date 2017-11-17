@@ -18,7 +18,7 @@ class Config(object):
 
 
 class DevelopmentConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://username:password@server/db'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@server/db'
     DEBUG = True
 
 class TestingConfig(Config):

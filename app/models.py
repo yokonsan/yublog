@@ -11,6 +11,7 @@ from app import db, lm
 class Admin(UserMixin, db.Model):
     __tablename__ = 'admin'
     id = db.Column(db.Integer, primary_key=True)
+    site_name = db.Column(db.String)
     name = db.Column(db.String)
     profile = db.Column(db.String)
     login_name = db.Column(db.String)
@@ -40,16 +41,20 @@ class Page(db.Model):
     __tablename__ = 'pages'
     id = db.Column(db.Integer, primary_key=True)
     page = db.Column(db.String())
+    url_name = db.Column(db.String)
     canComment = db.Column(db.Boolean, default=False)
     body = db.Column(db.Text)
     body_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.utcnow)
 
-    def __init__(self, page, body, body_html, canComment):
+    def __init__(self, page, body, body_html, canComment, url_name, timestamp):
         self.page = page
         self.body = body
         self.body_html = body_html
         self.canComment = canComment
+        self.url_name = url_name
+        self.timestamp = timestamp
+
 
     def __repr__(self):
         return '<Page %r>' % (self.page)
@@ -71,6 +76,12 @@ class Post(db.Model):
 
     def __init__(self, **kwargs):
         super(Post, self).__init__(**kwargs)
+
+    @staticmethod
+    def tag_in_post(self, tag):
+        if tag in self.tags:
+            return True
+        return False
 
     @staticmethod
     def change_body(target, value, oldvalue, initiator):
@@ -96,14 +107,16 @@ class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String, index=True)
+    url_name = db.Column(db.String)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
 
-    def __init__(self, tag, datetime, post_id):
+    def __init__(self, tag, timestamp, post_id, url_name):
         self.tag = tag
-        self.datetime = datetime
+        self.timestamp = timestamp
         self.post_id = post_id
+        self.url_name = url_name
 
     def __repr__(self):
         return '<Tag %r>' % (self.tag)
@@ -112,11 +125,13 @@ class Category(db.Model):
     __tablename__ = 'category'
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String, index=True)
+    url_name = db.Column(db.String)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
-    def __init__(self, category, datetime):
+    def __init__(self, category, timestamp, url_name):
         self.category = category
-        self.datetime = datetime
+        self.timestamp = timestamp
+        self.url_name = url_name
 
     def __repr__(self):
         return '<Category %r>' % (self.category)
@@ -125,11 +140,13 @@ class SocialLink(db.Model):
     __tablename__ = 'social_links'
     id = db.Column(db.Integer, primary_key=True)
     link = db.Column(db.String)
+    name = db.Column(db.String)
     isFriendLink = db.Column(db.Boolean)
 
-    def __init__(self, link, isFriendLink):
+    def __init__(self, link, isFriendLink, name):
         self.link = link
         self.isFriendLink = isFriendLink
+        self.name = name
 
     def __repr__(self):
         return '<SocialLink %r>' % (self.link)
