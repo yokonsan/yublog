@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+    <meta charset="UTF-8">
+    <title>{% if title %}{{ title }}{% else %}意外{% endif %} - 意外</title>
+    {% block styles %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/blog.css') }}">
+    <link media="(max-width: 960px)" href="{{ url_for('static', filename='css/mobile.css') }}" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/fontello.css') }}">
+    {% endblock %}
+</head>
+<body>
+    <div class="container">
+
+        <div class="site-header">
+            <!-- PC -->
+            <div class="site-wrap">
+
+                <div class="site-logo">
+                    <a href="/" class="logo">
+                        {% if global_data.admin %}{{ admin.site_name }}
+                        {% else %}意外{% endif %}
+                    </a>
+                    <span>{{ global_data.admin.name }}的博客</span>
+                </div>
+                <div class="site-nav">
+                    <ul id="menu" class="menu">
+                        <li class="menu-item search-nav"><span class="search-btn">搜索</span>
+                            <div class="search" style="display: none;">
+                                <form action="">
+                                    <i class="demo-icon icon-search"></i>
+                                    <input type="text" class="search-ipt" placeholder="Search...">
+                                </form>
+                            </div>
+                        </li>
+                        <!---->
+                        <!--<li class="menu-item"><a href="/">留言</a></li>-->
+                        <!--<li class="menu-item"><a href="/">关于</a></li>-->
+                        {% for page in global_data.pages %}
+                        <li class="menu-item">
+                            <a href="{{ url_for('main.page', page_name=page.url_name) }}">{{ page.page }}</a>
+                        </li>
+                        {% endfor %}
+                        <li class="menu-item"><a href="/">归档</a></li>
+                        <li class="menu-item category-nav"><a href="#">分类</a>
+                            <ul id="drop">
+                                {% for category in global_data.category %}
+                                <li>
+                                    <a href="{{ url_for('main.category', category_name=category.url_name) }}" class="drop-item">
+                                        {{ category.category }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                        <li class="menu-item"><a href="/">首页</a></li>
+                    </ul>
+                </div>
+
+
+            </div>
+
+            <!-- width < 960px -->
+            <div class="mobile-menu-btn">
+                <button>
+                    <span class="btn-bar"></span>
+                    <span class="btn-bar"></span>
+                    <span class="btn-bar"></span>
+                </button>
+            </div>
+
+            <div class="mobile-site-logo">
+                <a href="#">意外</a>
+                <span>俞坤的博客</span>
+            </div>
+            <div class="mobile-site-nav" style="display: none;">
+                <ul>
+                    <li><a class="mobile-nav-item" href=""><i class="demo-icon icon-home"></i> 首页</a></li>
+                    <li><a class="mobile-nav-item" href=""><i class="demo-icon icon-user"></i> 关于</a></li>
+                    <li>
+                        <a class="mobile-nav-item mobile-category" href="#"><i class="demo-icon icon-book"></i> 分类</a>
+                        <ul class="mobile-drop-category" style="display: none;">
+                            {% for category in global_data.category %}
+                                <li>
+                                    <a href="{{ url_for('main.category', category_name=category.url_name) }}" class="mobile-drop-item">
+                                        {{ category.category }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    <li><a class="mobile-nav-item" href=""><i class="demo-icon icon-box"></i> 归档</a></li>
+                    <li><a class="mobile-nav-item" href=""><i class="demo-icon icon-comment-empty"></i> 留言</a></li>
+                    <li>
+                        <div class="mobile-search">
+                            <i class="demo-icon icon-search"></i>
+                            <form action="">
+                                <input type="text" placeholder="Search...">
+                            </form>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="site-wrap">
+            <div class="sidebar">
+                <div class="profile site-box">
+                    <div class="author-background"></div>
+                    <div class="author-image">
+                        <img src="baifeng.jpg" alt="author">
+                    </div>
+                    <div class="author-description">
+                        {{ global_data.admin.profile }}
+                    </div>
+                </div>
+                <div class="social-links site-box">
+                    <div class="side-title"><i class="demo-icon icon-book"></i> 社交链接</div>
+                    <ul>
+                        <li><a href="/"><i class="demo-icon icon-github-circled"></i> Github</a></li>
+                        <li><a href="/"><i class="demo-icon icon-globe"></i> 知乎</a></li>
+                        <li><a href="/"><i class="demo-icon icon-weibo"></i> 微博</a></li>
+                    </ul>
+                    <div class="clear"></div>
+                </div>
+                <div class="friend-links site-box">
+                    <div class="side-title"><i class="demo-icon icon-globe"></i> 友情链接</div>
+                    <ul>
+                        {% for link in global_data.friend_links %}
+                        <li>
+                            <a href="{{ link.link }}"> {{ link.name }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="blog-tags site-box">
+                    <div class="side-title"><i class="demo-icon icon-tags"></i> 标签</div>
+                    <ul>
+                        {% for tag in global_data.tags %}
+                        <li><a href="{{ url_for('main.tag', tag_name = tag.url_name) }}">{{ tag.tag }}</a></li>
+                        {% endfor %}
+                    </ul>
+                    <div class="clear"></div>
+                </div>
+
+
+            </div>
+
+            <div class="main">
+                {% block content %}
+                {% endblock %}
+
+                <div class="footer">
+                    <div class="copyright">
+                        © 2017  <i class="demo-icon icon-heart"></i><span> 俞坤</span>
+                    </div>
+                    <span class="powered-by">苏ICP备17028833号 </span>
+                    <span class="powered-by">Flask </span>
+                    <span>源码</span>
+                </div>
+            </div>
+        </div>
+
+        <div><span id="go-to-top"></span></div>
+
+    </div>
+    {% block script %}
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% endblock %}
+</body>
+</html>

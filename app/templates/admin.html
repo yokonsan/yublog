@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/blog.css') }}">
+    <link media="(max-width: 960px)" href="{{ url_for('static', filename='css/admin.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="site-wrap">
+            {% block content %}
+            <div class="admin-menu">
+                <h2>管理你的网站</h2>
+                <p>
+                    <a href="#">
+                        <button>发布文章</button>
+                    </a>
+                </p>
+                <p>
+                    <a href="#">
+                        <button>管理草稿</button>
+                    </a>
+                </p>
+                <p>
+                    <a href="#">
+                        <button>管理文章</button>
+                    </a>
+                </p>
+                <p>
+                    <a href="#">
+                        <button>编辑资料</button>
+                    </a>
+                </p>
+                <p>
+                    <a href="#">
+                        <button>添加链接</button>
+                    </a>
+                </p>
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+</body>
+</html>
