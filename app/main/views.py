@@ -15,18 +15,31 @@ def index():
         error_out=False
     )
     posts = [post for post in pagination.items if post.draft == False]
+    timestamps = [post.timestamp for post in posts]
+    data = {}
+    for post, time in zip(posts, timestamps):
+        data = {post: moment_timestamp(time)}
     return render_template('index.html',
                            title='首页',
-                           posts=posts,
+                           data=data,
                            pagination=pagination)
+
+def moment_timestamp(timestamp):
+    """
+    存入数据库的post日期是Integer，
+    需要以'-'分割成正式日期返回
+    """
+    timestamp = str(timestamp)
+    return timestamp[0:3] + '-' + timestamp[4:5] + '-' + timestamp[6:7]
 
 @main.route('/<int:time>/<article_name>/')
 def post(time, article_name):
     post = Post.query.filter_by(timestamp=time, url_name=article_name).first()
     post.view_num += 1
     db.session.add(post)
+    time = moment_timestamp(post.timestamp)
 
-    return render_template('post.html', post=post)
+    return render_template('post.html', post=post, time=time)
 
 @main.route('/<page_name>/')
 def page(page_name):

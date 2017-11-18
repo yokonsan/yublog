@@ -11,11 +11,11 @@ from app import db, lm
 class Admin(UserMixin, db.Model):
     __tablename__ = 'admin'
     id = db.Column(db.Integer, primary_key=True)
-    site_name = db.Column(db.String)
-    name = db.Column(db.String)
-    profile = db.Column(db.String)
-    login_name = db.Column(db.String)
-    password = db.Column(db.String)
+    site_name = db.Column(db.String(4))
+    name = db.Column(db.String(4))
+    profile = db.Column(db.String(16))
+    login_name = db.Column(db.String(4))
+    password = db.Column(db.String(16))
 
     def __init__(self, name, login_name, password):
         self.name = name
@@ -40,8 +40,8 @@ class Admin(UserMixin, db.Model):
 class Page(db.Model):
     __tablename__ = 'pages'
     id = db.Column(db.Integer, primary_key=True)
-    page = db.Column(db.String())
-    url_name = db.Column(db.String)
+    page = db.Column(db.String(3))
+    url_name = db.Column(db.String(25))
     canComment = db.Column(db.Boolean, default=False)
     body = db.Column(db.Text)
     body_html = db.Column(db.Text)
@@ -106,11 +106,11 @@ class Post(db.Model):
 class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
-    tag = db.Column(db.String, index=True)
-    url_name = db.Column(db.String)
+    tag = db.Column(db.String(6), index=True)
+    url_name = db.Column(db.String(25))
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
-    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
 
     def __init__(self, tag, timestamp, post_id, url_name):
         self.tag = tag
@@ -124,8 +124,8 @@ class Tag(db.Model):
 class Category(db.Model):
     __tablename__ = 'category'
     id = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String, index=True)
-    url_name = db.Column(db.String)
+    category = db.Column(db.String(6), index=True)
+    url_name = db.Column(db.String(16))
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
     def __init__(self, category, timestamp, url_name):
@@ -139,8 +139,8 @@ class Category(db.Model):
 class SocialLink(db.Model):
     __tablename__ = 'social_links'
     id = db.Column(db.Integer, primary_key=True)
-    link = db.Column(db.String)
-    name = db.Column(db.String)
+    link = db.Column(db.String(125))
+    name = db.Column(db.String(25))
     isFriendLink = db.Column(db.Boolean)
 
     def __init__(self, link, isFriendLink, name):
