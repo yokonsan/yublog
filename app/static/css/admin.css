@@ -1,0 +1,213 @@
+/*admin login*/
+.admin-login {
+    text-align: center;
+    margin-top: 100px;
+    padding: 40px;
+}
+
+.login-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    margin: 20px auto;
+    width: 300px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+}
+
+.login-input p {
+    margin: 30px 0;
+}
+
+input.login,.profile-ipt input,.links-ipt input {
+    height: 20px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 2px 5px;
+}
+
+input.but {
+    border: 1px solid #ccc;
+    border-radius: 3px; 
+    color: #555;
+    padding: 5px 40px;
+    cursor: pointer;
+}
+
+input.but:hover,.admin-menu button:hover,.write-body .write-btn:hover {
+    background: rgba(0, 124, 197, 0.78);
+    color: #fff;
+}
+
+/*admin menu*/
+.admin-menu {
+    text-align: center;
+    margin: 100px 0;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 20px 0;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+}
+
+.admin-menu button {
+    width: 200px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    color: #333;
+    cursor: pointer;
+}
+
+
+/*admin write*/
+.admin-title {
+    padding: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.admin-title a {
+    float: left;
+    font-size: 14px;
+    text-decoration: none;
+    color: #555;
+    border-bottom: 1px solid #555;
+}
+
+.admin-title a:hover {
+    color: #111;
+}
+
+.admin-write {
+    padding: 20px 0;
+}
+
+.aticle-data {
+    float: left;
+    width: 240px;
+    background: #fff;
+    padding: 10px 0;
+}
+
+.data-ipt p {
+    padding: 10px;
+}
+
+.data-ipt input {
+    height: 25px;
+    border: none;
+    border-bottom: 1px solid #999;
+    /* color: #d12e2e; */
+    outline: none;
+    padding-left: 5px;
+}
+
+.aticle-body {
+    float: right;
+    width: 700px;
+    background: #fff;
+}
+
+.write-body {
+    padding: 20px;
+}
+
+.write-body input.aticle-title {
+    width: 650px;
+    height: 30px;
+    border: none;
+    border-bottom: 1px solid #999;
+    /* padding: 0 10px; */
+    padding-left: 10px;
+    outline: none;
+    font-size: 16px;
+}
+
+.write-body textarea {
+    width: 650px;
+    height: 380px;
+    margin-top: 20px
+    padding: 10px;
+    border: 1px solid #999;
+    border-radius: 3px;
+    font-size: 16px;
+    color: #444;
+    height: 500px;
+}
+
+.write-body .write-btn {
+    margin-left: 50px;
+    float: right;
+    padding: 2px 10px;
+    border-radius: 2px;
+    border: 1px solid #999;
+    color: #444;
+    cursor: pointer;
+}
+
+.write-body .first-btn {
+    float: left;
+    margin: 0;
+}
+
+
+/*admin profile and admin add links*/
+.admin-profile,.admin-links {
+    text-align: center;
+    margin: 100px 0;
+    border: 1px solid #ccc;
+    background: #fff;
+    padding: 30px;
+}
+
+.profile-ipt,.links-ipt {
+    padding: 20px;
+}
+
+.profile-ipt .but,.links-ipt .but {
+    height: 30px;
+}
+
+
+/*admin posts*/
+.all-posts {
+    margin: 20px;
+}
+
+.admin-post {
+    float: left;
+    padding: 15px;
+    width: 190px;
+    height: 280px;
+    margin: 10px 5px;
+}
+
+.admin-post-title a {
+    text-decoration: none;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.admin-post-title a:hover {
+    color: #000;
+    border-bottom: 1px solid #555;
+}
+
+.admin-post-edit,.admin-post-del {
+    float: right;
+    text-decoration: none;
+    color: #111;
+    border-bottom: 1px solid #555;
+}
+
+.admin-post-del {
+    float: left;
+}
+
+.admin-post-edit:hover,.admin-post-del:hover {
+    color: #666;
+}
+

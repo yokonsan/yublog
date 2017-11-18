@@ -1,0 +1,132 @@
+/*width < 960px*/
+.site-wrap {
+    width: 100%;
+}
+
+.site-nav,.site-logo,span.post-view-count {
+    display: none;
+}
+
+.sidebar {
+    display: none;
+}
+
+.main {
+    float: left;
+}
+
+.site-header {
+    position: relative;
+    padding: 20px 0;
+    color: #fff;
+    background: #222;
+    height: 35px;
+    box-shadow: 0 0 16px rgba(0,0,0,0.5);
+}
+
+.mobile-site-logo {
+    text-align: center;
+    display: block;
+}
+
+.mobile-site-logo a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+/*mobile nav*/
+.mobile-menu-btn {
+    display: block;
+    position: absolute;
+    left: 20px;
+    top: 50%
+    transform: translateY(-50%);
+
+}
+
+.mobile-menu-btn button {
+    margin-top: 2px;
+    padding: 9px 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-bar {
+    background: #fff;
+    display: block;
+    width: 22px;
+    height: 2px;
+    margin-bottom: 4px;
+    border-radius: 1px;
+}
+
+.mobile-site-nav {
+    display: none;
+    margin-top: 25px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background: rgba(255, 255, 255, .6);
+}
+
+.mobile-site-nav ul {
+    display: block;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.mobile-nav-item {
+    display: block;
+    text-decoration: none;
+    color: #555;
+    padding: 6px 25px;
+}
+
+.mobile-nav-item-active,.mobile-nav-item:hover,.mobile-drop-item:hover {
+    background: rgba(238, 238, 238, 0.8);
+    color: #222;
+}
+
+.mobile-drop-item {
+    text-decoration: none;
+    color: #666;
+    padding: 5px 60px;
+    display: block;
+}
+
+/*mobile search nav*/
+.mobile-search {
+    color: #555;
+    padding: 6px 25px;
+}
+
+.mobile-search i {
+    float: left;
+}
+
+.mobile-search input {
+    border: none;
+    outline: none;
+    padding: 0 5px;
+    height: 18px;
+    background: rgba(255, 255, 255, .6);
+    color: #555;
+}
+
+/*mobile main*/
+.main {
+    width: 100%;
+    margin-top: 30px;
+}
+
+span.post-comments-count {
+    border-right: none;
+}
+
+.footer {
+    background: #eee;
+}
+
