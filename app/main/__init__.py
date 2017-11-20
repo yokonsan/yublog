@@ -6,7 +6,7 @@ from . import views
 from ..models import *
 
 @main.app_context_processor
-def global_data():
+def global_datas():
     """
     所有页面共有的，比如侧栏的标签集合，社交链接，博主信息，
     和导航栏的所有分类。
@@ -22,7 +22,7 @@ def global_data():
     global_data = {}
     admin = Admin.query.get(1)
     if admin:
-        global_data.admin = admin
+        global_data['admin'] = admin
 
     all_links = SocialLink.query.order_by(SocialLink.link).all()
     if all_links:
@@ -47,3 +47,5 @@ def global_data():
         global_data.pages = pages
 
     return global_data
+
+main.add_app_template_global(global_datas, 'global_datas')

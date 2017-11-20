@@ -14,13 +14,15 @@ class Admin(UserMixin, db.Model):
     site_name = db.Column(db.String(4))
     name = db.Column(db.String(4))
     profile = db.Column(db.String(16))
-    login_name = db.Column(db.String(4))
+    login_name = db.Column(db.String(16))
     password = db.Column(db.String(16))
 
-    def __init__(self, name, login_name, password):
+    def __init__(self, name, login_name, password, site_name, profile):
         self.name = name
         self.login_name = login_name
         self.password = password
+        self.site_name = site_name
+        self.profile = profile
 
     # 对密码进行加密保存
     @property
@@ -29,10 +31,10 @@ class Admin(UserMixin, db.Model):
 
     @password.setter
     def password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password = generate_password_hash(password)
 
     def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password, password)
 
     def __repr__(self):
         return '<Admin %r>' % (self.name)
@@ -71,8 +73,8 @@ class Post(db.Model):
     draft = db.Column(db.Boolean, default=False)
 
     tags = db.relationship('Tag', backref='post', lazy='dynamic')
-    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
-    category = db.relationship('Category', backref='post', lazy='dynamic')
+    # category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
+    category = db.relationship('Category', backref='post', uselist=False)
 
     def __init__(self, **kwargs):
         super(Post, self).__init__(**kwargs)
@@ -128,6 +130,8 @@ class Category(db.Model):
     url_name = db.Column(db.String(16))
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+
     def __init__(self, category, timestamp, url_name):
         self.category = category
         self.timestamp = timestamp
@@ -151,3 +155,12 @@ class SocialLink(db.Model):
     def __repr__(self):
         return '<SocialLink %r>' % (self.link)
 
+class Alembic(db.Model):
+    __tablename__ = 'alembic_version'
+    version_num = db.Column(db.String(32), primary_key=True, nullable=False)
+
+    @staticmethod
+    def clear_A():
+        for a in Alembic.query.all():
+            db.session.delete(a)
+        db.session.commit()
