@@ -1,11 +1,13 @@
-{% extends "base.html" %}
+{% extends "admin.html" %}
 {% block content %}
 <div class="admin-login">
     <h2>你好，管理员</h2>
     <div class="login-input">
-        <form action="">
-            <p>用户：<input class="login" type="text"></p>
-            <p>密码：<input class="login" type="password"></p>
+        <form action="{{ url_for('admin.login') }}" method="post">
+            {{form.hidden_tag()}}
+            <p>用户：{{form.username(class="login")}}</p>
+            <p>密码：{{form.password(class="login")}}</p>
+            <p>记住：{{form.remember_me}}</p>
             <p><input class="but" type="submit" value="登录"></p>
         </form>
     </div>
