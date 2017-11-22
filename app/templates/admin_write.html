@@ -1,10 +1,27 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "admin.html" %}
+{% block content %}
+<div class="admin-write">
+    <div class="admin-title site-box">写文章<span><a href="#">返回，注意保存</a></span></div>
 
-</body>
-</html>
+    <form action="{{url_for('admin.write')}}" method="post">
+        {{form.hidden_tag()}}
+        <div class="aticle-data site-box">
+            <div class="data-ipt">
+                <p>分类：{{form.category(placeholder="只能写一个")}}</p>
+                <p>标签：{{form.tags(placeholder="用英文逗号隔开")}}</p>
+                <p>链接：{{form.url_name(placeholder="url文章名")}}</p>
+                <p>日期：{{form.time(placeholder="使用-连接年月日")}}</p>
+            </div>
+        </div>
+        <div class="aticle-body site-box">
+            <div class="write-body">
+                <p>{{form.title(class="aticle-title",placeholder="标题")}}</p>
+                <p>{{form.body()}}</p>
+                <p>{{ form.save_draft(class="write-btn first-btn",value="保存草稿") }}</p>
+                <p>{{ form.submit(class="write-btn",value="发布") }}</p>
+            </div>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

@@ -128,7 +128,7 @@ input.but:hover,.admin-menu button:hover,.write-body .write-btn:hover {
 .write-body textarea {
     width: 650px;
     height: 380px;
-    margin-top: 20px
+    margin-top: 20px;
     padding: 10px;
     border: 1px solid #999;
     border-radius: 3px;
@@ -209,5 +209,26 @@ input.but:hover,.admin-menu button:hover,.write-body .write-btn:hover {
 
 .admin-post-edit:hover,.admin-post-del:hover {
     color: #666;
+}
+
+
+/*flash message*/
+.flash-msg {
+    display: none;
+    padding: 12px;
+    background: #0882c9c7;
+    color: #fff;
+    font-size: 16px;
+    text-align: center;
+}
+
+.flash-msg span {
+    float: right;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.flash-msg span:hover {
+    font-weight: 600;
 }
 

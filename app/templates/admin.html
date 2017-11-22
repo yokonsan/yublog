@@ -10,36 +10,9 @@
     <div class="container">
         <div class="site-wrap">
             {% block content %}
-            <div class="admin-menu">
-                <h2>管理你的网站</h2>
-                <p>
-                    <a href="#">
-                        <button>发布文章</button>
-                    </a>
-                </p>
-                <p>
-                    <a href="#">
-                        <button>管理草稿</button>
-                    </a>
-                </p>
-                <p>
-                    <a href="#">
-                        <button>管理文章</button>
-                    </a>
-                </p>
-                <p>
-                    <a href="#">
-                        <button>编辑资料</button>
-                    </a>
-                </p>
-                <p>
-                    <a href="#">
-                        <button>添加链接</button>
-                    </a>
-                </p>
-            </div>
             {% endblock %}
         </div>
     </div>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 </body>
 </html>
