@@ -13,16 +13,12 @@ class Admin(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     site_name = db.Column(db.String(4))
     name = db.Column(db.String(4))
-    profile = db.Column(db.String(16))
-    login_name = db.Column(db.String(16))
-    password = db.Column(db.String(16))
+    profile = db.Column(db.String(255))
+    login_name = db.Column(db.String(500))
+    password_hash = db.Column(db.String(500))
 
-    def __init__(self, name, login_name, password, site_name, profile):
-        self.name = name
-        self.login_name = login_name
-        self.password = password
-        self.site_name = site_name
-        self.profile = profile
+    def __init__(self, **kwargs):
+        super(Admin, self).__init__(**kwargs)
 
     # 对密码进行加密保存
     @property
@@ -31,13 +27,17 @@ class Admin(UserMixin, db.Model):
 
     @password.setter
     def password(self, password):
-        self.password = generate_password_hash(password)
+        self.password_hash = generate_password_hash(password)
 
     def verify_password(self, password):
-        return check_password_hash(self.password, password)
+        return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
         return '<Admin %r>' % (self.name)
+
+@lm.user_loader
+def load_user(user_id):
+    return Admin.query.get(int(user_id))
 
 class Page(db.Model):
     __tablename__ = 'pages'
@@ -47,16 +47,13 @@ class Page(db.Model):
     canComment = db.Column(db.Boolean, default=False)
     body = db.Column(db.Text)
     body_html = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.utcnow)
 
-    def __init__(self, page, body, body_html, canComment, url_name, timestamp):
+    def __init__(self, page, body, body_html, canComment, url_name):
         self.page = page
         self.body = body
         self.body_html = body_html
         self.canComment = canComment
         self.url_name = url_name
-        self.timestamp = timestamp
-
 
     def __repr__(self):
         return '<Page %r>' % (self.page)
@@ -65,9 +62,9 @@ class Post(db.Model):
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
-    url_name = db.Column(db.DateTime)
+    url_name = db.Column(db.String)
     body = db.Column(db.Text)
-    timestamp = db.Column(db.Integer)
+    timestampInt = db.Column(db.Integer)
     view_num = db.Column(db.Integer, default=0)
     body_html = db.Column(db.Text)
     draft = db.Column(db.Boolean, default=False)
@@ -78,6 +75,14 @@ class Post(db.Model):
 
     def __init__(self, **kwargs):
         super(Post, self).__init__(**kwargs)
+
+    @property
+    def timestamp(self):
+        return self.timestampInt
+
+    @timestamp.setter
+    def timestamp(self, timestamp):
+        self.timestampInt = int(''.join([i for i in timestamp.split('-')]))
 
     @staticmethod
     def tag_in_post(self, tag):
@@ -109,16 +114,13 @@ class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String(6), index=True)
-    url_name = db.Column(db.String(25))
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
 
-    def __init__(self, tag, timestamp, post_id, url_name):
+    def __init__(self, tag, post_id):
         self.tag = tag
-        self.timestamp = timestamp
         self.post_id = post_id
-        self.url_name = url_name
+
 
     def __repr__(self):
         return '<Tag %r>' % (self.tag)
@@ -128,13 +130,11 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(6), index=True)
     url_name = db.Column(db.String(16))
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow())
 
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
 
-    def __init__(self, category, timestamp, url_name):
+    def __init__(self, category, url_name):
         self.category = category
-        self.timestamp = timestamp
         self.url_name = url_name
 
     def __repr__(self):

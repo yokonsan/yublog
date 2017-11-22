@@ -35,11 +35,13 @@ def moment_timestamp(timestamp):
 @main.route('/<int:time>/<article_name>/')
 def post(time, article_name):
     post = Post.query.filter_by(timestamp=time, url_name=article_name).first()
-    post.view_num += 1
-    db.session.add(post)
-    time = moment_timestamp(post.timestamp)
+    if post:
+        post.view_num += 1
+        db.session.add(post)
+        time = moment_timestamp(post.timestamp)
 
-    return render_template('post.html', post=post, time=time)
+        return render_template('post.html', post=post, time=time)
+    return None
 
 @main.route('/<page_name>/')
 def page(page_name):

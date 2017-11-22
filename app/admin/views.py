@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, g, request, flash
-from flask_login import login_required, current_user, login_user
+from flask_login import login_required, current_user, login_user, logout_user
 
 from .. import db
 from ..models import *
@@ -11,7 +11,7 @@ from .forms import *
 @admin.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    return render_template('admin.html')
+    return render_template('admin_menu.html')
 
 @admin.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -26,10 +26,27 @@ def login():
                            title='登录',
                            form=form)
 
+@admin.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('你已经登出账号。')
+    return redirect(url_for('admin.index'))
+
 @admin.route('/edit-site')
 @login_required
 def edit_site():
     pass
+
+def save_tags(tags, id):
+    """
+    保存标签到模型
+    :param tags: 标签集合，创建时间，文章ID
+    """
+    for tag in tags:
+        tag = Tag(tag=tag, post_id=id)
+        db.session.add(tag)
+    db.session.commit()
 
 def save_post(form, draft=False):
     """
@@ -39,24 +56,25 @@ def save_post(form, draft=False):
     :return: post object
     """
     tags = [tag for tag in form.tags.data.split(',')]
-    timestamp = int(''.join([i for i in form.time.data.split('-')]))
     post = Post(body=form.body.data,
                 title=form.title.data,
                 url_name=form.url_name.data,
-                tags=tags,
                 category=form.category.data,
-                timestamp=timestamp)
+                timestamp=form.time.data)
     if draft == True:
         Post.draft = True
     else:
         Post.draft = False
+    # 保存标签模型
+    save_tags(tags, post.id)
 
     return post
 
-@admin.route('/write/')
+@admin.route('/write', methods=['GET', 'POST'])
 @login_required
 def write():
     form = AdminWrite()
+    print('1')
     if form.validate_on_submit():
         if 'save_draft' in request.form and form.validate():
             post = save_post(form, True)
@@ -66,12 +84,13 @@ def write():
             post = save_post(form)
             db.session.add(post)
             flash('发布成功！')
+        db.session.commit()
         return redirect(url_for('admin.write'))
     return render_template('admin_write.html',
                            form=form,
                            title='写文章')
 
-@admin.route('/draft/')
+@admin.route('/draft')
 @login_required
 def admin_draft():
     posts = Post.query.order_by(Post.timestamp.desc()).all()
@@ -80,7 +99,7 @@ def admin_draft():
                            drafts=drafts,
                            title='管理草稿')
 
-@admin.route('/pages/')
+@admin.route('/pages')
 @login_required
 def add_page():
     pages = Page.query.order_by(Page.timestamp.desc()).all()
@@ -88,7 +107,7 @@ def add_page():
                            pages=pages,
                            title='管理页面')
 
-@admin.route('/posts/')
+@admin.route('/posts')
 @login_required
 def admin_posts():
     page = request.args.get('page', 1, type=int)

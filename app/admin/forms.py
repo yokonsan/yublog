@@ -11,7 +11,7 @@ class AdminLogin(FlaskForm):
 
 class AdminWrite(FlaskForm):
     title = StringField('title', validators=[DataRequired()])
-    time = DateTimeField('datetime', validators=[DataRequired()])
+    time = StringField('datetime', validators=[DataRequired()])
     tags = StringField('tag', validators=[DataRequired()])
     category = StringField('category', validators=[DataRequired()])
     url_name = StringField('urlName', validators=[DataRequired()])
