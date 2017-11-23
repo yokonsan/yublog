@@ -7,8 +7,8 @@ from . import admin
 from .forms import *
 
 
-@admin.route('/', methods=['GET', 'POST'])
-@admin.route('/index', methods=['GET', 'POST'])
+@admin.route('/')
+@admin.route('/index')
 @login_required
 def index():
     return render_template('admin_menu.html')
@@ -33,10 +33,19 @@ def logout():
     flash('你已经登出账号。')
     return redirect(url_for('admin.index'))
 
-@admin.route('/edit-site')
+@admin.route('/links', methods=['GET', 'POST'])
 @login_required
-def edit_site():
-    pass
+def add_link():
+    form = AddLinkForm()
+    if form.validate_on_submit():
+        link = SocialLink(link=form.link.data,
+                      name=form.name.data,
+                      isFriendLink=form.isFriendLink.data)
+        db.session.add(link)
+        flash('添加成功')
+        db.session.commit()
+        return redirect(url_for('admin.add_link'))
+    return render_template('admin_add_link.html', form=form)
 
 def save_tags(tags, id):
     """
@@ -57,7 +66,6 @@ def save_post(form, draft=False):
     :param draft: article is or not draft
     :return: post object
     """
-
     category = Category.query.filter_by(category=form.category.data).first()
     if not category:
         category = Category(category=form.category.data)
@@ -104,20 +112,25 @@ def write():
                            form=form,
                            title='写文章')
 
+@admin.route('/edit/<name>', methods=['GET', 'POST'])
+@login_required
+def admin_edit(name):
+    pass
+
 @admin.route('/draft')
 @login_required
 def admin_draft():
-    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    posts = Post.query.order_by(Post.id.desc()).all()
     drafts = [post for post in posts if post.draft]
-    return render_template('drafts.html',
+    return render_template('admin_draft.html',
                            drafts=drafts,
                            title='管理草稿')
 
 @admin.route('/pages')
 @login_required
 def add_page():
-    pages = Page.query.order_by(Page.timestamp.desc()).all()
-    return render_template('pages.html',
+    pages = Page.query.order_by(Page.id.desc()).all()
+    return render_template('admin_page.html',
                            pages=pages,
                            title='管理页面')
 
@@ -125,12 +138,12 @@ def add_page():
 @login_required
 def admin_posts():
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.timestampInt.desc()).paginate(
+    pagination = Post.query.order_by(Post.id.desc()).paginate(
         page, per_page=current_app.config['ADMIN_POSTS_PER_PAGE'],
         error_out=False
     )
     posts = [post for post in pagination.items if post.draft == False]
-    return render_template('admin_posts.html',
+    return render_template('admin_post.html',
                            title='管理文章',
                            posts=posts,
                            pagination=pagination)

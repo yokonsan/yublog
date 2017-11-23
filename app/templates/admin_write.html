@@ -1,7 +1,7 @@
 {% extends "admin.html" %}
 {% block content %}
 <div class="admin-write">
-    <div class="admin-title site-box">写文章<span><a href="#">返回，注意保存</a></span></div>
+    <div class="admin-title site-box">写文章<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
 
     <form action="{{url_for('admin.write')}}" method="post">
         {{form.hidden_tag()}}

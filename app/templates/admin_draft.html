@@ -1,0 +1,35 @@
+{% extends "admin.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="flash-msg">
+    {{ message }}
+    <span class="flash-x">x</span>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+<div class="admin-title site-box">管理草稿<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
+<div class="all-posts">
+    {% for draft in drafts %}
+    <div class="admin-post site-box">
+        <div class="admin-post-title"><a href="{{url_for('admin.edit', name=draft.url_name)}}">{{draft.title}}</a></div>
+        <div class="admin-post-desc">
+            {% if draft.body_html %}
+            {{ draft.body_html | truncate(250) | safe}}
+            {% else %}
+                {{draft.body | truncate(250)}}
+            {% endif %}
+        </div>
+        <div>
+            <a class="admin-post-del" href="{{url_for('admin.delete',name=draft.url_name)}}">删除</a>
+            <a class="admin-post-edit" href="{{url_for('admin.edit', name=draft.url_name)}}">编辑>>></a>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% endif %}
+{% endblock %}

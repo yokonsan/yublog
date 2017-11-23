@@ -27,10 +27,6 @@ class EditpostForm(FlaskForm):
     submit = SubmitField('发布')
     save_draft = SubmitField('保存')
 
-class AdminProfile(FlaskForm):
-    name = StringField('name', validators=[DataRequired()])
-    profile = StringField('profile', validators=[DataRequired()])
-
 class AddLinkForm(FlaskForm):
     link = StringField('url', validators=[DataRequired()])
     name = StringField('name', validators=[DataRequired()])
