@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
-{% for post,time in data.items() %}
+{% for post in posts %}
     <div class="post-item site-box">
         <h1 class="post-title">
-            <a href="{{ url_for('main.post',time=post.timestamp,article_name=post.url_name) }}">
+            <a href="{{ url_for('main.post',time=post.timestampInt,article_name=post.url_name) }}">
                 {{ post.title }}
             </a>
         </h1>
         <div class="post-meta">
-            <span class="post-time"><i class="demo-icon icon-calendar"></i> 发表于{{ time }}</span>
+            <span class="post-time"><i class="demo-icon icon-calendar"></i> 发表于{{ post.timestamp }}</span>
             <span class="post-category">
                 <i class="demo-icon icon-folder-empty"></i> 分类：
-                <a href="{{ url_for('main.category', category_name=post.category) }}">{{ post.category }}</a>
+                <a href="{{ url_for('main.category', category_name=post.category) }}">{{ post.category.category }}</a>
             </span>
             <span class="post-comments-count">
                 <i class="demo-icon icon-comment-empty"></i> 评论：22
@@ -20,12 +20,12 @@
         </div>
         <div class="post-body">
             {% if post.body_html %}
-            {{ post.body_html | truncate(250) }}
+            {{ post.body_html | truncate(250) | safe}}
             {% else %}
                 {{post.body | truncate(250)}}
             {% endif %}
             <div class="read-more-btn">
-                <a href="{{ url_for('main.post',time=post.timestamp,article_name=post.url_name) }}">阅读全文</a>
+                <a href="{{ url_for('main.post',time=post.timestampInt,article_name=post.url_name) }}">阅读全文</a>
             </div>
         </div>
     </div>

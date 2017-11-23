@@ -8,7 +8,7 @@
                 el2.style.display = 'none';
             }
         }
-    }
+    };
 
     // 下拉菜单事件
     var dropNav = document.getElementById('drop');
@@ -17,12 +17,12 @@
     // 鼠标进入
     navCate.onmouseenter = function() {
         dropNav.style.display = 'block';
-    }
+    };
 
     // 鼠标离开
     navCate.onmouseleave = function() {
         dropNav.style.display = 'none';
-    }
+    };
 
     // 搜索框事件
     var searchNav = document.getElementsByClassName('search-btn')[0];
@@ -37,7 +37,7 @@
         } else {
             searchDiv.style.display = 'none';
         }
-    }
+    };
 
     // 回到顶部
     window.onscroll = function() {
@@ -77,7 +77,7 @@
             clearInterval(timer);
         }
         oldTop = newTop;
-    }
+    };
 
     // donate button
     var donateBtn = document.getElementsByClassName('donate-btn')[0];
