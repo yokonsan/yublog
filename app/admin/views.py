@@ -38,13 +38,18 @@ def logout():
 def add_link():
     form = AddLinkForm()
     if form.validate_on_submit():
-        link = SocialLink(link=form.link.data,
-                      name=form.name.data,
-                      isFriendLink=form.isFriendLink.data)
-        db.session.add(link)
-        flash('添加成功')
-        db.session.commit()
-        return redirect(url_for('admin.add_link'))
+        exist_link = SocialLink.query.filter_by(link=form.link.data).first()
+        if exist_link:
+            flash('链接已经存在哦...')
+            return redirect(url_for('admin.add_link'))
+        else:
+            link = SocialLink(link=form.link.data,
+                          name=form.name.data,
+                          isFriendLink=form.isFriendLink.data)
+            db.session.add(link)
+            flash('添加成功')
+            db.session.commit()
+            return redirect(url_for('admin.add_link'))
     return render_template('admin_add_link.html', form=form)
 
 def save_tags(tags, id):
@@ -117,9 +122,14 @@ def write():
 def admin_edit(name):
     pass
 
+@admin.route('/add-page')
+@login_required
+def add_page():
+    pass
+
 @admin.route('/draft')
 @login_required
-def admin_draft():
+def admin_drafts():
     posts = Post.query.order_by(Post.id.desc()).all()
     drafts = [post for post in posts if post.draft]
     return render_template('admin_draft.html',
@@ -128,7 +138,7 @@ def admin_draft():
 
 @admin.route('/pages')
 @login_required
-def add_page():
+def admin_pages():
     pages = Page.query.order_by(Page.id.desc()).all()
     return render_template('admin_page.html',
                            pages=pages,
@@ -148,4 +158,7 @@ def admin_posts():
                            posts=posts,
                            pagination=pagination)
 
-
+@admin.route('/delete/<name>')
+@login_required
+def delete(name):
+    pass

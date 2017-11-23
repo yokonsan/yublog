@@ -30,5 +30,5 @@ class EditpostForm(FlaskForm):
 class AddLinkForm(FlaskForm):
     link = StringField('url', validators=[DataRequired()])
     name = StringField('name', validators=[DataRequired()])
-    isFriendLink = BooleanField('type')
+    isFriendLink = BooleanField('type', default=False)
 

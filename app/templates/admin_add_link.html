@@ -11,10 +11,11 @@
 {% endfor %}
 {% endif %}
 {% endwith %}
-<div class="admin-links">
+<div class="admin-links site-box">
     <h2>添加网站链接</h2>
     <div class="links-ipt">
         <form action="{{url_for('admin.add_link')}}" method="post">
+            {{form.hidden_tag()}}
             <p>标题：{{form.name()}}</p>
             <p>链接：{{form.link()}}</p>
             <p>是否友链：{{form.isFriendLink}}</p>

@@ -15,17 +15,17 @@
 <div class="all-posts">
     {% for post in posts %}
     <div class="admin-post site-box">
-        <div class="admin-post-title"><a href="{{url_for('admin.edit', name=post.url_name)}}">{{post.title}}</a></div>
+        <div class="admin-post-title"><a href="{{url_for('admin.admin_edit', name=post.url_name)}}">{{post.title}}</a></div>
         <div class="admin-post-desc">
             {% if post.body_html %}
-            {{ post.body_html | truncate(250) | safe}}
+            {{ post.body_html | truncate(250)}}
             {% else %}
                 {{post.body | truncate(250)}}
             {% endif %}
         </div>
         <div>
             <a class="admin-post-del" href="{{url_for('admin.delete',name=post.url_name)}}">删除</a>
-            <a class="admin-post-edit" href="{{url_for('admin.edit', name=post.url_name)}}">编辑>>></a>
+            <a class="admin-post-edit" href="{{url_for('admin.admin_edit', name=post.url_name)}}">编辑>>></a>
         </div>
     </div>
     {% endfor %}

@@ -419,32 +419,34 @@ span.post-view-count {
 
 /*post pages*/
 .post-page {
-    
-}
-
-.pages {
-    text-align: center;
     padding: 20px;
-    padding-bottom: 0;
 }
 
-.pages ul {
+ul.pages {
     margin: 0;
     padding: 0;
     list-style: none;
+    text-align: center;
 }
 
-.pages a {
+ul.pages li {
+    display: inline-block;
+}
+
+ul.pages a {
     text-decoration: none;
     padding: 5px 10px;
     border: 1px solid #ccc;
     border-radius: 3px;
-    background: #ccc;
-    color: #333;
 }
 
-.pages a:hover {
-    background: #666;
+ul.pages a.active,ul.pages a.active:hover {
+    background: #ccc;
+    color: #fff;
+}
+
+ul.pages a:hover {
+    background: #ccc;
     color: #fff;
 }
 

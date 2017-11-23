@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "_pagination.html" as page %}
 {% block content %}
 {% for post in posts %}
     <div class="post-item site-box">
@@ -32,16 +33,17 @@
     {% endfor %}
 
     <div class="post-page site-box">
-        <div class="pages">
-            <a class="pre-page" href="#"><</a>
-            <a href="#">1</a>
-            <a href="#">2</a>
-            <a href="#">3</a>
-            <a href="#">4</a>
-            <a href="#">5</a>
-            <a href="#">...</a>
-            <a href="#">20</a>
-            <a class="next-page" href="#">></a>
-        </div>
+        <ul class="pages">
+            <li class="pre-page p"><a href=""><</a></li>
+            <li class="p"><a class="active" href="">1</a></li>
+            <li class="p"><a href="">2</a></li>
+            <li class="p"><a href="">3</a></li>
+            <li class="p"><a href="">4</a></li>
+            <li class="p"><a href="">5</a></li>
+            <li class="p"><a href="">...</a></li>
+            <li class="p"><a href="">20</a></li>
+            <li class="next-page p"><a href="">></a></li>
+            {{ page.pages(pagination, 'main.index') }}
+        </ul>
     </div>
 {% endblock %}

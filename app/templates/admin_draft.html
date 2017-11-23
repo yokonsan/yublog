@@ -15,17 +15,17 @@
 <div class="all-posts">
     {% for draft in drafts %}
     <div class="admin-post site-box">
-        <div class="admin-post-title"><a href="{{url_for('admin.edit', name=draft.url_name)}}">{{draft.title}}</a></div>
+        <div class="admin-post-title"><a href="{{url_for('admin.admin_edit', name=draft.url_name)}}">{{draft.title}}</a></div>
         <div class="admin-post-desc">
             {% if draft.body_html %}
-            {{ draft.body_html | truncate(250) | safe}}
+            {{ draft.body_html | truncate(250)}}
             {% else %}
                 {{draft.body | truncate(250)}}
             {% endif %}
         </div>
         <div>
             <a class="admin-post-del" href="{{url_for('admin.delete',name=draft.url_name)}}">删除</a>
-            <a class="admin-post-edit" href="{{url_for('admin.edit', name=draft.url_name)}}">编辑>>></a>
+            <a class="admin-post-edit" href="{{url_for('admin.admin_edit', name=draft.url_name)}}">编辑>>></a>
         </div>
     </div>
     {% endfor %}
