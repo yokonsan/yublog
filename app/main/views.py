@@ -10,37 +10,29 @@ from ..models import *
 @main.route('/index')
 def index():
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+
+    pagination = Post.query.order_by(Post.id.desc()).paginate(
         page, per_page=current_app.config['POSTS_PER_PAGE'],
         error_out=False
     )
     posts = [post for post in pagination.items if post.draft == False]
-    timestamps = [post.timestamp for post in posts]
-    data = {}
-    for post, time in zip(posts, timestamps):
-        data = {post: moment_timestamp(time)}
+
     return render_template('index.html',
                            title='首页',
-                           data=data,
+                           posts=posts,
                            pagination=pagination)
-
-def moment_timestamp(timestamp):
-    """
-    存入数据库的post日期是Integer，
-    需要以'-'分割成正式日期返回
-    """
-    timestamp = str(timestamp)
-    return timestamp[0:3] + '-' + timestamp[4:5] + '-' + timestamp[6:7]
 
 @main.route('/<int:time>/<article_name>/')
 def post(time, article_name):
-    post = Post.query.filter_by(timestamp=time, url_name=article_name).first()
+    timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
+    print(timestamp)
+
+    post = Post.query.filter_by(timestamp=timestamp, url_name=article_name).first()
     if post:
         post.view_num += 1
         db.session.add(post)
-        time = moment_timestamp(post.timestamp)
-
-        return render_template('post.html', post=post, time=time)
+        tags = [tag for tag in post.tags.split(',')]
+        return render_template('post.html', post=post, tags=tags)
     return None
 
 @main.route('/<page_name>/')

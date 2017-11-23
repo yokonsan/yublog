@@ -44,8 +44,10 @@ def save_tags(tags, id):
     :param tags: 标签集合，创建时间，文章ID
     """
     for tag in tags:
-        tag = Tag(tag=tag, post_id=id)
+        tag = Tag(tag=tag)
         db.session.add(tag)
+        post_tag = PostTag(tag_id=tag.id, post_id=id)
+        db.session.add(post_tag)
     db.session.commit()
 
 def save_post(form, draft=False):
@@ -55,16 +57,29 @@ def save_post(form, draft=False):
     :param draft: article is or not draft
     :return: post object
     """
+
+    category = Category.query.filter_by(category=form.category.data).first()
+    if not category:
+        category = Category(category=form.category.data)
+        db.session.add(category)
+
     tags = [tag for tag in form.tags.data.split(',')]
-    post = Post(body=form.body.data,
+    if draft == True:
+        post = Post(body=form.body.data,
                 title=form.title.data,
                 url_name=form.url_name.data,
-                category=form.category.data,
-                timestamp=form.time.data)
-    if draft == True:
-        Post.draft = True
+                category=Category(category=form.category.data),
+                tags = form.tags.data,
+                timestamp=form.time.data,
+                draft=True)
     else:
-        Post.draft = False
+        post = Post(body=form.body.data,
+                title=form.title.data,
+                url_name=form.url_name.data,
+                category=Category(category=form.category.data),
+                tags=form.tags.data,
+                timestamp=form.time.data,
+                draft=False)
     # 保存标签模型
     save_tags(tags, post.id)
 
@@ -74,7 +89,6 @@ def save_post(form, draft=False):
 @login_required
 def write():
     form = AdminWrite()
-    print('1')
     if form.validate_on_submit():
         if 'save_draft' in request.form and form.validate():
             post = save_post(form, True)
@@ -111,7 +125,7 @@ def add_page():
 @login_required
 def admin_posts():
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+    pagination = Post.query.order_by(Post.timestampInt.desc()).paginate(
         page, per_page=current_app.config['ADMIN_POSTS_PER_PAGE'],
         error_out=False
     )

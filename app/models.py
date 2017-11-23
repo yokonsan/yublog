@@ -62,27 +62,29 @@ class Post(db.Model):
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
-    url_name = db.Column(db.String)
-    body = db.Column(db.Text)
-    timestampInt = db.Column(db.Integer)
+    url_name = db.Column(db.String(64))
+    timestamp = db.Column(db.String(64))
     view_num = db.Column(db.Integer, default=0)
     body_html = db.Column(db.Text)
     draft = db.Column(db.Boolean, default=False)
+    disable = db.Column(db.Boolean, default=False)
 
-    tags = db.relationship('Tag', backref='post', lazy='dynamic')
-    # category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
+    tags = db.Column(db.String(64))
     category = db.relationship('Category', backref='post', uselist=False)
 
-    def __init__(self, **kwargs):
-        super(Post, self).__init__(**kwargs)
+    def __init__(self, title, url_name, timestamp, body, draft, category, tags):
+        self.title = title
+        self.url_name = url_name
+        self.timestamp = timestamp
+        self.body = body
+        self.draft = draft
+        self.category = category
+        self.tags = tags
+        # self.timestampInt = int(''.join([i for i in timestamp.split('-')]))
 
     @property
-    def timestamp(self):
-        return self.timestampInt
-
-    @timestamp.setter
-    def timestamp(self, timestamp):
-        self.timestampInt = int(''.join([i for i in timestamp.split('-')]))
+    def timestampInt(self):
+        return int(''.join([i for i in self.timestamp.split('-')]))
 
     @staticmethod
     def tag_in_post(self, tag):
@@ -90,15 +92,20 @@ class Post(db.Model):
             return True
         return False
 
-    @staticmethod
-    def change_body(target, value, oldvalue, initiator):
+    @property
+    def body(self):
+        return self.body_html
+
+    @body.setter
+    def body(self, body):
+        # html_text = markdown(value, output_format='html')
         allowed_tags = [
             'a', 'abbr', 'acronym', 'b', 'img', 'blockquote', 'code',
             'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2',
             'h3', 'p'
         ]
-        target.body_html = bleach.linkify(bleach.clean(
-            markdown(value, output_format='html'),
+        self.body_html = bleach.linkify(bleach.clean(
+            markdown(body, output_format='html'),
             tags=allowed_tags, strip=True,
             attributes={
                 '*': ['class'],
@@ -115,27 +122,31 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String(6), index=True)
 
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
-
-    def __init__(self, tag, post_id):
+    def __init__(self, tag):
         self.tag = tag
-        self.post_id = post_id
-
 
     def __repr__(self):
         return '<Tag %r>' % (self.tag)
+
+class PostTag(db.Model):
+    __tablename__ = 'post_tags'
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer)
+    tag_id = db.Column(db.Integer)
+
+    def __init__(self, post_id, tag_id):
+        self.post_id = post_id
+        self.tag_id = tag_id
 
 class Category(db.Model):
     __tablename__ = 'category'
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(6), index=True)
-    url_name = db.Column(db.String(16))
 
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
 
-    def __init__(self, category, url_name):
+    def __init__(self, category):
         self.category = category
-        self.url_name = url_name
 
     def __repr__(self):
         return '<Category %r>' % (self.category)

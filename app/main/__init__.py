@@ -28,23 +28,23 @@ def global_datas():
     if all_links:
         social_links = [link for link in all_links if link.isFriendLink == False]
         friend_links = [link for link in all_links if link.isFriendLink == True]
-        global_data.social_links = social_links
-        global_data.friend_links = friend_links
+        global_data['social_links'] = social_links
+        global_data['friend_links'] = friend_links
 
-    all_tags = Tag.query.order_by(Tag.timestamp.desc()).all()
+    all_tags = Tag.query.all()
     if all_tags:
         tags = [tag for tag in all_tags]
-        global_data.tags = tags
+        global_data['tags'] = tags
 
-    all_categories = Category.query.order_by(Category.timestamp.desc()).all()
+    all_categories = Category.query.all()
     if all_categories:
         categories = [category for category in all_categories]
-        global_data.categories = categories
+        global_data['categories'] = categories
 
-    all_pages = Page.query.order_by(Page.timestamp.desc()).all()
+    all_pages = Page.query.all()
     if all_pages:
         pages = [page for page in all_pages]
-        global_data.pages = pages
+        global_data['pages'] = pages
 
     return global_data
 
