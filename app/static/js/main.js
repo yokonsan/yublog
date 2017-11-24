@@ -79,12 +79,6 @@
         oldTop = newTop;
     };
 
-    // donate button
-    var donateBtn = document.getElementsByClassName('donate-btn')[0];
-    var donateImg = document.getElementsByClassName('donate-img')[0];
-
-    clickEvent(donateBtn, donateImg);
-
     // width < 960px
     // 导航事件
     var mobileNav = document.getElementsByClassName('mobile-site-nav')[0];

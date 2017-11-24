@@ -86,5 +86,17 @@
         toolbar : false
     });
 
+    // donate button
+    var donateBtn = document.getElementsByClassName('donate-btn')[0];
+    var donateImg = document.getElementsByClassName('donate-img')[0];
+
+    donateBtn.onclick = function() {
+        if (donateImg.style.display === 'none') {
+            donateImg.style.display = 'block';
+        } else {
+            donateImg.style.display = 'none';
+        }
+    };
+
 </script>
 {% endblock %}
