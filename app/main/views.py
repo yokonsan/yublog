@@ -35,24 +35,32 @@ def post(time, article_name):
         return render_template('post.html', post=post, tags=tags)
     return None
 
-@main.route('/<page_name>/')
-def page(page_name):
-    page = Page.query.filter_by(page=page_name).first()
+@main.route('/<page_url>/')
+def page(page_url):
+    page = Page.query.filter_by(url_name=page_url).first()
 
     return render_template('page.html', page=page)
 
 @main.route('/tag/<tag_name>/')
 def tag(tag_name):
     tag = Tag.query.filter_by(tag=tag_name).first()
-    all_posts = Post.order_by().all()
-    posts = [post for post in all_posts if post.tag_in_post(tag.tag)]
+    post_ids = PostTag.query.filter_by(tag_id=tag.id).all()
+    # all_posts = Post.order_by().all()
+    # posts = [post for post in all_posts if post.tag_in_post(tag.tag)]
+    posts = []
+    for id in post_ids:
+        post = Post.query.filter_by(id=id).first()
+        posts.append(post)
     return render_template('tag.html', tag=tag, posts=posts)
 
 @main.route('/category/<category_name>/')
 def category(category_name):
     category = Category.query.filter_by(category=category_name).first()
-    posts = Post.query.filter(category=category.category).all()
-    return render_template('category.html', category=category, posts=posts)
+    posts = Post.query.filter_by(category=category).all()
+    return render_template('category.html',
+                           category=category,
+                           posts=posts,
+                           title='分类：' + category.category)
 
 @main.route('/archives/')
 def archives():

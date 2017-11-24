@@ -88,9 +88,15 @@ class Post(db.Model):
 
     @staticmethod
     def tag_in_post(self, tag):
-        if tag in self.tags:
-            return True
-        return False
+        try:
+            tags = [i for i in self.tags.split(',')]
+            if tag in tags:
+                return True
+            return False
+        except:
+            if tag == self.tags:
+                return True
+            return False
 
     @property
     def body(self):
