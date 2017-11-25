@@ -61,13 +61,25 @@ def category(category_name):
 def archives():
     page = request.args.get('page', 1, type=int)
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
-        page, per_page=current_app.config['POSTS_PER_PAGE'],
+        page, per_page=current_app.config['ACHIVES_POSTS_PER_PAGE'],
         error_out=False
     )
     posts = [post for post in pagination.items if post.draft == False]
+    times = [post.timestamp for post in posts ]
+    year = [i.split('-')[0] for i in times]
+    year = set(year)
+    data = {}
+    for y, p in zip(year, posts):
+        if y in p.timestamp:
+            data = {
+                y: p
+            }
+    print(data)
     return render_template('archives.html',
                            title='归档',
                            posts=posts,
+                           data=data,
+                           count=len(posts),
                            pagination=pagination)
 
 @main.route('/search/')
