@@ -76,7 +76,6 @@
             <div class="mobile-site-nav" style="display: none;">
                 <ul>
                     <li><a class="mobile-nav-item" href=""><i class="demo-icon icon-home"></i> 首页</a></li>
-                    <li><a class="mobile-nav-item" href=""><i class="demo-icon icon-user"></i> 关于</a></li>
                     <li>
                         <a class="mobile-nav-item mobile-category" href="#"><i class="demo-icon icon-book"></i> 分类</a>
                         <ul class="mobile-drop-category" style="display: none;">
@@ -89,8 +88,12 @@
                             {% endfor %}
                         </ul>
                     </li>
-                    <li><a class="mobile-nav-item" href=""><i class="demo-icon icon-box"></i> 归档</a></li>
-                    <li><a class="mobile-nav-item" href=""><i class="demo-icon icon-comment-empty"></i> 留言</a></li>
+                    <li><a class="mobile-nav-item" href="{{url_for('main.archives')}}"><i class="demo-icon icon-box"></i> 归档</a></li>
+                    {% for page in global_datas().pages %}
+                    <li class="menu-item">
+                        <a href="{{ url_for('main.page', page_name=page.url_name) }}">{{ page.page }}</a>
+                    </li>
+                    {% endfor %}
                     <li>
                         <div class="mobile-search">
                             <i class="demo-icon icon-search"></i>

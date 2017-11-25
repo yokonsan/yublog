@@ -1,10 +1,67 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
+<div class="post-item site-box">
+    <h1 class="post-title"><a href="">关于</a></h1>
 
-</body>
-</html>
+    <div class="post-body">
+        <h2>介绍</h2>
+        <p><a data-fancybox="image" href="http://imgout.ph.126.net/55813046/dog-2156775_960_720.jpg"><img src="http://imgout.ph.126.net/55813046/dog-2156775_960_720.jpg" alt=""></a></p>
+        <div id="player1" class="aplayer"></div>
+
+        <p>每个看起来与正常人无异的程序员，其实都是在学习的途中熬过，压抑过，而且创伤过的反社会人士。我是俞坤。这是我的博客网站，记录我的学习路程，技术分享和一些生活感悟。大学时光总是过得很快，转眼就要大四，开始准备进入社会后的摸爬滚打。前几天室友开始讨论起实习的事情，我茫茫然抬起头，才惊觉时光的流逝。为了记录这匆匆的时光，就建了这个博客网站。</p>
+        <p>我是一个宁愿一个人宅在宿舍背英语单词，也不想结伴出去看一场电影的人。不是因为我天生孤僻，而是我很懒，懒癌发作时，吃饭都不想出去。不喜欢自找麻烦，但是折腾起来常常想废寝忘食。我喜欢王家卫的电影，喜欢周杰伦的音乐，不爱运动，爱美女。希望今后不会被生活击垮，让自己的内心住着一条巨龙，既是一种苦刑，也是一种乐趣。</p>
+        <p>至今单身，那么，请美丽的单身姑娘们联系我吧…</p>
+        <h2>联系我</h2>
+        <ul>
+            <li>邮箱：15152347277@163.com;</li>
+            <li>github：yukun;</li>
+            <li>QQ：944682328;</li>
+            <li>知乎：俞坤的知乎;</li>
+            <li>微博：不常玩;</li>
+            <li>微信：不给;</li>
+        </ul>
+        <h2>座右铭</h2>
+        <blockquote>
+            博观约取，厚积薄发
+        </blockquote>
+    </div>
+
+    <div class="footer">
+        <div class="copyright">
+            © 2017  <i class="demo-icon icon-heart"></i><span> 俞坤</span>
+        </div>
+        <span class="powered-by">苏ICP备17028833号 </span>
+        <span class="powered-by">Flask </span>
+        <span>源码</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="{{url_for('static', filename='lib/highlight.min.js')}}"></script>
+<script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
+<script src="{{url_for('static', filename='lib/jquery.fancybox.min.js')}}"></script>
+<script>
+    // highlight
+    hljs.initHighlightingOnLoad();
+
+    // image
+    $('[data-fancybox]').fancybox({
+        toolbar : false
+    });
+
+    // donate button
+    var donateBtn = document.getElementsByClassName('donate-btn')[0];
+    var donateImg = document.getElementsByClassName('donate-img')[0];
+
+    donateBtn.onclick = function() {
+        if (donateImg.style.display === 'none') {
+            donateImg.style.display = 'block';
+        } else {
+            donateImg.style.display = 'none';
+        }
+    };
+
+</script>
+{% endblock %}

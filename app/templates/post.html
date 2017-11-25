@@ -10,7 +10,7 @@
             <span class="post-time"><i class="demo-icon icon-calendar"></i> 发表于{{ post.timestamp }}</span>
             <span class="post-category">
                 <i class="demo-icon icon-folder-empty"></i> 分类：
-                <a href="{{ url_for('main.category', category_name=post.category.category) }}">{{ post.category.category }}</a>
+                <a href="{{ url_for('main.category', category_name=post.category) }}">{{ post.category }}</a>
             </span>
             <span class="post-comments-count">
                 <i class="demo-icon icon-comment-empty"></i> 评论：22
