@@ -70,23 +70,12 @@ class Post(db.Model):
     disable = db.Column(db.Boolean, default=False)
 
     tags = db.Column(db.String(64))
-    category = db.relationship('Category', backref='post', uselist=False)
-
-    def __init__(self, title, url_name, timestamp, body, draft, category, tags):
-        self.title = title
-        self.url_name = url_name
-        self.timestamp = timestamp
-        self.body = body
-        self.draft = draft
-        self.category = category
-        self.tags = tags
-        # self.timestampInt = int(''.join([i for i in timestamp.split('-')]))
+    category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
 
     @property
     def timestampInt(self):
         return int(''.join([i for i in self.timestamp.split('-')]))
 
-    @staticmethod
     def tag_in_post(self, tag):
         try:
             tags = [i for i in self.tags.split(',')]
@@ -128,31 +117,15 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String(6), index=True)
 
-    def __init__(self, tag):
-        self.tag = tag
-
     def __repr__(self):
         return '<Tag %r>' % (self.tag)
-
-class PostTag(db.Model):
-    __tablename__ = 'post_tags'
-    id = db.Column(db.Integer, primary_key=True)
-    post_id = db.Column(db.Integer)
-    tag_id = db.Column(db.Integer)
-
-    def __init__(self, post_id, tag_id):
-        self.post_id = post_id
-        self.tag_id = tag_id
 
 class Category(db.Model):
     __tablename__ = 'category'
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(6), index=True)
 
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
-
-    def __init__(self, category):
-        self.category = category
+    posts = db.relationship('Post', backref='category', uselist=False)
 
     def __repr__(self):
         return '<Category %r>' % (self.category)

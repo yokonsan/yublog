@@ -25,7 +25,6 @@ def index():
 @main.route('/<int:time>/<article_name>/')
 def post(time, article_name):
     timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
-    print(timestamp)
 
     post = Post.query.filter_by(timestamp=timestamp, url_name=article_name).first()
     if post:
@@ -43,14 +42,10 @@ def page(page_url):
 
 @main.route('/tag/<tag_name>/')
 def tag(tag_name):
-    tag = Tag.query.filter_by(tag=tag_name).first()
-    post_ids = PostTag.query.filter_by(tag_id=tag.id).all()
-    # all_posts = Post.order_by().all()
-    # posts = [post for post in all_posts if post.tag_in_post(tag.tag)]
-    posts = []
-    for id in post_ids:
-        post = Post.query.filter_by(id=id).first()
-        posts.append(post)
+    tag = tag_name
+    all_posts = Post.query.all()
+    posts = [post for post in all_posts if post.tag_in_post(tag)]
+
     return render_template('tag.html', tag=tag, posts=posts)
 
 @main.route('/category/<category_name>/')

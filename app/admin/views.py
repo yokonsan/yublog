@@ -57,11 +57,12 @@ def save_tags(tags, id):
     保存标签到模型
     :param tags: 标签集合，创建时间，文章ID
     """
+    id = id
     for tag in tags:
-        tag = Tag(tag=tag)
-        db.session.add(tag)
-        post_tag = PostTag(tag_id=tag.id, post_id=id)
-        db.session.add(post_tag)
+        exist_tag = Tag.query.filter_by(tag=tag).first()
+        if not exist_tag:
+            tag = Tag(tag=tag)
+            db.session.add(tag)
     db.session.commit()
 
 def save_post(form, draft=False):
@@ -81,7 +82,7 @@ def save_post(form, draft=False):
         post = Post(body=form.body.data,
                 title=form.title.data,
                 url_name=form.url_name.data,
-                category=Category(category=form.category.data),
+                category=category,
                 tags = form.tags.data,
                 timestamp=form.time.data,
                 draft=True)
@@ -89,12 +90,13 @@ def save_post(form, draft=False):
         post = Post(body=form.body.data,
                 title=form.title.data,
                 url_name=form.url_name.data,
-                category=Category(category=form.category.data),
+                category=category,
                 tags=form.tags.data,
                 timestamp=form.time.data,
                 draft=False)
-    # 保存标签模型
-    save_tags(tags, post.id)
+        print(post.id)
+        # 保存标签模型
+        save_tags(tags, post.id)
 
     return post
 
