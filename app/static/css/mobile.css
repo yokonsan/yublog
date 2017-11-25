@@ -129,6 +129,7 @@ span.post-comments-count {
 /*footer*/
 
 .footer {
+    margin-top: 200px;
     background: #eee;
 }
 
@@ -136,6 +137,11 @@ span.post-comments-count {
 .category-post ul {
     list-style: none;
     margin: 0;
+    padding: 0;
+}
+
+/*mobile achives page*/
+.archives-posts ul {
     padding: 0;
 }
 

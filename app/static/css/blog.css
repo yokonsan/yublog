@@ -584,6 +584,47 @@ ul.pages a:hover {
     border-bottom: 1px solid #333;
 }
 
+/*archives page*/
+.archives-title {
+    padding: 20px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.archives {
+    padding: 30px;
+}
+
+.archives-year {
+    font-size: 18px;
+    font-weight: 600;
+    display: inline-block;
+    padding: 3px 0;
+    border-bottom: 3px solid #444;
+}
+
+.archives-posts {
+    padding: 20px;
+}
+
+.archives-posts li {
+    padding: 10px 5px;
+    font-size: 12px;
+/*    border-bottom: 1px dashed #666;*/
+}
+
+.archives-posts li a {
+    font-size: 15px;
+    text-decoration: none;
+    color: #555;
+    margin-left: 20px;
+}
+
+.archives-posts li a:hover {
+    color: #111;
+    border-bottom: 1px solid #333;
+}
+
 
 /*mobile disply*/
 .mobile-site-logo,.mobile-site-nav,.mobile-menu-btn,.mobile-site-nav ul {
