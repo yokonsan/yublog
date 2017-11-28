@@ -45,15 +45,26 @@ class Page(db.Model):
     page = db.Column(db.String(3))
     url_name = db.Column(db.String(25))
     canComment = db.Column(db.Boolean, default=False)
+    isNav = db.Column(db.Boolean, default=False)
     body = db.Column(db.Text)
-    body_html = db.Column(db.Text)
 
-    def __init__(self, page, body, body_html, canComment, url_name):
-        self.page = page
-        self.body = body
-        self.body_html = body_html
-        self.canComment = canComment
-        self.url_name = url_name
+    @property
+    def body_to_html(self):
+        allowed_tags = [
+            'a', 'abbr', 'acronym', 'b', 'img', 'blockquote', 'code',
+            'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2',
+            'h3', 'p'
+        ]
+        body_html = bleach.linkify(bleach.clean(
+            markdown(self.body, output_format='html'),
+            tags=allowed_tags, strip=True,
+            attributes={
+                '*': ['class'],
+                'a': ['href', 'rel'],
+                'img': ['src', 'alt'],  # 支持标签和属性
+            }
+        ))
+        return body_html
 
     def __repr__(self):
         return '<Page %r>' % (self.page)
@@ -65,7 +76,7 @@ class Post(db.Model):
     url_name = db.Column(db.String(64))
     timestamp = db.Column(db.String(64))
     view_num = db.Column(db.Integer, default=0)
-    body_html = db.Column(db.Text)
+    body = db.Column(db.Text)
     draft = db.Column(db.Boolean, default=False)
     disable = db.Column(db.Boolean, default=False)
 
@@ -88,19 +99,14 @@ class Post(db.Model):
             return False
 
     @property
-    def body(self):
-        return self.body_html
-
-    @body.setter
-    def body(self, body):
-        # html_text = markdown(value, output_format='html')
+    def body_to_html(self):
         allowed_tags = [
             'a', 'abbr', 'acronym', 'b', 'img', 'blockquote', 'code',
             'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2',
             'h3', 'p'
         ]
-        self.body_html = bleach.linkify(bleach.clean(
-            markdown(body, output_format='html'),
+        body_html = bleach.linkify(bleach.clean(
+            markdown(self.body, output_format='html'),
             tags=allowed_tags, strip=True,
             attributes={
                 '*': ['class'],
@@ -108,6 +114,7 @@ class Post(db.Model):
                 'img': ['src', 'alt'],  # 支持标签和属性
             }
         ))
+        return body_html
 
     def __repr__(self):
         return '<Post %r>' % (self.title)
@@ -125,7 +132,7 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(6), index=True)
 
-    posts = db.relationship('Post', backref='category', uselist=False)
+    posts = db.relationship('Post', backref='category')
 
     def __repr__(self):
         return '<Category %r>' % (self.category)

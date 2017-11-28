@@ -11,7 +11,7 @@ from ..models import *
 def index():
     page = request.args.get('page', 1, type=int)
 
-    pagination = Post.query.order_by(Post.id.desc()).paginate(
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['POSTS_PER_PAGE'],
         error_out=False
     )
@@ -66,15 +66,16 @@ def archives():
     )
     posts = [post for post in pagination.items if post.draft == False]
     times = [post.timestamp for post in posts ]
-    year = [i.split('-')[0] for i in times]
-    year = set(year)
+    year = set([i.split('-')[0] for i in times])
     data = {}
-    for y, p in zip(year, posts):
-        if y in p.timestamp:
-            data = {
-                y: p
-            }
-    print(data)
+    year_post = []
+    for y in year:
+        for p in posts:
+            if y in p.timestamp:
+                year_post.append(p)
+                data[y] = year_post
+        year_post = []
+
     return render_template('archives.html',
                            title='归档',
                            posts=posts,

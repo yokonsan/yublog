@@ -78,6 +78,7 @@ def save_post(form, draft=False):
         db.session.add(category)
 
     tags = [tag for tag in form.tags.data.split(',')]
+    # print(form.body.data)
     if draft == True:
         post = Post(body=form.body.data,
                 title=form.title.data,
@@ -119,14 +120,49 @@ def write():
                            form=form,
                            title='写文章')
 
-@admin.route('/edit/<name>', methods=['GET', 'POST'])
+# 编辑文章或草稿
+@admin.route('/edit/<int:time>/<name>', methods=['GET', 'POST'])
 @login_required
-def admin_edit(name):
-    pass
+def admin_edit(time, name):
+    timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
 
-@admin.route('/add-page')
+    post = Post.query.filter_by(timestamp=timestamp, url_name=name).first()
+    form = AdminWrite()
+    if form.validate_on_submit():
+
+        db.session.commit()
+        return redirect(url_for('admin.write'))
+    form.category.data = post.category.category
+    form.tags.data = post.tags
+    form.url_name.data = post.url_name
+    form.time.data = post.timestamp
+    form.title.data = post.title
+    form.body.data = post.body
+    return render_template('admin_write.html',
+                           form=form,
+                           title='编辑')
+
+@admin.route('/add-page', methods=['GET', 'POST'])
 @login_required
 def add_page():
+    form = AddPageForm()
+    if form.validate_on_submit():
+        page = Page(page=form.title.data,
+                    url_name=form.url_name.data,
+                    body=form.body.data,
+                    canComment=form.can_comment.data,
+                    isNav=form.is_nav.data)
+        db.session.add(page)
+        db.session.commit()
+        flash('添加成功')
+        return redirect(url_for('admin.add_page'))
+    return render_template('admin_add_page.html',
+                           form=form,
+                           title='添加页面')
+
+@admin.route('/edit-page/<name>')
+@login_required
+def edit_page(name):
     pass
 
 @admin.route('/draft')

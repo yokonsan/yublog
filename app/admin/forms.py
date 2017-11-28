@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired
 from flask_pagedown.fields import PageDownField
 
@@ -15,20 +15,29 @@ class AdminWrite(FlaskForm):
     tags = StringField('tag', validators=[DataRequired()])
     category = StringField('category', validators=[DataRequired()])
     url_name = StringField('urlName', validators=[DataRequired()])
-    body = PageDownField('body', validators=[DataRequired()])
+    body = TextAreaField('body', validators=[DataRequired()])
 
     save_draft = SubmitField('save')
     submit = SubmitField('submit')
 
-class EditpostForm(FlaskForm):
-    title = StringField('标题', validators=[DataRequired()])
-    body = PageDownField('编辑文章', validators=[DataRequired()])
-    update = SubmitField('更新')
-    submit = SubmitField('发布')
-    save_draft = SubmitField('保存')
+class AddPageForm(FlaskForm):
+    title = StringField('title', validators=[DataRequired()])
+    url_name = StringField('url_name', validators=[DataRequired()])
+    body = TextAreaField('body', validators=[DataRequired()])
+    can_comment = BooleanField('can_comment')
+    is_nav = BooleanField('is_nav')
+    submit = SubmitField('submit')
 
 class AddLinkForm(FlaskForm):
     link = StringField('url', validators=[DataRequired()])
     name = StringField('name', validators=[DataRequired()])
     isFriendLink = BooleanField('type', default=False)
+
+class AdminSiteForm(FlaskForm):
+    site_name = StringField('name', validators=[DataRequired()])
+    site_title = StringField('title', validators=[DataRequired()])
+
+    username = StringField('username', validators=[DataRequired()])
+    profile = StringField('profile', validators=[DataRequired()])
+
 
