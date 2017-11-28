@@ -1,5 +1,19 @@
 {% extends "admin.html" %}
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.css') }}"/>
+{% endblock %}
 {% block content %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="flash-msg">
+    {{ message }}
+    <span class="flash-x">x</span>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 <div class="admin-write">
     <div class="admin-title site-box">写文章<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
 
@@ -16,7 +30,9 @@
         <div class="aticle-body site-box">
             <div class="write-body">
                 <p>{{form.title(class="aticle-title",placeholder="标题")}}</p>
-                <p>{{form.body()}}</p>
+                <div id="editormd">
+                    {{form.body(style="display:none;")}}<br>
+                </div>
                 <p>{{ form.save_draft(class="write-btn first-btn",value="保存草稿") }}</p>
                 <p>{{ form.submit(class="write-btn",value="发布") }}</p>
             </div>
@@ -24,4 +40,21 @@
     </form>
 
 </div>
+{% endblock %}
+
+{% block script %}
+<script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
+<script src="{{ url_for('static',filename='editormd/editormd.min.js') }}"></script>
+<script type="text/javascript">
+    var testEditor;
+    $(function () {
+        testEditor = editormd("editormd", {
+            width: "100%",
+            height: "550px",
+            syncScrolling : "single",
+            path: "{{ url_for('static',filename='editormd/lib/') }}"
+            //saveHTMLToTextarea : true
+        });
+    });
+</script>
 {% endblock %}

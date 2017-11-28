@@ -5,17 +5,19 @@
     共计{{ count }}篇文章，继续努力！
 </div>
 <div class="archives site-box">
-    {% for y,p in data.items %}
+    {% for y,p in data.items() %}
     <div class="archives-year">
         {{ y }}
     </div>
     <div class="archives-posts">
         <ul>
+            {% for i in p %}
             <li>
                 <span class="circular"></span>
-                {{ p.timestamp }}
-                <a href="{{ url_for('main.post', time=p.timestampInt, article_name=p.url_name) }}">{{ p.title }}</a>
+                {{ i.timestamp }}
+                <a href="{{ url_for('main.post', time=i.timestampInt, article_name=i.url_name) }}">{{ i.title }}</a>
             </li>
+            {% endfor %}
         </ul>
     </div>
     {% endfor %}

@@ -2,48 +2,35 @@
 {% import "_pagination.html" as page %}
 {% block content %}
 {% for post in posts %}
-    <div class="post-item site-box">
-        <h1 class="post-title">
-            <a href="{{ url_for('main.post',time=post.timestampInt,article_name=post.url_name) }}">
-                {{ post.title }}
-            </a>
-        </h1>
-        <div class="post-meta">
-            <span class="post-time"><i class="demo-icon icon-calendar"></i> 发表于{{ post.timestamp }}</span>
-            <span class="post-category">
-                <i class="demo-icon icon-folder-empty"></i> 分类：
-                <a href="{{ url_for('main.category', category_name=post.category.category) }}">{{ post.category.category }}</a>
-            </span>
-            <span class="post-comments-count">
-                <i class="demo-icon icon-comment-empty"></i> 评论：22
-            </span>
-            <span class="post-view-count"><i class="demo-icon icon-eye"></i> 阅读：{{ post.view_num }}</span>
-        </div>
-        <div class="post-body">
-            {% if post.body_html %}
-            {{ post.body_html | truncate(250) | safe}}
-            {% else %}
-                {{post.body | truncate(250)}}
-            {% endif %}
-            <div class="read-more-btn">
-                <a href="{{ url_for('main.post',time=post.timestampInt,article_name=post.url_name) }}">阅读全文</a>
-            </div>
+<div class="post-item site-box">
+    <h1 class="post-title">
+        <a href="{{ url_for('main.post',time=post.timestampInt,article_name=post.url_name) }}">
+            {{ post.title }}
+        </a>
+    </h1>
+    <div class="post-meta">
+        <span class="post-time"><i class="demo-icon icon-calendar"></i> 发表于{{ post.timestamp }}</span>
+        <span class="post-category">
+            <i class="demo-icon icon-folder-empty"></i> 分类：
+            <a href="{{ url_for('main.category', category_name=post.category.category) }}">{{ post.category.category }}</a>
+        </span>
+        <span class="post-comments-count">
+            <i class="demo-icon icon-comment-empty"></i> 评论：22
+        </span>
+        <span class="post-view-count"><i class="demo-icon icon-eye"></i> 阅读：{{ post.view_num }}</span>
+    </div>
+    <div class="post-body">
+        {{ post.body_to_html | striptags | truncate(250)}}
+        <div class="read-more-btn">
+            <a href="{{ url_for('main.post',time=post.timestampInt,article_name=post.url_name) }}">阅读全文</a>
         </div>
     </div>
-    {% endfor %}
+</div>
+{% endfor %}
 
-    <div class="post-page site-box">
-        <ul class="pages">
-            <!--<li class="pre-page p"><a href=""><</a></li>-->
-            <!--<li class="p"><a class="active" href="">1</a></li>-->
-            <!--<li class="p"><a href="">2</a></li>-->
-            <!--<li class="p"><a href="">3</a></li>-->
-            <!--<li class="p"><a href="">4</a></li>-->
-            <!--<li class="p"><a href="">5</a></li>-->
-            <!--<li class="p"><a href="">...</a></li>-->
-            <!--<li class="p"><a href="">20</a></li>-->
-            <!--<li class="next-page p"><a href="">></a></li>-->
-            {{ page.pages(pagination, 'main.index') }}
-        </ul>
-    </div>
+<div class="post-page site-box">
+    <ul class="pages">
+        {{ page.pages(pagination, 'main.index') }}
+    </ul>
+</div>
 {% endblock %}

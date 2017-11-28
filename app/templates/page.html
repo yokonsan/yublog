@@ -1,4 +1,8 @@
 {% extends "base.html" %}
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.css') }}"/>
+{% endblock %}
 {% block content %}
 <div class="post-item site-box">
     <h1 class="post-title"><a href="">关于</a></h1>
@@ -24,15 +28,6 @@
         <blockquote>
             博观约取，厚积薄发
         </blockquote>
-    </div>
-
-    <div class="footer">
-        <div class="copyright">
-            © 2017  <i class="demo-icon icon-heart"></i><span> 俞坤</span>
-        </div>
-        <span class="powered-by">苏ICP备17028833号 </span>
-        <span class="powered-by">Flask </span>
-        <span>源码</span>
     </div>
 </div>
 {% endblock %}

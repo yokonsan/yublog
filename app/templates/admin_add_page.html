@@ -1,0 +1,25 @@
+{% extends "admin.html" %}
+{% block content %}
+<div class="admin-write">
+    <div class="admin-title site-box">添加页面<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
+
+    <form action="{{url_for('admin.add_page')}}" method="post">
+        {{form.hidden_tag()}}
+        <div class="aticle-data site-box">
+            <div class="data-ipt">
+                <p>允许评论：{{form.can_comment()}}</p>
+                <p>导航显示：{{form.is_nav()}}</p>
+                <p>链接：{{form.url_name(placeholder="url")}}</p>
+            </div>
+        </div>
+        <div class="aticle-body site-box">
+            <div class="write-body">
+                <p>{{form.title(class="aticle-title",placeholder="标题")}}</p>
+                <p>{{form.body()}}</p>
+                <p>{{ form.submit(class="write-btn",value="发布") }}</p>
+            </div>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

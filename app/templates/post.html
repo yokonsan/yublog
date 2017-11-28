@@ -1,4 +1,14 @@
 {% extends "base.html" %}
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.preview.min.css') }}"/>
+<link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.min.css') }}"/>
+<style>
+    .editormd-html-preview, .editormd-preview-container {padding: 0;}
+    .editormd-html-preview, .editormd-preview-container {padding: 0;}
+    .post-body {padding: 0;}
+</style>
+{% endblock %}
 {% block content %}
     <div class="post-item site-box">
         <h1 class="post-title">
@@ -10,20 +20,15 @@
             <span class="post-time"><i class="demo-icon icon-calendar"></i> 发表于{{ post.timestamp }}</span>
             <span class="post-category">
                 <i class="demo-icon icon-folder-empty"></i> 分类：
-                <a href="{{ url_for('main.category', category_name=post.category) }}">{{ post.category }}</a>
+                <a href="{{ url_for('main.category', category_name=post.category.category) }}">{{ post.category.category }}</a>
             </span>
             <span class="post-comments-count">
                 <i class="demo-icon icon-comment-empty"></i> 评论：22
             </span>
             <span class="post-view-count"><i class="demo-icon icon-eye"></i> 阅读：{{ post.view_num }}</span>
         </div>
-        <div class="post-body">
-            {% if post.body_html %}
-            {{ post.body_html | safe }}
-            {% else %}
-                {{post.body}}
-            {% endif %}
-
+        <div id="content" class="content post-body">
+            {{ post.body_to_html | safe }}
         </div>
         <div class="post-tags">
             {% for tag in tags %}
@@ -56,7 +61,7 @@
     <div class="post-copyright site-box">
         <blockquote>
             <p><strong>本文作者：</strong>俞坤</p>
-            <p><strong>本文链接：</strong><a href="#">http://www.yukunweb.com/0/0/aaaa</a></p>
+            <p><strong>本文链接：</strong><a href="{{url_for('main.post',time=post.timestampInt,article_name=post.url_name)}}">http://www.yukunweb.com/{{post.timestampInt}}/{{post.url_name}}</a></p>
             <p><strong>版权声明：</strong>本博客所有文章除特别声明外，均采用<a href="https://creativecommons.org/licenses/by-nc-sa/3.0/">CC BY-NC-SA 3.0</a>许可协议。转载请注明出处！</p>
         </blockquote>
     </div>
@@ -74,12 +79,18 @@
 
 {% block script %}
 {{ super() }}
-<script src="{{url_for('static', filename='lib/highlight.min.js')}}"></script>
+
+<!--<script src="{{url_for('static', filename='lib/highlight.min.js')}}"></script>-->
 <script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
 <script src="{{url_for('static', filename='lib/jquery.fancybox.min.js')}}"></script>
-<script>
+<script src="{{ url_for('static',filename='editormd/lib/marked.min.js') }}"></script>
+<script src="{{ url_for('static',filename='editormd/lib/prettify.min.js') }}"></script>
+<script src="{{ url_for('static',filename='editormd/lib/raphael.min.js') }}"></script>
+<script src="{{ url_for('static',filename='editormd/editormd.min.js') }}"></script>
+<script type="text/javascript">
     // highlight
-    hljs.initHighlightingOnLoad();
+   //hljs.initHighlightingOnLoad();
+    editormd.markdownToHTML("content");
 
     // image
     $('[data-fancybox]').fancybox({
