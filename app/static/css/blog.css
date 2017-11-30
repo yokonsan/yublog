@@ -260,6 +260,7 @@ ul#drop a:hover {
 
 .friend-links li {
     margin: 5px 0;
+    padding: 0 10px;
 }
 
 .friend-links a {
@@ -338,12 +339,12 @@ ul#drop a:hover {
     padding: 0 5px;
 }
 
-span.post-category a {
+span.post-category a,span.post-comments-count a {
     text-decoration: none;
     color: #555;
 }
 
-span.post-category a:hover {
+span.post-category a:hover,span.post-comments-count a:hover {
     color: #000;
 }
 
@@ -482,7 +483,7 @@ ul.pages a:hover {
 
 .donate-title {
     color: #666;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .donate button {

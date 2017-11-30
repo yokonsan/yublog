@@ -7,14 +7,14 @@
     .editormd-html-preview, .editormd-preview-container {padding: 0;}
     .editormd-html-preview, .editormd-preview-container {padding: 0;}
     .post-body {padding: 0;}
+    .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6 {position: static;}
+
 </style>
 {% endblock %}
 {% block content %}
     <div class="post-item site-box">
         <h1 class="post-title">
-            <a href="{{ url_for('main.post',time=post.timestampInt,article_name=post.url_name) }}">
-                {{ post.title }}
-            </a>
+            {{ post.title }}
         </h1>
         <div class="post-meta">
             <span class="post-time"><i class="demo-icon icon-calendar"></i> 发表于{{ post.timestamp }}</span>
@@ -23,7 +23,7 @@
                 <a href="{{ url_for('main.category', category_name=post.category.category) }}">{{ post.category.category }}</a>
             </span>
             <span class="post-comments-count">
-                <i class="demo-icon icon-comment-empty"></i> 评论：22
+                <i class="demo-icon icon-comment-empty"></i> 评论：<a href="#"></a>
             </span>
             <span class="post-view-count"><i class="demo-icon icon-eye"></i> 阅读：{{ post.view_num }}</span>
         </div>
@@ -82,20 +82,13 @@
 
 <!--<script src="{{url_for('static', filename='lib/highlight.min.js')}}"></script>-->
 <script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
-<script src="{{url_for('static', filename='lib/jquery.fancybox.min.js')}}"></script>
 <script src="{{ url_for('static',filename='editormd/lib/marked.min.js') }}"></script>
 <script src="{{ url_for('static',filename='editormd/lib/prettify.min.js') }}"></script>
 <script src="{{ url_for('static',filename='editormd/lib/raphael.min.js') }}"></script>
 <script src="{{ url_for('static',filename='editormd/editormd.min.js') }}"></script>
 <script type="text/javascript">
-    // highlight
-   //hljs.initHighlightingOnLoad();
     editormd.markdownToHTML("content");
 
-    // image
-    $('[data-fancybox]').fancybox({
-        toolbar : false
-    });
 
     // donate button
     var donateBtn = document.getElementsByClassName('donate-btn')[0];

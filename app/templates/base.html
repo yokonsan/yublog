@@ -54,14 +54,11 @@
                             </ul>
                         </li>
                         <li class="menu-item"><a href="/">首页</a></li>
-
                     </ul>
                     <div class="clear"></div>
                 </div>
 
-
             </div>
-
             <!-- width < 960px -->
             <div class="mobile-menu-btn">
                 <button>
@@ -70,7 +67,6 @@
                     <span class="btn-bar"></span>
                 </button>
             </div>
-
             <div class="mobile-site-logo">
                 <a href="#">意外</a>
                 <span>俞坤的博客</span>
@@ -92,8 +88,8 @@
                     </li>
                     <li><a class="mobile-nav-item" href="{{url_for('main.archives')}}"><i class="demo-icon icon-box"></i> 归档</a></li>
                     {% for page in global_datas().pages %}
-                    <li class="menu-item">
-                        <a href="{{ url_for('main.page', page_url=page.url_name) }}">{{ page.page }}</a>
+                    <li>
+                        <a href="{{ url_for('main.page', page_url=page.url_name) }}" class="mobile-nav-item mobile-add-page"> {{ page.page }}</a>
                     </li>
                     {% endfor %}
                     <li>
@@ -123,9 +119,11 @@
                 <div class="social-links site-box">
                     <div class="side-title"><i class="demo-icon icon-book"></i> 社交链接</div>
                     <ul>
-                        <li><a href="/"><i class="demo-icon icon-github-circled"></i> Github</a></li>
-                        <li><a href="/"><i class="demo-icon icon-globe"></i> 知乎</a></li>
-                        <li><a href="/"><i class="demo-icon icon-weibo"></i> 微博</a></li>
+                        {% for link in global_datas().social_links %}
+                        <li>
+                            <a class="add-link" href="{{ link.link }}">{{ link.name }}</a>
+                        </li>
+                        {% endfor %}
                     </ul>
                     <div class="clear"></div>
                 </div>
@@ -174,6 +172,31 @@
     </div>
     {% block script %}
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        var addPage = document.getElementsByClassName('mobile-add-page');
+        for (var p=0; p<addPage.length; p++) {
+            var text = addPage[p].innerText;
+            if (text === ' 关于') {
+                addPage[p].innerHTML = '<i class="demo-icon icon-user"></i>' + text;
+            } else if (text === ' 留言') {
+                addPage[p].innerHTML = '<i class="demo-icon icon-comment-empty"></i>' + text;
+            } else {
+                addPage[p].innerHTML = '<i class="demo-icon icon-globe"></i>' + text;
+            }
+        }
+
+        var addLink = document.getElementsByClassName('add-link');
+        for (var l=0; l<addLink.length; l++) {
+            var link = addLink[l].innerText;
+            if (link === 'Github' || link ==='github') {
+                addLink[l].innerHTML = '<i class="demo-icon icon-github-circled"></i>' + ' ' + link;
+            } else if (link === '微博') {
+                addLink[l].innerHTML = '<i class="demo-icon icon-weibo"></i>' + ' ' + link;
+            } else {
+                addLink[l].innerHTML = '<i class="demo-icon icon-globe"></i>' + ' ' + link;
+            }
+        }
+    </script>
     {% endblock %}
 </body>
 </html>
