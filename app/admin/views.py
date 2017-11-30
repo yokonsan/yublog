@@ -95,7 +95,6 @@ def save_post(form, draft=False):
                 tags=form.tags.data,
                 timestamp=form.time.data,
                 draft=False)
-        print(post.id)
         # 保存标签模型
         save_tags(tags, post.id)
 
@@ -125,13 +124,32 @@ def write():
 @login_required
 def admin_edit(time, name):
     timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
-
     post = Post.query.filter_by(timestamp=timestamp, url_name=name).first()
+
     form = AdminWrite()
     if form.validate_on_submit():
-
-        db.session.commit()
-        return redirect(url_for('admin.write'))
+        category = Category.query.filter_by(category=form.category.data).first()
+        post.category = category
+        post.tags = form.tags.data
+        post.url_name = form.url_name.data
+        post.timestamp = form.time.data
+        post.title = form.title.data
+        post.body = form.body.data
+        if post.draft == True:
+            if 'save_draft' in request.form and form.validate():
+                db.session.add(post)
+                flash('保存成功！')
+            elif 'submit' in request.form and form.validate():
+                post.draft = False
+                db.session.add(post)
+                db.session.commit()
+                flash('发布成功')
+            return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))
+        else:
+            db.session.add(post)
+            db.session.commit()
+            flash('更新成功')
+            return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))
     form.category.data = post.category.category
     form.tags.data = post.tags
     form.url_name.data = post.url_name
@@ -140,7 +158,8 @@ def admin_edit(time, name):
     form.body.data = post.body
     return render_template('admin_write.html',
                            form=form,
-                           title='编辑')
+                           post=post,
+                           title='编辑文章')
 
 @admin.route('/add-page', methods=['GET', 'POST'])
 @login_required
@@ -160,10 +179,39 @@ def add_page():
                            form=form,
                            title='添加页面')
 
-@admin.route('/edit-page/<name>')
+@admin.route('/edit-page/<name>', methods=['GET', 'POST'])
 @login_required
 def edit_page(name):
-    pass
+    page = Page.query.filter_by(url_name=name).first()
+    form = AddPageForm()
+    if form.validate_on_submit():
+        page.page = form.title.data
+        page.body = form.body.data
+        page.canComment = form.can_comment.data
+        page.isNav = form.is_nav.data
+        page.url_name = form.url_name.data
+        db.session.add(page)
+        db.session.commit()
+        flash('更新成功')
+        return redirect(url_for('admin.edit_page', name=page.url_name))
+    form.title.data = page.page
+    form.body.data = page.body
+    form.can_comment.data = page.canComment
+    form.is_nav.data = page.isNav
+    form.url_name.data = page.url_name
+    return render_template('admin_add_page.html',
+                           title="编辑页面",
+                           form=form,
+                           page=page)
+
+@admin.route('/page/delete/<name>')
+@login_required
+def delete_page(name):
+    page = Page.query.filter_by(page=name).first()
+    db.session.delete(page)
+    db.session.commit()
+    flash('删除成功')
+    return redirect(url_for('admin.admin_pages'))
 
 @admin.route('/draft')
 @login_required
@@ -196,7 +244,12 @@ def admin_posts():
                            posts=posts,
                            pagination=pagination)
 
-@admin.route('/delete/<name>')
+@admin.route('/delete/<int:time>/<name>')
 @login_required
-def delete(name):
-    pass
+def delete(time, name):
+    timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
+    post = Post.query.filter_by(timestamp=timestamp, url_name=name).first()
+    db.session.delete(post)
+    db.session.commit()
+    flash('删除成功')
+    return redirect(url_for('admin.admin_posts'))
