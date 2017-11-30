@@ -1,16 +1,7 @@
 {% extends "admin.html" %}
 {% block content %}
 {% if current_user.is_authenticated %}
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-{% for message in messages %}
-<div class="flash-msg">
-    {{ message }}
-    <span class="flash-x">x</span>
-</div>
-{% endfor %}
-{% endif %}
-{% endwith %}
+
 <div class="admin-links site-box">
     <h2>添加网站链接</h2>
     <div class="links-ipt">

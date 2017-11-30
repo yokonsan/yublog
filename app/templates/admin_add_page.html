@@ -1,9 +1,13 @@
 {% extends "admin.html" %}
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.css') }}"/>
+{% endblock %}
 {% block content %}
 <div class="admin-write">
-    <div class="admin-title site-box">添加页面<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
+    <div class="admin-title site-box">{{title}}<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
 
-    <form action="{{url_for('admin.add_page')}}" method="post">
+    <form action="{%if title=='添加页面'%}{{url_for('admin.add_page')}}{%else%}{{url_for('admin.edit_page',name=page.url_name)}}{%endif%}" method="post">
         {{form.hidden_tag()}}
         <div class="aticle-data site-box">
             <div class="data-ipt">
@@ -15,11 +19,30 @@
         <div class="aticle-body site-box">
             <div class="write-body">
                 <p>{{form.title(class="aticle-title",placeholder="标题")}}</p>
-                <p>{{form.body()}}</p>
+                <div id="editormd">
+                    {{form.body(style="display:none;")}}<br>
+                </div>
                 <p>{{ form.submit(class="write-btn",value="发布") }}</p>
             </div>
         </div>
     </form>
 
 </div>
+{% endblock %}
+
+{% block script %}
+<script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
+<script src="{{ url_for('static',filename='editormd/editormd.min.js') }}"></script>
+<script type="text/javascript">
+    var testEditor;
+    $(function () {
+        testEditor = editormd("editormd", {
+            width: "100%",
+            height: "550px",
+            syncScrolling : "single",
+            path: "{{ url_for('static',filename='editormd/lib/') }}"
+            //saveHTMLToTextarea : true
+        });
+    });
+</script>
 {% endblock %}

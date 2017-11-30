@@ -1,35 +1,26 @@
 {% extends "admin.html" %}
 {% block content %}
 {% if current_user.is_authenticated %}
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-{% for message in messages %}
-<div class="flash-msg">
-    {{ message }}
-    <span class="flash-x">x</span>
-</div>
-{% endfor %}
-{% endif %}
-{% endwith %}
-<div class="admin-title site-box">管理文章<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
-<div class="all-posts">
-    {% for post in posts %}
-    <div class="admin-post site-box">
-        <div class="admin-post-title"><a href="{{url_for('admin.admin_edit',time=post.timestampInt, name=post.url_name)}}">{{post.title}}</a></div>
-        <div class="admin-post-desc">
-            {% if post.body_html %}
-            {{ post.body_html | truncate(250) | safe }}
-            {% else %}
-                {{post.body | truncate(250)}}
-            {% endif %}
-        </div>
-        <div>
-            <a class="admin-post-del" href="{{url_for('admin.delete',name=post.url_name)}}">删除</a>
-            <a class="admin-post-edit" href="{{url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name)}}">编辑>>></a>
-        </div>
-    </div>
-    {% endfor %}
 
+<div class="admin-title site-box">管理文章<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
+
+<div class="admin-post site-box">
+    <ul>
+        {% for post in posts %}
+        <li>
+            {{ post.timestamp }}
+            <a class="article-title" href="{{url_for('admin.admin_edit',time=post.timestampInt, name=post.url_name)}}">
+                {{ post.title }}
+            </a>
+            <a href="{{url_for('admin.delete',time=post.timestampInt,name=post.url_name)}}">
+                <button class="delete-btn">删除</button>
+            </a>
+            <a href="{{url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name)}}">
+                <button class="edit-btn">编辑</button>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
 </div>
 {% endif %}
 {% endblock %}

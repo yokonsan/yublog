@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin</title>
+    <title>{% if title %}{{title}}{%else%}Admin{%endif%} | Admin</title>
     {% block styles %}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/blog.css') }}">
     <link  type="text/css" href="{{ url_for('static', filename='css/admin.css') }}" rel="stylesheet">
@@ -11,6 +11,17 @@
 <body>
     <div class="container">
         <div class="site-wrap">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            {% for message in messages %}
+                <div class="flash-msg">
+                    {{ message }}
+                    <span class="flash-x">x</span>
+                </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
             {% block content %}
             {% endblock %}
         </div>

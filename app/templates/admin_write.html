@@ -4,20 +4,11 @@
 <link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.css') }}"/>
 {% endblock %}
 {% block content %}
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-{% for message in messages %}
-<div class="flash-msg">
-    {{ message }}
-    <span class="flash-x">x</span>
-</div>
-{% endfor %}
-{% endif %}
-{% endwith %}
-<div class="admin-write">
-    <div class="admin-title site-box">写文章<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
 
-    <form action="{{url_for('admin.write')}}" method="post">
+<div class="admin-write">
+    <div class="admin-title site-box">{{ title }}<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
+
+    <form action="{%if title== '写文章'%}{{url_for('admin.write')}}{%else%}{{url_for('admin.admin_edit',time=post.timestampInt,name=post.url_name)}}{%endif%}" method="post">
         {{form.hidden_tag()}}
         <div class="aticle-data site-box">
             <div class="data-ipt">
@@ -33,8 +24,13 @@
                 <div id="editormd">
                     {{form.body(style="display:none;")}}<br>
                 </div>
+                {% if title == '写文章' %}
                 <p>{{ form.save_draft(class="write-btn first-btn",value="保存草稿") }}</p>
                 <p>{{ form.submit(class="write-btn",value="发布") }}</p>
+                {% else %}
+                <p>{{ form.save_draft(class="write-btn first-btn",value="保存草稿",style="display:none;") }}</p>
+                <p>{{ form.submit(class="write-btn",value="更新") }}</p>
+                {% endif %}
             </div>
         </div>
     </form>
