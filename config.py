@@ -11,6 +11,8 @@ class Config(object):
 
     POSTS_PER_PAGE = 10
     ADMIN_POSTS_PER_PAGE = 20
+    ACHIVES_POSTS_PER_PAGE = 20
+    SEARCH_POSTS_PER_PAGE = 15
 
     # 博客信息
     # 管理员姓名
@@ -24,6 +26,8 @@ class Config(object):
     # 管理员简介
     ADMIN_PROFILE = '克制力，执行力'
 
+    WHOOSHEE_MIN_STRING_LEN = 1
+
 
     @staticmethod
     def init_app(app):
@@ -31,7 +35,7 @@ class Config(object):
 
 
 class DevelopmentConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@localhost:3306/blog'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@localhost:3306/mydb'
     DEBUG = True
 
 class TestingConfig(Config):

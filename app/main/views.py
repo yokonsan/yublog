@@ -1,10 +1,14 @@
-from flask import render_template, redirect, url_for, request, current_app
+from flask import render_template, redirect, url_for, request, g
 
-from .. import db
 from . import main
-from .forms import *
+from .forms import SearchForm
 from ..models import *
 
+
+@main.before_request
+def before_request():
+    g.search_form = SearchForm()
+    g.search_form2 = SearchForm()
 
 @main.route('/')
 @main.route('/index')
@@ -44,14 +48,14 @@ def page(page_url):
 def tag(tag_name):
     tag = tag_name
     all_posts = Post.query.all()
-    posts = [post for post in all_posts if post.tag_in_post(tag)]
+    posts = [post for post in all_posts if post.tag_in_post(tag) and post.draft==False]
 
     return render_template('tag.html', tag=tag, posts=posts)
 
 @main.route('/category/<category_name>/')
 def category(category_name):
     category = Category.query.filter_by(category=category_name).first()
-    posts = Post.query.filter_by(category=category).all()
+    posts = Post.query.filter_by(category=category, draft=False).all()
     return render_template('category.html',
                            category=category,
                            posts=posts,
@@ -83,9 +87,29 @@ def archives():
                            count=len(posts),
                            pagination=pagination)
 
-@main.route('/search/')
-# url_for('main.search', {keywords: xxx})
+@main.route('/search/', methods=['GET', 'POST'])
 def search():
-    search = request.args.get('keywords')
-    pass
+    if g.search_form.validate_on_submit():
+        query = g.search_form.search.data
+        return redirect(url_for('main.search_result', keywords=query))
 
+    elif g.search_form2.validate_on_submit():
+        print('a')
+        query = g.search_form2.search.data
+        return redirect(url_for('main.search_result', keywords=query))
+
+# /search-result?keywords=query
+@main.route('/search-result/')
+def search_result():
+    query = request.args.get('keywords')
+    page = request.args.get('page', 1, type=int)
+    pagination = Post.query.whooshee_search(query).order_by(Post.id.desc()).paginate(
+        page, per_page=current_app.config['SEARCH_POSTS_PER_PAGE'],
+        error_out=False
+    )
+    results = [post for post in pagination.items if post.draft == False]
+    return render_template('results.html',
+                           results=results,
+                           query=query,
+                           pagination=pagination,
+                           title=query + '的搜索结果')

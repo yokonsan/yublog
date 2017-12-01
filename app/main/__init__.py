@@ -43,7 +43,7 @@ def global_datas():
 
     all_pages = Page.query.all()
     if all_pages:
-        pages = [page for page in all_pages]
+        pages = [page for page in all_pages if page.isNav==True]
         global_data['pages'] = pages
 
     return global_data

@@ -5,7 +5,7 @@ from flask import current_app
 from markdown import markdown
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app import db, lm
+from app import db, lm, whooshee
 
 
 class Admin(UserMixin, db.Model):
@@ -69,6 +69,7 @@ class Page(db.Model):
     def __repr__(self):
         return '<Page %r>' % (self.page)
 
+@whooshee.register_model('title', 'body')
 class Post(db.Model):
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)

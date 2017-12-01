@@ -39,4 +39,3 @@ class AdminSiteForm(FlaskForm):
     username = StringField('username', validators=[DataRequired()])
     profile = StringField('profile', validators=[DataRequired()])
 
-
