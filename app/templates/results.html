@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% import "_pagination.html" as page %}
+{% block content %}
+{% if results %}
+<div class="category site-box"><strong>{{query}}</strong> 的搜索结果</div>
+<div class="result-list site-box">
+    <ul>
+        {% for result in results %}
+        <li>
+            <a href="{{url_for('main.post',time=result.timestampInt,article_name=result.url_name)}}">
+                {{ result.title }}
+            </a>
+            <p>
+                {{ result.body_to_html | striptags | truncate(100)}}
+            </p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+<div class="post-page site-box">
+    <ul class="pages">
+        {{ page.pages(pagination, 'main.search_result') }}
+    </ul>
+</div>
+{% else %}
+<div class="category site-box">没有 <strong>{{query}}</strong> 的搜索结果哦！</div>
+{% endif %}
+{% endblock %}

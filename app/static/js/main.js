@@ -64,7 +64,7 @@
                 } else {
                     clearInterval(timer);
                 }
-            }, 5);
+            }, 0);
         };
 
         var newTop = document.documentElement.scrollTop || document.body.scrollTop;

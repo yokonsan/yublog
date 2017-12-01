@@ -630,6 +630,31 @@ ul.pages a:hover {
     border-bottom: 1px solid #333;
 }
 
+/*result page*/
+.result-list {
+    padding: 20px 25px 20px 5px;
+}
+
+.result-list li {
+    margin-bottom: 10px;
+    border-bottom: 1px dashed #999;
+}
+
+.result-list li:hover {
+    border-bottom: 1px dashed #555;
+}
+
+.result-list li a {
+    text-decoration: none;
+    color: #555;
+    border-bottom: 1px solid;
+}
+
+.result-list li a:hover {
+    color: #222;
+
+}
+
 
 /*mobile disply*/
 .mobile-site-logo,.mobile-site-nav,.mobile-menu-btn,.mobile-site-nav ul {

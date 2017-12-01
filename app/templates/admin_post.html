@@ -1,4 +1,5 @@
 {% extends "admin.html" %}
+{% import "_pagination.html" as page %}
 {% block content %}
 {% if current_user.is_authenticated %}
 
@@ -23,4 +24,10 @@
     </ul>
 </div>
 {% endif %}
+
+<div class="post-page site-box">
+    <ul class="pages">
+        {{ page.pages(pagination, 'main.index') }}
+    </ul>
+</div>
 {% endblock %}
