@@ -20,9 +20,9 @@ def global_datas():
     }
     """
     global_data = {}
-    admin = Admin.query.get(1)
+    admin = Admin.query.all()
     if admin:
-        global_data['admin'] = admin
+        global_data['admin'] = admin[0]
 
     all_links = SocialLink.query.order_by(SocialLink.link).all()
     if all_links:

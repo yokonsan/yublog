@@ -33,6 +33,38 @@ def logout():
     flash('你已经登出账号。')
     return redirect(url_for('admin.index'))
 
+@admin.route('/setting', methods=['GET', 'POST'])
+@login_required
+def set_site():
+    form = AdminSiteForm()
+    user = Admin.query.all()[0]
+    if form.validate_on_submit():
+        print('a')
+        user.name = form.username.data
+        user.profile = form.profile.data
+        user.site_name = form.site_name.data
+        user.site_title = form.site_title.data
+        user.record_info = form.record_info.data or None
+        print(user.record_info)
+        user.changyan_id = form.changyanID.data or None
+        user.changyan_key = form.changyanKEY.data or None
+        db.session.add(user)
+        print('b')
+        db.session.commit()
+        flash('设置成功')
+        return redirect(url_for('admin.index'))
+    form.username.data = user.name
+    form.profile.data = user.profile
+    form.site_name.data = user.site_name
+    form.site_title.data = user.site_title
+    form.record_info.data = user.record_info or None
+    form.changyanID.data = user.changyan_id or None
+    form.changyanKEY.data = user.changyan_key or None
+    return render_template('admin_profile.html',
+                           title='设置网站信息',
+                           form=form)
+
+
 @admin.route('/links', methods=['GET', 'POST'])
 @login_required
 def add_link():

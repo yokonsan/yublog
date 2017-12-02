@@ -12,10 +12,15 @@ class Admin(UserMixin, db.Model):
     __tablename__ = 'admin'
     id = db.Column(db.Integer, primary_key=True)
     site_name = db.Column(db.String(4))
+    site_title = db.Column(db.String(255))
     name = db.Column(db.String(4))
     profile = db.Column(db.String(255))
     login_name = db.Column(db.String(500))
     password_hash = db.Column(db.String(500))
+
+    record_info = db.Column(db.String(255), nullable=True)
+    changyan_id = db.Column(db.String(500), nullable=True)
+    changyan_key = db.Column(db.String(500), nullable=True)
 
     def __init__(self, **kwargs):
         super(Admin, self).__init__(**kwargs)

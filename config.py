@@ -23,6 +23,8 @@ class Config(object):
     ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD') or 'password'
     # 博客名
     SITE_NAME = '意外'
+    # 博客标题
+    SITE_TITLE = '俞坤的博客'
     # 管理员简介
     ADMIN_PROFILE = '克制力，执行力'
 
