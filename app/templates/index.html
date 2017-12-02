@@ -15,7 +15,9 @@
             <a href="{{ url_for('main.category', category_name=post.category.category) }}">{{ post.category.category }}</a>
         </span>
         <span class="post-comments-count">
-            <i class="demo-icon icon-comment-empty"></i> 评论：<a href="#"></a>
+            <i class="demo-icon icon-comment-empty"></i> 评论：<span id = "sourceId::{{post.url_name}}" class = "cy_cmt_count" ></span>
+<script id="cy_cmt_num" src="https://changyan.sohu.com/upload/plugins/plugins.list.count.js?clientId=cyt4XGBmJ">
+</script>
         </span>
         <span class="post-view-count"><i class="demo-icon icon-eye"></i> 阅读：{{ post.view_num }}</span>
     </div>

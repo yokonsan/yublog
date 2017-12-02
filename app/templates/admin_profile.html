@@ -1,0 +1,20 @@
+{% extends "admin.html" %}
+{% block content %}
+<div class="admin-profile">
+    <h2>管理员信息设置</h2>
+    <div class="profile-ipt">
+        <form action="{{url_for('admin.set_site')}}" method="post">
+            {{form.hidden_tag()}}
+            <p>姓名：{{form.username()}}</p>
+            <p>简介：{{form.profile()}}</p>
+            <p>网站名：{{form.site_name()}}</p>
+            <p>网站标题：{{form.site_title()}}</p>
+            <p>备案信息：{{form.record_info(placeholder="选填")}}</p>
+            <p>畅言ID：{{form.changyanID(placeholder="选填")}}</p>
+            <p>畅言KEY：{{form.changyanKEY(placeholder="选填")}}</p>
+            <p><input class="but" type="submit" value="确定"></p>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

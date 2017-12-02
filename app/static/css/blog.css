@@ -339,6 +339,10 @@ ul#drop a:hover {
     padding: 0 5px;
 }
 
+.post-meta span.post-comments-count {
+    border-right: none;
+}
+
 span.post-category a,span.post-comments-count a {
     text-decoration: none;
     color: #555;
@@ -388,6 +392,16 @@ span.post-view-count {
     margin-top: 50px;
     padding-top: 10px;
     padding-bottom: 20px;
+}
+
+.footer a {
+    text-decoration: none;
+    color: #444;
+    border-bottom: 1px solid #555;
+}
+
+.footer a:hover {
+    color: #000;
 }
 
 .copyright {
