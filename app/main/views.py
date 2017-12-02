@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, request, g
+from flask import render_template, redirect, url_for, request, g, current_app
 
 from . import main
 from .forms import SearchForm

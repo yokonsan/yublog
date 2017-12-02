@@ -1,7 +1,5 @@
-import datetime
 import bleach
 from flask_login import UserMixin
-from flask import current_app
 from markdown import markdown
 from werkzeug.security import generate_password_hash, check_password_hash
 
