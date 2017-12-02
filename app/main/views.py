@@ -10,6 +10,16 @@ def before_request():
     g.search_form = SearchForm()
     g.search_form2 = SearchForm()
 
+@main.app_errorhandler(404)
+def page_not_found(e):
+    return render_template('error/404.html', title='404'), 404
+
+@main.app_errorhandler(500)
+def internal_server_error(e):
+    db.session.rollback()
+    db.session.commit()
+    return render_template('error/500.html', title='500'), 500
+
 @main.route('/')
 @main.route('/index')
 def index():
@@ -38,7 +48,7 @@ def post(time, article_name):
         return render_template('post.html', post=post, tags=tags)
     return None
 
-@main.route('/<page_url>/')
+@main.route('/page/<page_url>/')
 def page(page_url):
     page = Page.query.filter_by(url_name=page_url).first()
 

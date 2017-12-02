@@ -2,9 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>500 | 意外</title>
+    <style>
+        #server-error {
+            text-align: center;
+        }
+        #server-error img {
+            width: 150px;
+        }
+
+        #server-error a {
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #555;
+        }
+    </style>
 </head>
 <body>
-
+    <div id="server-error">
+        <img src="http://opxib6gmc.bkt.clouddn.com/500img1.jpg" alt="500">
+        <img src="http://opxib6gmc.bkt.clouddn.com/500img2.jpg" alt="500">
+        <p>服务器又抽风了啦。。。</p>
+        <p>管理员赶来修复中。。。</p>
+        <p>回到 <a href="{{url_for('main.index')}}">首页</a> 吧</p>
+    </div>
 </body>
 </html>

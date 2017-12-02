@@ -2,9 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-</head>
+    <title>404 | 意外</title>
+    <style>
+        #not-found {
+            text-align: center;
+        }
+        #not-found img {
+            width: 310px;
+        }
+        #not-found p {
+            margin: 5px;
+            font-size: 14px;
+        }
+        #not-found a {
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #555;
+        }
+    </style>
+</head>autoplay="autoplay"
 <body>
-
+    <div id="not-found">
+        <img src="http://opxib6gmc.bkt.clouddn.com/404.jpg" alt="404">
+        <p>找不到页面，是不是天然呆打错了。</p>
+        <p>回到 <a href="{{url_for('main.index')}}">首页</a></p>
+        <audio src="http://opxib6gmc.bkt.clouddn.com/cnhyk.mp3" autoplay="autoplay"></audio>
+    </div>
 </body>
 </html>
