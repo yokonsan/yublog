@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, request, g, current_app
+from flask import render_template, redirect, url_for, request, g, current_app, abort
 
 from . import main
 from .forms import SearchForm
@@ -36,6 +36,31 @@ def index():
                            posts=posts,
                            pagination=pagination)
 
+def nextPost(post):
+    """
+    获取本篇文章的下一篇
+    :param post: post
+    :return: next post
+    """
+    post_list = Post.query.order_by(Post.timestamp.desc()).all()
+    posts = [post for post in post_list if post.draft == False]
+    if posts[-1] != post:
+        next_post = posts[posts.index(post) + 1]
+        return next_post
+    return None
+def prevPost(post):
+    """
+    获取本篇文章的上一篇
+    :param post: post
+    :return: prev post
+    """
+    post_list = Post.query.order_by(Post.timestamp.desc()).all()
+    posts = [post for post in post_list if post.draft == False]
+    if posts[0] != post:
+        prev_post = posts[posts.index(post) - 1]
+        return prev_post
+    return None
+
 @main.route('/<int:time>/<article_name>/')
 def post(time, article_name):
     timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
@@ -45,8 +70,11 @@ def post(time, article_name):
         post.view_num += 1
         db.session.add(post)
         tags = [tag for tag in post.tags.split(',')]
-        return render_template('post.html', post=post, tags=tags)
-    return None
+        next_post = nextPost(post)
+        prev_post = prevPost(post)
+        return render_template('post.html', post=post, tags=tags,
+                               next_post=next_post, prev_post=prev_post)
+    abort(404)
 
 @main.route('/page/<page_url>/')
 def page(page_url):

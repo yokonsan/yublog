@@ -70,8 +70,16 @@
     </div>
 
     <div class="pre-next-post site-box">
-        <a class="pre-post" href="#">< 啊啊啊啊啊</a>
-        <a class="next-post" href="#">啊啊啊啊啊 ></a>
+        {% if prev_post %}
+        <a class="pre-post" href="{{url_for('main.post',time=prev_post.timestampInt,article_name=prev_post.url_name)}}">
+            < {{ prev_post.title }}
+        </a>
+        {% endif %}
+        {% if next_post %}
+        <a class="next-post" href="{{url_for('main.post',time=next_post.timestampInt,article_name=next_post.url_name)}}">
+            {{ next_post.title }} >
+        </a>
+        {% endif %}
         <div class="clear"></div>
     </div>
 
