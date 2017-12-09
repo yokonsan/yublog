@@ -101,6 +101,7 @@ def category(category_name):
 
 @main.route('/archives/')
 def archives():
+    count = Post.query.count()
     page = request.args.get('page', 1, type=int)
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['ACHIVES_POSTS_PER_PAGE'],
@@ -122,7 +123,7 @@ def archives():
                            title='归档',
                            posts=posts,
                            data=data,
-                           count=len(posts),
+                           count=count,
                            pagination=pagination)
 
 @main.route('/search/', methods=['GET', 'POST'])
