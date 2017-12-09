@@ -3,7 +3,7 @@
     width: 100%;
 }
 
-.site-nav,.site-logo,span.post-view-count {
+.site-nav,.site-logo {
     display: none;
 }
 

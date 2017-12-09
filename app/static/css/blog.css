@@ -335,12 +335,8 @@ ul#drop a:hover {
 }
 
 .post-meta span {
-    border-right: 1px solid #999;
+    border-left: 1px solid #999;
     padding: 0 5px;
-}
-
-.post-meta span.post-comments-count {
-    border-right: none;
 }
 
 span.post-category a,span.post-comments-count a {
@@ -352,8 +348,8 @@ span.post-category a:hover,span.post-comments-count a:hover {
     color: #000;
 }
 
-span.post-view-count {
-    border-right: none;
+span.post-time {
+    border-left: none;
 }
 
 .post-body {
@@ -372,19 +368,6 @@ span.post-view-count {
     text-align: center;
 }
 
-.read-more-btn a {
-    text-decoration: none;
-    color: #666;
-    font-size: 16px;
-    padding: 5px 15px;
-    border: 1px solid #333;
-    border-radius: 3px;
-}
-
-.read-more-btn a:hover {
-    background: #333;
-    color: #fff;
-}
 
 /*footer*/
 .footer {
@@ -477,6 +460,20 @@ ul.pages a:hover {
 
 .post-body a:hover,.post-tags a:hover {
     color: #666;
+}
+
+.read-more-btn a {
+    text-decoration: none;
+    color: #666;
+    font-size: 16px;
+    padding: 5px 15px;
+    border: 1px solid #333;
+    border-radius: 3px;
+}
+
+.read-more-btn a:hover {
+    background: #333;
+    color: #fff;
 }
 
 .post-tags {
