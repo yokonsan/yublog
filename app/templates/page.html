@@ -19,9 +19,11 @@
         {{ page.body_to_html | safe }}
     </div>
 </div>
+{% if page.canComment == true %}
 <div class="post-comments site-box">
     <div id="SOHUCS" sid="{{page.url_name}}" ></div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block script %}

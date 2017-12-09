@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>{% if title %}{{ title }}{% else %}意外{% endif %} - 意外</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
+    <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="blank" />
     {% block styles %}
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/blog.css') }}">
     <link media="(max-width: 960px)" href="{{ url_for('static', filename='css/mobile.css') }}" rel="stylesheet">
