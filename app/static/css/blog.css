@@ -588,6 +588,9 @@ ul.pages a:hover {
     margin-left: 50px;
 }
 
+.category-post ul li {
+    padding: 5px 0;
+}
 .category-post a {
     text-decoration: none;
     color: #333;
@@ -664,6 +667,11 @@ ul.pages a:hover {
 .result-list li a:hover {
     color: #222;
 
+}
+
+/*cnzz*/
+.footer span.cnzz-span {
+    display: none;
 }
 
 

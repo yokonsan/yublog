@@ -15,7 +15,7 @@
             <li>
                 <span class="circular"></span>
                 {{ i.timestamp }}
-                <a href="{{ url_for('main.post', time=i.timestampInt, article_name=i.url_name) }}">{{ i.title }}</a>
+                <a href="{{ url_for('main.post', year=i.year,month=i.month, article_name=i.url_name) }}">{{ i.title }}</a>
             </li>
             {% endfor %}
         </ul>

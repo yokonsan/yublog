@@ -7,7 +7,7 @@
     <ul>
         {% for result in results %}
         <li>
-            <a href="{{url_for('main.post',time=result.timestampInt,article_name=result.url_name)}}">
+            <a href="{{url_for('main.post',year=result.year,month=result.month,article_name=result.url_name)}}">
                 {{ result.title }}
             </a>
             <p>
