@@ -90,6 +90,12 @@ class Post(db.Model):
     @property
     def timestampInt(self):
         return int(''.join([i for i in self.timestamp.split('-')]))
+    @property
+    def year(self):
+        return int([i for i in self.timestamp.split('-')][0])
+    @property
+    def month(self):
+        return int([i for i in self.timestamp.split('-')][1])
 
     def tag_in_post(self, tag):
         try:

@@ -4,7 +4,6 @@ from . import main
 from .forms import SearchForm
 from ..models import *
 
-
 @main.before_request
 def before_request():
     g.search_form = SearchForm()
@@ -61,20 +60,26 @@ def prevPost(post):
         return prev_post
     return None
 
-@main.route('/<int:time>/<article_name>/')
-def post(time, article_name):
-    timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
+@main.route('/<int:year>/<int:month>/<article_name>/')
+def post(year, month, article_name):
+    time = str(year) + '-' + str(month)
+    posts = Post.query.filter_by(url_name=article_name).all()
+    post = ''
+    if len(posts) == 1:
+        post = posts[0]
+    elif len(posts) > 1:
+        post = [i for i in posts if time in i.timestamp][0]
+    elif len(posts) < 1:
+        abort(404)
 
-    post = Post.query.filter_by(timestamp=timestamp, url_name=article_name).first()
-    if post:
-        post.view_num += 1
-        db.session.add(post)
-        tags = [tag for tag in post.tags.split(',')]
-        next_post = nextPost(post)
-        prev_post = prevPost(post)
-        return render_template('post.html', post=post, tags=tags,
-                               next_post=next_post, prev_post=prev_post)
-    abort(404)
+    post.view_num += 1
+    db.session.add(post)
+    tags = [tag for tag in post.tags.split(',')]
+    next_post = nextPost(post)
+    prev_post = prevPost(post)
+    return render_template('post.html', post=post, tags=tags, title=post.title,
+                           next_post=next_post, prev_post=prev_post)
+
 
 @main.route('/page/<page_url>/')
 def page(page_url):
@@ -85,7 +90,7 @@ def page(page_url):
 @main.route('/tag/<tag_name>/')
 def tag(tag_name):
     tag = tag_name
-    all_posts = Post.query.all()
+    all_posts = Post.query.order_by(Post.timestamp.desc()).all()
     posts = [post for post in all_posts if post.tag_in_post(tag) and post.draft==False]
 
     return render_template('tag.html', tag=tag, posts=posts)
@@ -93,7 +98,8 @@ def tag(tag_name):
 @main.route('/category/<category_name>/')
 def category(category_name):
     category = Category.query.filter_by(category=category_name).first()
-    posts = Post.query.filter_by(category=category, draft=False).all()
+
+    posts = Post.query.filter_by(category=category, draft=False).order_by(Post.timestamp.desc()).all()
     return render_template('category.html',
                            category=category,
                            posts=posts,
