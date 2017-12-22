@@ -12,6 +12,7 @@
     <link media="(max-width: 960px)" href="{{ url_for('static', filename='css/mobile.css') }}" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/fontello.css') }}">
     {% endblock %}
+
 </head>
 <body>
     <div class="container">
@@ -157,6 +158,15 @@
                     <div class="clear"></div>
                 </div>
 
+                <div id="sticky" class="love-me site-box">
+                    <div class="side-title love-title"><i class="demo-icon icon-heart"></i> 喜欢我吗</div>
+                    <div class="love-me-icon">
+                        <i class="demo-icon icon-heart"></i>
+                        <span class="love-me-count">{{global_datas().loves}}</span>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+
             </div>
 
             <div class="main">
@@ -174,7 +184,7 @@
             <span class="powered-by"><a href="http://www.miitbeian.gov.cn/" target="_blank">{% if global_datas().admin.record_info %}{{ global_datas().admin.record_info }}{% else %}无备案信息{% endif %}</a></span>
             <span class="powered-by">Flask </span>
             <span><a href="https://github.com/Blackyukun/YuBlog" target="_blank">源码</a></span>
-            <span class="cnzz-span"><script src="https://s22.cnzz.com/z_stat.php?id=1263956682&web_id=1263956682" language="JavaScript"></script></span>
+            <!--<span class="cnzz-span"><script src="https://s22.cnzz.com/z_stat.php?id=1263956682&web_id=1263956682" language="JavaScript"></script></span>-->
         </div>
 
         <div><span id="go-to-top"></span></div>
@@ -182,6 +192,32 @@
     </div>
     {% block script %}
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sticky.js') }}"></script>
+    <script>
+        var sticky = new Sticky("#sticky", {
+            // 表示距离顶部 20px 的时候就固定
+            offset: 70
+        });
+    </script>
+    <script>
+        var loveMeTitle = document.getElementsByClassName('love-title')[0];
+        var loveMe = document.getElementsByClassName('love-me-icon')[0];
+        var loveMeCount = document.getElementsByClassName('love-me-count')[0];
+        var counts = parseInt(loveMeCount.innerText);
+
+        var request = new XMLHttpRequest();
+
+        loveMe.onclick = function() {
+            counts += 1;
+            loveMeTitle.innerHTML = '<i class="demo-icon icon-heart"></i> 我喜欢你';
+            loveMeCount.innerText = counts.toString();
+
+            // 发送请求:
+            request.open('GET', '/loveme');
+            request.send();
+        };
+
+    </script>
     <script>
         var addPage = document.getElementsByClassName('mobile-add-page');
         for (var p=0; p<addPage.length; p++) {

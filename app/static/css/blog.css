@@ -293,6 +293,30 @@ ul#drop a:hover {
     color: #fff;
 }
 
+/*side love me*/
+.love-me-icon {
+    text-align: center;
+    margin: 10px 10px 0;
+    font-size: 50px;
+    /*color: #ff0000d9;*/
+    /*color: #c70404;*/
+    color: #ff0000d9;
+}
+
+.love-me-icon {
+    cursor: pointer;
+}
+
+.love-me-icon:hover {
+    color: #fff;
+    background: #ff0000d9;
+}
+
+.love-me-icon span.love-me-count {
+    font-size: 33px;
+    margin-left: -18px;
+}
+
 
 /*main*/
 .main {
