@@ -42,6 +42,17 @@ class Admin(UserMixin, db.Model):
 def load_user(user_id):
     return Admin.query.get(int(user_id))
 
+class LoveMe(db.Model):
+    __tablename__ = 'loveme'
+    id = db.Column(db.Integer, primary_key=True)
+    loveMe = db.Column(db.Integer, default=666)
+
+    def __init__(self, loveMe):
+        self.loveMe = loveMe
+
+    def __repr__(self):
+        return '<LoveMe %r>' % (self.loveMe)
+
 class Page(db.Model):
     __tablename__ = 'pages'
     id = db.Column(db.Integer, primary_key=True)

@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, request, g, current_app, abort
+from flask import render_template, redirect, url_for, request, g, current_app, abort, jsonify
 
 from . import main
 from .forms import SearchForm
@@ -158,3 +158,12 @@ def search_result():
                            query=query,
                            pagination=pagination,
                            title=query + '的搜索结果')
+
+@main.route('/loveme', methods=['GET'])
+def love_me():
+    love_me_counts = LoveMe.query.all()[0]
+    love_me_counts.loveMe += 1
+    db.session.add(love_me_counts)
+    db.session.commit()
+    return jsonify(counts=love_me_counts.loveMe)
+

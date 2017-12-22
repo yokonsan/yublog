@@ -46,6 +46,14 @@ def global_datas():
         pages = [page for page in all_pages if page.isNav==True]
         global_data['pages'] = pages
 
+    love_me_counts = LoveMe.query.all()[0]
+    if all_pages:
+        global_data['loves'] = love_me_counts.loveMe
+    else:
+        love = LoveMe(loveMe=666)
+        db.session.add(love)
+        db.session.commit()
+
     return global_data
 
 main.add_app_template_global(global_datas, 'global_datas')
