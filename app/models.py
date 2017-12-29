@@ -1,3 +1,6 @@
+import datetime
+from hashlib import md5
+
 import bleach
 from flask_login import UserMixin
 from markdown import markdown
@@ -62,6 +65,8 @@ class Page(db.Model):
     isNav = db.Column(db.Boolean, default=False)
     body = db.Column(db.Text)
 
+    comments = db.relationship('Comment', backref='page')
+
     @property
     def body_to_html(self):
         allowed_tags = [
@@ -97,6 +102,7 @@ class Post(db.Model):
 
     tags = db.Column(db.String(64))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
+    comments = db.relationship('Comment', backref='post', lazy='dynamic')
 
     @property
     def timestampInt(self):
@@ -139,6 +145,37 @@ class Post(db.Model):
 
     def __repr__(self):
         return '<Post %r>' % (self.title)
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.Integer, primary_key=True)
+    comment = db.Column(db.Text)
+    author = db.Column(db.String(25))
+    email = db.Column(db.String(255))
+    website = db.Column(db.String(255), nullable=True)
+    isReply = db.Column(db.Boolean, default=False)
+    replyTo = db.Column(db.Integer, nullable=True)
+    disabled = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
+
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+    page_id = db.Column(db.Integer, db.ForeignKey('pages.id'))
+
+    @property
+    def strptime(self):
+        return datetime.datetime.strftime(self.timestamp, '%Y-%m-%d')
+
+    # 获取Gravatar头像
+    def gravatar(self, size):
+        return 'http://www.gravatar.com/avatar/' + md5(self.email.encode('utf-8')).hexdigest() + '?d=mm&s=' + str(size)
+
+    # def hasReply(self):
+    #     if self.isReply == False:
+    #
+
+    def __repr__(self):
+        return '<Comment %r>' %(self.comment)
+
 
 class Tag(db.Model):
     __tablename__ = 'tags'

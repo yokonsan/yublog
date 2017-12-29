@@ -12,6 +12,7 @@ class Config(object):
     ADMIN_POSTS_PER_PAGE = 20
     ACHIVES_POSTS_PER_PAGE = 20
     SEARCH_POSTS_PER_PAGE = 15
+    COMMENTS_PER_PAGE = 10
 
     # 博客信息
     # 管理员姓名
