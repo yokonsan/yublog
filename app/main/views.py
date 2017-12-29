@@ -1,7 +1,9 @@
+import json
+
 from flask import render_template, redirect, url_for, request, g, current_app, abort, jsonify
 
 from . import main
-from .forms import SearchForm
+from .forms import SearchForm, CommentForm
 from ..models import *
 
 @main.before_request
@@ -77,8 +79,22 @@ def post(year, month, article_name):
     tags = [tag for tag in post.tags.split(',')]
     next_post = nextPost(post)
     prev_post = prevPost(post)
+
+    page = request.args.get('page', 1, type=int)
+    counts = 0
+    if page == -1:
+        counts = post.comments.count()
+        page = (counts - 1) / \
+               current_app.config['COMMENTS_PER_PAGE'] + 1
+    pagination = Comment.query.filter_by(post=post,isReply=False).order_by(Comment.timestamp.desc()).paginate(
+        page, per_page=current_app.config['COMMENTS_PER_PAGE'],
+        error_out=False
+    )
+    comments = pagination.items
+    replys = post.comments.filter_by(isReply=True).all()
     return render_template('post.html', post=post, tags=tags, title=post.title,
-                           next_post=next_post, prev_post=prev_post)
+                           next_post=next_post, prev_post=prev_post, pagination=pagination,
+                           comments=comments, replys=replys, counts=counts)
 
 
 @main.route('/page/<page_url>/')
@@ -159,6 +175,7 @@ def search_result():
                            pagination=pagination,
                            title=query + '的搜索结果')
 
+# 侧栏 love me 插件
 @main.route('/loveme', methods=['GET'])
 def love_me():
     love_me_counts = LoveMe.query.all()[0]
@@ -166,4 +183,80 @@ def love_me():
     db.session.add(love_me_counts)
     db.session.commit()
     return jsonify(counts=love_me_counts.loveMe)
+
+@main.route('/<int:id>/comment', methods=['POST'])
+def comment(id):
+    print(1)
+    post = Post.query.get_or_404(id)
+    form = request.get_json()
+    nickname = form['nickname']
+    print(nickname)
+    email = form['email']
+    print(email)
+    website = form['website'] or None
+    print(website)
+    comment = form['comment']
+    print(comment)
+    # try:
+    isReply = form['isReply']
+    print(isReply)
+    replyTo = form['replyTo']
+    print(replyTo)
+    comment = Comment(comment=comment, author=nickname,
+                      email=email, website=website,
+                      isReply=True, replyTo=replyTo,
+                      post=post)
+    db.session.add(comment)
+    db.session.commit()
+    return jsonify(nickname=nickname, email=email, website=website,
+                   isReply=True, replyTo=replyTo,
+                   post=post.title)
+    # except:
+    #     comment = Comment(comment=comment, author=nickname,
+    #                       email=email, website=website,
+    #                       post=post.title)
+    #     print(comment)
+    #     db.session.add(comment)
+    #     db.session.commit()
+    #     return jsonify(nickname=nickname, email=email, website=website,
+    #                    post=post.title)
+
+# # 写评论
+# @main.route('/<int:id>/comment', methods=['POST'])
+# def comment(id):
+#     post = Post.query.get_or_404(id)
+#     form = CommentForm()
+#     user_id = request.args.get('replytoid')
+#     if user_id:
+#         if form.validate_on_submit():
+#             comment = Comment(comment=form.comment.data,
+#                               author=form.nickname.data,
+#                               email=form.email.data,
+#                               website=form.website.data,
+#                               isReply=True, replyTo=user_id,
+#                               post=post)
+#             db.session.add(comment)
+#             db.session.commit()
+#     if form.validate_on_submit():
+#         comment = Comment(comment=form.comment.data,
+#                           author=form.nickname.data,
+#                           email=form.email.data,
+#                           website=form.website.data,
+#                           post=post)
+#         db.session.add(comment)
+#         db.session.commit()
+
+# # 获取文章所有评论
+# def get_comments(post):
+#     all_comments = Comment.query.filter_by(post=post).all()
+#     data = {}
+#     if all_comments:
+#         # 直接评论
+#         comments = [comment for comment in all_comments if comment.isReply==False]
+#         # 回复评论
+#         replys = [comment for comment in all_comments if comment.isReply==True]
+#         counts = len(all_comments)
+#         data = {'comments': comments,'replys':replys,'counts':counts}
+#         return data
+#     return None
 
