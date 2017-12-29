@@ -145,3 +145,35 @@ span.post-comments-count {
     padding: 0;
 }
 
+/*mobile comment*/
+#comments {
+    font-size: 10px;
+    color: #999;
+    padding: 10px;
+    padding-bottom: 20px;
+}
+
+.textarea-container {
+    padding: 0;
+}
+
+.textarea-container div.input-div {
+    width: 100%;
+}
+
+.textarea-container input {
+    float: none;
+}
+
+ol.comment-list,ul.comment-children {
+    padding: 0;
+}
+
+.comment-content {
+    margin-left: 45px;
+}
+
+.comment-children .comment-content {
+    margin-left: 35px;
+}
+

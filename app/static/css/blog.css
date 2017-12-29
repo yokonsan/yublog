@@ -78,6 +78,7 @@ code {
     background: #fff;
     color: #8590a6;
     box-shadow: 0 1px 3px 0 rgba(0,34,77,.1);
+    z-index: 999;
 }
 
 .site-logo {
@@ -555,6 +556,7 @@ ul.pages a:hover {
 
 .post-copyright {
     border-left: 4px solid #f06909;
+    overflow: hidden;
     padding-bottom: 0;
 }
 
@@ -691,6 +693,293 @@ ul.pages a:hover {
 .result-list li a:hover {
     color: #222;
 
+}
+
+/*comment css*/
+#comments {
+    padding: 20px;
+}
+
+.comment-title {
+    font-size: 16px;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.comment-title span {
+    padding: 8px;
+    border-bottom: 2px solid #f06909;
+}
+
+.comment-send {
+    margin: 20px 0;
+}
+
+.author {
+    display: inline-block;
+    float: left;
+    margin-right: 10px;
+}
+
+.author img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+}
+
+.textarea-container {
+    padding: 0 20px;
+    position: relative;
+}
+
+.textarea-container div.input-div {
+    margin-bottom: 12px;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.textarea-container .author-info {
+    margin: 0;
+}
+
+.textarea-container label {
+    position: absolute;
+    left: 8px;
+    top: 4px;
+    color: #df846c;
+}
+
+.textarea-container input {
+    width: 180px;
+    height: 14px;
+    float: left;
+    margin: 0;
+    padding: 7px 0 7px 54px;
+    border: 1px dashed #df846c;
+    border-radius: 3px;
+    outline: 0;
+    overflow: hidden;
+    background: transparent;
+    line-height: 16px;
+    color: rgba(0,0,0,0.3);
+}
+
+.textarea-container textarea {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    border-radius: 3px;
+    overflow: hidden;
+    resize: none;
+    outline: none;
+    border: 1px dashed #df846c;
+    padding: 10px;
+    font-size: 12px;
+}
+
+
+.textarea-container textarea:hover,.textarea-container textarea:focus,
+.textarea-container input:hover,.textarea-container input:focus {
+    border: 1px dashed #f06909;
+}
+
+.textarea-container span.cancel {
+    display: none;
+    border: 1px solid #df846c;
+    color: #df846c;
+    padding: 1px 5px;
+    cursor: pointer;
+    border-radius: 3px;
+    float: left;
+}
+
+.textarea-container span.cancel:hover {
+    color: #f06909;
+    border: 1px solid #f06909;
+}
+
+.textarea-container button.comment-submit {
+    border: 1px solid #df846c;
+    background: #df846c;
+    color: #fff;
+    padding: 3px 5px;
+    cursor: pointer;
+    border-radius: 3px;
+    float: right;
+}
+
+.textarea-container button.comment-submit:hover {
+    background: #f06909;
+}
+
+
+ol.comment-list {
+    list-style: none;
+    padding: 0 10px;
+}
+
+.comment-list {
+    margin: 40px 0;
+}
+
+.comment-list li {
+    margin: 10px 0;
+}
+
+.comment-body {
+    padding: 10px 0;
+    display: block;
+    position: relative;
+}
+
+.comment-list .comment-author {
+    float: left;
+}
+
+.comment-list .comment-author img.avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 20px;
+    border: 1px solid #ededed;
+}
+
+.comment-list .comment-time {
+    margin: 0 0 0 12px;
+    float: right;
+    color: rgba(0,0,0,0.4);
+}
+
+.comment-content {
+    margin-left: 55px;
+    margin-right: 60px;
+    position: relative;
+    padding-top: 24px;
+}
+
+.comment-list .comment-name {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.comment-list .comment-name a {
+    color: #df846c;
+    text-decoration: none;
+}
+
+.comment-list .comment-name a:hover {
+    color: #f06909;
+}
+
+.comment-list .reply-comment {
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin-right: 20px;
+}
+
+.comment-list .reply-comment a {
+    color: #999;
+    text-decoration: none;
+}
+
+.comment-list .reply-comment a:hover {
+    color: #df846c;
+}
+
+.comment-list .comment-text {
+    padding-top: 5px;
+    margin-top: 3px;
+    border-top: 1px solid #ededed;
+}
+
+.comment-list .comment-text p {
+    margin: 0;
+}
+
+/*reply comment css*/
+ul.comment-children {
+    list-style: none;
+    padding: 0;
+    margin-left: 40px;
+    padding-left: 10px;
+}
+
+.comment-children li {
+    margin: 0;
+    padding-left: 20px;
+    border-left: 1px solid #ededed;
+}
+
+.comment-children .comment-body {
+    padding: 6px 0;
+}
+
+.comment-children .comment-author img.avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 14px;
+}
+
+.comment-children .comment-name,
+.comment-children .comment-time,
+.comment-children .reply-comment {
+    display: none;
+}
+
+.comment-children .comment-name {
+    margin-left: -107px;
+    float: left;
+    color: #fff;
+    padding: 3px 6px;
+    background: #df846c;
+    border-radius: 3px;
+    margin-top: 0;
+}
+
+.comment-children .comment-content {
+    margin-left: 46px;
+    margin-right: 46px;
+    padding: 0;
+}
+
+.comment-children .comment-text {
+    line-height: 28px;
+    border: 0;
+    padding: 0;
+}
+
+.comment-children .comment-time {
+    margin-top: 0;
+}
+
+.comment-children .reply-comment {
+    margin-top: 0;
+}
+
+
+.comments-navi {
+    padding: 10px;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
+
+.comments-navi a {
+    text-decoration: none;
+    margin: 0 5px;
+    display: inline-block;
+    color: #888;
+    padding: 5px 3px;
+}
+
+.comments-navi a.current-page {
+    border-bottom: 2px solid #df846c;
+}
+
+.comments-navi a:hover {
+    color: #df846c;
+    border-bottom: 2px solid #df846c;
 }
 
 /*cnzz*/

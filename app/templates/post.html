@@ -82,6 +82,8 @@
         <div class="clear"></div>
     </div>
 
+    {% include "_comment.html" %}
+
     <div class="post-comments site-box">
         <div id="SOHUCS"></div>
     </div>
@@ -89,7 +91,7 @@
 
 {% block script %}
 {{ super() }}
-
+<script src="{{url_for('static', filename='js/comment.js')}}"></script>
 <!--<script src="{{url_for('static', filename='lib/highlight.min.js')}}"></script>-->
 <script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
 <script src="{{ url_for('static',filename='editormd/lib/marked.min.js') }}"></script>

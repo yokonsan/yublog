@@ -205,7 +205,12 @@
         var loveMeCount = document.getElementsByClassName('love-me-count')[0];
         var counts = parseInt(loveMeCount.innerText);
 
-        var request = new XMLHttpRequest();
+        var request;
+        if (window.XMLHttpRequest) {
+            request = new XMLHttpRequest();
+        } else {
+            request = new ActiveXObject('Microsoft.XMLHTTP');
+        }
 
         loveMe.onclick = function() {
             counts += 1;
