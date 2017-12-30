@@ -285,3 +285,8 @@ def delete(time, name):
     db.session.commit()
     flash('删除成功')
     return redirect(url_for('admin.admin_posts'))
+
+@admin.route('/comments')
+@login_required
+def admin_comments():
+    pass
