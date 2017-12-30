@@ -739,8 +739,22 @@ ul.pages a:hover {
     overflow: hidden;
 }
 
-.textarea-container .author-info {
+.textarea-container {
     margin: 0;
+}
+
+.textarea-container i {
+    display: none;
+    margin-bottom: 10px;
+}
+
+.textarea-container i a {
+    text-decoration: none;
+    color: #999;
+}
+
+.textarea-container i a:hover {
+    color: #666;
 }
 
 .textarea-container label {

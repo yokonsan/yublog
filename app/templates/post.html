@@ -91,6 +91,7 @@
 
 {% block script %}
 {{ super() }}
+<script src="{{url_for('static', filename='js/myStorage.js')}}"></script>
 <script src="{{url_for('static', filename='js/comment.js')}}"></script>
 <!--<script src="{{url_for('static', filename='lib/highlight.min.js')}}"></script>-->
 <script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>

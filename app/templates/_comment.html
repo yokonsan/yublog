@@ -1,7 +1,7 @@
 <div id="comments" class="post-comments site-box">
 
     <div class="comment-title">
-        <span>{{ counts }} 评论</span>
+        <span>{{ post.comments.count() }} 条评论</span>
     </div>
 
     <ol class="comment-list">
@@ -24,7 +24,7 @@
                         {% endif %}
                     </span>
                     <div class="reply-comment">
-                        <a class="comment-reply-link" replyid="{{comment.id}}" replyto="{{comment.author}}">回复</a>
+                        <a class="comment-reply-link" curid="{{comment.id}}" replyid="{{comment.id}}" replyto="{{comment.author}}">回复</a>
                     </div>
                     <div class="comment-text">
                         <p>{{ comment.comment }}</p>
@@ -44,7 +44,7 @@
                         <div class="comment-content">
                             <span class="comment-name">{{ reply.author }}</span>
                             <div class="reply-comment">
-                                <a class="comment-reply-link" replyid="{{comment.id}}" replyto="{{reply.author}}">回复</a>
+                                <a class="comment-reply-link" curid="{{ reply.id }}" replyid="{{comment.id}}" replyto="{{reply.author}}">回复</a>
                             </div>
                             <div class="comment-text">
                                     {{ reply.comment }}
@@ -72,7 +72,7 @@
                 {% if p == pagination.page %}
                     <a  class="current-page" href="{{ url_for('main.post',year=post.year,month=post.month,article_name=post.url_name,page = p) }}">{{ p }}</a>
                 {% else %}
-                    <a href="{{ url_for('main.post',year=post.year,month=post.month,article_name=post.url_name,page = p, **kwargs) }}">{{ p }}</a>
+                    <a href="{{ url_for('main.post',year=post.year,month=post.month,article_name=post.url_name,page = p) }}">{{ p }}</a>
                 {% endif %}
             {% else %}
             <a class="disabled" href="#">&hellip;</a>
@@ -102,6 +102,7 @@
                         <input type="text" name="url" placeholder="选填">
                     </div>
                 </div>
+                <i class="logined">已登录，<a class="delete-user">注销</a></i>
                 <textarea cols="80" name="comment" rows="5" placeholder="请自觉遵守互联网相关的政策法规，严禁发布色情、暴力、反动的言论。" class="ipt-txt"></textarea>
                 <span class="cancel">取消</span>
                 <button type="submit" class="comment-submit" postid="{{post.id}}" replyid="" replyto="">发表评论</button>
