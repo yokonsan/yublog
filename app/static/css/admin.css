@@ -242,6 +242,32 @@ button.edit-btn:hover {
     font-weight: 600;
 }
 
+/*允许评论*/
+button.allow-btn {
+    border: 1px solid #f4d918;
+    border-radius: 3px;
+    background: #fff;
+    color: #f4d918;
+    cursor: pointer;
+    float: right;
+    margin: 0 20px;
+}
+
+button.allow-btn:hover {
+    background: #f4d918;
+    color: #fff;
+}
+
+.comment-author,.comment-post {
+    text-decoration: none;
+    color: #bd1515;
+    margin: 0 5px;
+}
+
+.comment-author:hover,.comment-post:hover {
+    color: #cf5050;
+}
+
 /*!*edit plug-in*!*/
 /*.plug-list {*/
     /*float: left;*/
