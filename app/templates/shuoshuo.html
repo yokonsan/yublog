@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="shuo-content site-box">
-    {% for y,s in data.items() %}
+    {% for y in years %}
     <article>
         <h3>{{y}}</h3>
-        {% for i in s %}
+        {% for i in data[y] %}
         <section>
             <span class="point-time point-orange"></span>
             <span class="date-time">{{i.month_and_day}}</span>

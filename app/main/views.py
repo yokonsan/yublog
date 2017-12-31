@@ -131,7 +131,7 @@ def archives():
     )
     posts = [post for post in pagination.items if post.draft == False]
     # times = [post.timestamp for post in posts ]
-    year = set([i.year for i in posts])
+    year = list(set([i.year for i in posts]))[::-1]
     data = {}
     year_post = []
     for y in year:
@@ -144,6 +144,7 @@ def archives():
     return render_template('archives.html',
                            title='归档',
                            posts=posts,
+                           year= year,
                            data=data,
                            count=count,
                            pagination=pagination)
@@ -216,7 +217,7 @@ def comment(id):
 @main.route('/shuoshuo')
 def shuoshuo():
     shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
-    years = set([y.year for y in shuos])
+    years = list(set([y.year for y in shuos]))[::-1]
     data = {}
     year_shuo = []
     for y in years:
@@ -225,4 +226,4 @@ def shuoshuo():
                 year_shuo.append(s)
                 data[y] = year_shuo
         year_shuo = []
-    return render_template('shuoshuo.html', title='说说', data=data)
+    return render_template('shuoshuo.html', title='说说', years=years, data=data)

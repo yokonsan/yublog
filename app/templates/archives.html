@@ -5,13 +5,13 @@
     共计 {{ count }} 篇文章，继续努力哦！
 </div>
 <div class="archives site-box">
-    {% for y,p in data.items() %}
+    {% for y in year %}
     <div class="archives-year">
         {{ y }}
     </div>
     <div class="archives-posts">
         <ul>
-            {% for i in p %}
+            {% for i in data[y] %}
             <li>
                 <span class="circular"></span>
                 {{ i.timestamp }}
