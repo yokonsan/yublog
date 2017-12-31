@@ -328,3 +328,34 @@ def unable_comment(id):
     db.session.commit()
     flash('隐藏成功')
     return redirect(url_for('admin.admin_comments'))
+
+@admin.route('/write/shuoshuo', methods=['GET','POST'])
+@login_required
+def write_shuoshuo():
+    form = ShuoForm()
+    if form.validate_on_submit():
+        shuo = Shuoshuo(shuo=form.shuoshuo.data)
+        db.session.add(shuo)
+        db.session.commit()
+        flash('发布成功')
+        return redirect(url_for('admin.write_shuoshuo'))
+    return render_template('admin_write_shuoshuo.html',
+                           title='写说说', form=form)
+
+@admin.route('/shuos')
+@login_required
+def admin_shuos():
+    shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
+    return render_template('admin_shuoshuo.html',
+                           title='管理说说',
+                           shuos=shuos)
+
+@admin.route('/delete/shuoshuo/<int:id>')
+@login_required
+def delete_shuo(id):
+    shuo = Shuoshuo.query.get_or_404(id)
+    db.session.delete(shuo)
+    db.session.commit()
+    flash('删除成功')
+    return redirect(url_for('admin.admin_shuos'))
+
