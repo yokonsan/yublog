@@ -289,4 +289,42 @@ def delete(time, name):
 @admin.route('/comments')
 @login_required
 def admin_comments():
-    pass
+    page = request.args.get('page', 1, type=int)
+    pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
+        page, per_page=current_app.config['ADMIN_COMMENTS_PER_PAGE'],
+        error_out=False
+    )
+    comments = pagination.items
+    return render_template('admin_comment.html',
+                           title='管理评论',
+                           comments=comments,
+                           pagination=pagination)
+
+@admin.route('/delete/comment/<int:id>')
+@login_required
+def delete_comment(id):
+    comment = Comment.query.get_or_404(id)
+    db.session.delete(comment)
+    db.session.commit()
+    flash('删除成功')
+    return redirect(url_for('admin.admin_comments'))
+
+@admin.route('/allow/comment/<int:id>')
+@login_required
+def allow_comment(id):
+    comment = Comment.query.get_or_404(id)
+    comment.disabled = True
+    db.session.add(comment)
+    db.session.commit()
+    flash('允许通过')
+    return redirect(url_for('admin.admin_comments'))
+
+@admin.route('/unable/comment/<int:id>')
+@login_required
+def unable_comment(id):
+    comment = Comment.query.get_or_404(id)
+    comment.disabled = False
+    db.session.add(comment)
+    db.session.commit()
+    flash('隐藏成功')
+    return redirect(url_for('admin.admin_comments'))

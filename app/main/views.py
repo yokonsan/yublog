@@ -86,15 +86,15 @@ def post(year, month, article_name):
         print(counts)
         page = (counts - 1) / \
                current_app.config['COMMENTS_PER_PAGE'] + 1
-    pagination = Comment.query.filter_by(post=post,isReply=False).order_by(Comment.timestamp.desc()).paginate(
+    pagination = Comment.query.filter_by(post=post,isReply=False,disabled=True).order_by(Comment.timestamp.desc()).paginate(
         page, per_page=current_app.config['COMMENTS_PER_PAGE'],
         error_out=False
     )
     comments = pagination.items
-    replys = post.comments.filter_by(isReply=True).all()
+    replys = post.comments.filter_by(isReply=True,disabled=True).all()
     return render_template('post.html', post=post, tags=tags, title=post.title,
                            next_post=next_post, prev_post=prev_post, pagination=pagination,
-                           comments=comments, replys=replys)
+                           comments=comments, replys=replys, counts=len(comments)+len(replys))
 
 
 @main.route('/page/<page_url>/')
