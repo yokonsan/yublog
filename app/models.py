@@ -169,10 +169,6 @@ class Comment(db.Model):
     def gravatar(self, size):
         return 'http://www.gravatar.com/avatar/' + md5(self.email.encode('utf-8')).hexdigest() + '?d=mm&s=' + str(size)
 
-    # def hasReply(self):
-    #     if self.isReply == False:
-    #
-
     def __repr__(self):
         return '<Comment %r>' %(self.comment)
 
@@ -209,6 +205,47 @@ class SocialLink(db.Model):
 
     def __repr__(self):
         return '<SocialLink %r>' % (self.link)
+
+class Shuoshuo(db.Model):
+    __tablename__ = 'shuos'
+    id = db.Column(db.Integer, primary_key=True)
+    shuo = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
+
+    def __init__(self, shuo):
+        self.shuo = shuo
+
+    @property
+    def strptime(self):
+        return datetime.datetime.strftime(self.timestamp, '%Y-%m-%d')
+    @property
+    def year(self):
+        return int([i for i in self.strptime.split('-')][0])
+    @property
+    def month_and_day(self):
+        return [i for i in self.strptime.split('-')][1] + '/' + [i for i in self.strptime.split('-')][2]
+
+    @property
+    def body_to_html(self):
+        allowed_tags = [
+            'a', 'abbr', 'acronym', 'b', 'img', 'blockquote', 'code',
+            'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2',
+            'h3', 'p'
+        ]
+        body_html = bleach.linkify(bleach.clean(
+            markdown(self.shuo, output_format='html'),
+            tags=allowed_tags, strip=True,
+            attributes={
+                '*': ['class'],
+                'a': ['href', 'rel'],
+                'img': ['src', 'alt'],  # 支持标签和属性
+            }
+        ))
+        return body_html
+
+    def __repr__(self):
+        return '<Shuoshuo %r>' % (self.shuo)
+
 
 class Alembic(db.Model):
     __tablename__ = 'alembic_version'
