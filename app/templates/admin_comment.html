@@ -9,7 +9,7 @@
     <ul>
         {% for comment in comments %}
         <li>
-            {{ comment.timestamp }}
+            {{ comment.strptime }}
             <a class="comment-author" href="{{comment.website}}">{{comment.author}}</a>
             在文章
             <a class="comment-post" href="{{url_for('main.post',year=comment.post.year,month=comment.post.month,article_name=comment.post.url_name)}}">
