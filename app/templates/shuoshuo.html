@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="shuo-content site-box">
+    {% for y,s in data.items() %}
+    <article>
+        <h3>{{y}}</h3>
+        {% for i in s %}
+        <section>
+            <span class="point-time point-orange"></span>
+            <span class="date-time">{{i.month_and_day}}</span>
+            <aside>
+                <p class="things">{{i.shuo}}</p>
+                <p class="brief">---- <span>俞坤</span>
+                <span class="mobile-date-time">{{i.month_and_day}}</span>
+                </p>
+            </aside>
+        </section>
+        {% endfor %}
+    </article>
+    {% endfor %}
+</div>
+{% endblock %}

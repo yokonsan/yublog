@@ -1,0 +1,22 @@
+{% extends "admin.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+
+<div class="admin-title site-box">管理说说<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
+
+<div class="admin-post site-box">
+    <ul>
+        {% for shuo in shuos %}
+        <li>
+            {{ shuo.strptime }}
+            <a href="{{url_for('admin.delete_shuo',id=shuo.id)}}">
+                <button class="delete-btn">删除</button>
+            </a>
+            <p>{{shuo.shuo}}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% endblock %}

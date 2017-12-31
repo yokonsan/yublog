@@ -177,3 +177,24 @@ ol.comment-list,ul.comment-children {
     margin-left: 35px;
 }
 
+/*mobile shuoshuo page*/
+.shuo-content span.date-time {
+    display: none;
+}
+
+.shuo-content article section aside {
+    margin-left: 8%;
+}
+
+.point-time {
+left: 1%;
+}
+
+.shuo-content article section:before {
+    left: 1%;
+}
+
+.shuo-content article section .brief span.mobile-date-time {
+    display: inline-block;
+}
+

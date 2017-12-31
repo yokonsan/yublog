@@ -996,6 +996,92 @@ ul.comment-children {
     border-bottom: 2px solid #df846c;
 }
 
+
+/*shuoshuo page*/
+.point-time {
+    content: "";
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    top: 3px;
+    left: 11%;
+    background: #1c87bf;
+    margin-left: -4px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 5px #fff;
+}
+
+.text-orange {
+    color: #df846c;
+}
+
+.point-orange {
+    background-color: #df846c;
+}
+
+.shuo-content {
+    padding: 20px;
+}
+.shuo-content article {
+    position: relative;
+}
+.shuo-content article > h3 {
+    width: 15%;
+    height: 20px;
+    line-height: 20px;
+    font-size: 22px;
+    color: #df846c;
+    padding: 10px 0 20px;
+}
+.shuo-content article section {
+    padding: 0 0 30px;
+    position: relative;
+}
+.shuo-content article section:before {
+    content: "";
+    width: 5px;
+    top: 17px;
+    bottom: -17px;
+    left: 11%;
+    background: #e6e6e6;
+    position: absolute;
+}
+.shuo-content article section:last-child:before {
+    display: none;
+}
+.shuo-content article section time {
+    width: 8%;
+    display: block;
+    position: absolute;
+}
+.shuo-content article section time > span {
+    display: block;
+    text-align: right;
+}
+.shuo-content article section aside {
+    color: #333;
+    margin-left: 15%;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 3px;
+    background: #f5f7f9;
+}
+.shuo-content article section .brief {
+    color: #9f9f9f;
+    text-align: right;
+    font-size: 12px;
+}
+
+.shuo-content article section p {
+    margin: 0;
+}
+.shuo-content span.date-time {
+    position: absolute;
+    margin-left: 13px;
+    font-size: 13px;
+    color: #999;
+}
+
 /*cnzz*/
 .footer span.cnzz-span {
     display: none;
@@ -1004,5 +1090,9 @@ ul.comment-children {
 
 /*mobile disply*/
 .mobile-site-logo,.mobile-site-nav,.mobile-menu-btn,.mobile-site-nav ul {
+    display: none;
+}
+
+.shuo-content article section .brief span.mobile-date-time {
     display: none;
 }

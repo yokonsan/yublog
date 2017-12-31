@@ -1,0 +1,15 @@
+{% extends "admin.html" %}
+{% block content %}
+<div class="admin-write">
+    <div class="admin-title site-box">{{title}}<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
+
+    <form action="{{url_for('admin.write_shuoshuo')}}" method="post">
+        {{form.hidden_tag()}}
+        <div class="write-shuo">
+            {{form.shuoshuo(placeholder="支持markdown",cols="30",rows="10")}}
+            <input type="submit" value="发布">
+        </div>
+    </form>
+
+</div>
+{% endblock %}
