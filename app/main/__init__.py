@@ -47,12 +47,8 @@ def global_datas():
         global_data['pages'] = pages
 
     love_me_counts = LoveMe.query.all()[0]
-    if all_pages:
+    if love_me_counts:
         global_data['loves'] = love_me_counts.loveMe
-    else:
-        love = LoveMe(loveMe=666)
-        db.session.add(love)
-        db.session.commit()
 
     return global_data
 

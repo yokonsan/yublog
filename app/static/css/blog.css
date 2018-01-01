@@ -301,7 +301,7 @@ ul#drop a:hover {
     font-size: 50px;
     /*color: #ff0000d9;*/
     /*color: #c70404;*/
-    color: #ff0000d9;
+    color: #ff0000;
 }
 
 .love-me-icon {
@@ -310,7 +310,7 @@ ul#drop a:hover {
 
 .love-me-icon:hover {
     color: #fff;
-    background: #ff0000d9;
+    background: #ff0000;
 }
 
 .love-me-icon span.love-me-count {

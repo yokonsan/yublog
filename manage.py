@@ -29,12 +29,14 @@ def clearAlembic():
 
 @manager.command
 def addAdmin():
-    from app.models import Admin
+    from app.models import Admin, LoveMe
     from config import Config
     admin = Admin(site_name=Config.SITE_NAME, site_title=Config.SITE_TITLE ,name=Config.ADMIN_NAME, \
                   profile=Config.ADMIN_PROFILE, login_name=Config.ADMIN_LOGIN_NAME, \
                   password=Config.ADMIN_PASSWORD)
+    love = LoveMe(loveMe=666)
     db.session.add(admin)
+    db.session.add(love)
     db.session.commit()
 
 
