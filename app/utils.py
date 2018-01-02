@@ -1,18 +1,6 @@
 import os
-
-"""
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  
-  <url>
-    <loc>http://www.yukunweb.com/about/index.html</loc>
-    
-    <lastmod>2017-10-11T13:16:59.301Z</lastmod>
-    
-  </url>
-  
-</urlset>
-"""
+import smtplib
+from email.mime.text import MIMEText
 
 def get_sitemap(posts):
     header = '<?xml version="1.0" encoding="UTF-8"?> '+ '\n' + \
@@ -34,26 +22,22 @@ def get_sitemap(posts):
     return None
 
 def save_file(sitemap):
-    isExists = os.path.exists(os.path.join("C:/Users/Administrator/Desktop/YuBlog/app/static", 'sitemap.xml'))
+    path = os.getcwd().replace('\\', '/')
+    filename = path + '/static/sitemap.xml'
+    isExists = os.path.exists(filename)
     if not isExists:
-        with open('C:/Users/Administrator/Desktop/YuBlog/app/static/sitemap.xml', 'w') as f:
+        with open(filename, 'w') as f:
             f.write(sitemap)
     else:
-        os.remove('C:/Users/Administrator/Desktop/YuBlog/app/static/sitemap.xml')
-        with open('C:/Users/Administrator/Desktop/YuBlog/app/static/sitemap.xml', 'w') as f:
+        os.remove(filename)
+        with open(filename, 'w') as f:
             f.write(sitemap)
 
-# sitemap = """<?xml version="1.0" encoding="UTF-8"?>
-# <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-#
-#   <url>
-#     <loc>http://www.yukunweb.com/about/index.html</loc>
-#
-#     <lastmod>2017-10-11T13:16:59.301Z</lastmod>
-#
-#   </url>
-#
-# </urlset>
-# """
-# save_file(sitemap)
+def send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg):
+    content = MIMEText(msg, 'plain', 'utf-8')
+    server = smtplib.SMTP(smtp_server, mail_port)
+    server.starttls()
+    server.login(from_addr, password)
+    server.sendmail(from_addr, [to_addr], content.as_string())
+    server.quit()
 

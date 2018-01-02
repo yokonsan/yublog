@@ -31,12 +31,12 @@ class Config(object):
 
     # email
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
-    MAIL_PASSWORD = os.getenv('MAIN_PASSWORD')
-    MAIL_SERVER = os.getenv('MAIL_SERVER') or 'smtp.163.com'
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    MAIL_SERVER = os.getenv('MAIL_SERVER') or 'smtp.qq.com'
     MAIL_PORT = os.getenv('MAIL_PORT') or '25'
 
     ADMIN_MAIL_SUBJECT_PREFIX = 'blog'
-    ADMIN_MAIL_SENDER = 'admin 15152347277@163.com'
+    ADMIN_MAIL_SENDER = 'admin 944682328@qq.com'
     ADMIN_MAIL = os.getenv('ADMIN_MAIL')
 
     WHOOSHEE_MIN_STRING_LEN = 1

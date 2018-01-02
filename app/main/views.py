@@ -1,10 +1,9 @@
-import json
-
 from flask import render_template, redirect, url_for, request, g, current_app, abort, jsonify
 
 from . import main
 from .forms import SearchForm, CommentForm
 from ..models import *
+from ..utils import send_mail
 
 @main.before_request
 def before_request():
@@ -187,30 +186,41 @@ def love_me():
 
 @main.route('/<int:id>/comment', methods=['POST'])
 def comment(id):
+    # 邮件配置
+    from_addr = current_app.config['MAIL_USERNAME']
+    password = current_app.config['MAIL_PASSWORD']
+    to_addr = current_app.config['ADMIN_MAIL']
+    smtp_server = current_app.config['MAIL_SERVER']
+    mail_port = current_app.config['MAIL_PORT']
+
     post = Post.query.get_or_404(id)
     form = request.get_json()
     nickname = form['nickname']
     email = form['email']
     website = form['website'] or None
-    comment = form['comment']
+    com = form['comment']
     try:
         isReply = form['isReply']
         replyTo = form['replyTo']
-        comment = Comment(comment=comment, author=nickname,
+        comment = Comment(comment=com, author=nickname,
                           email=email, website=website,
                           isReply=True, replyTo=replyTo,
                           post=post)
         db.session.add(comment)
         db.session.commit()
+        msg = nickname + '在文章：' + post.title + '\n' + '中发布一条评论：' + com + '\n' + '请前往查看。'
+        send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg)
         return jsonify(nickname=nickname, email=email, website=website,
                        isReply=True, replyTo=replyTo,
                        post=post.title)
     except:
-        comment = Comment(comment=comment, author=nickname,
+        comment = Comment(comment=com, author=nickname,
                           email=email, website=website,
                           post=post)
         db.session.add(comment)
         db.session.commit()
+        msg = nickname + '在文章：' + post.title + '\n' + '中发布一条评论：' + com + '\n' + '请前往查看。'
+        send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg)
         return jsonify(nickname=nickname, email=email, website=website,
                        post=post.title)
 
@@ -227,3 +237,4 @@ def shuoshuo():
                 data[y] = year_shuo
         year_shuo = []
     return render_template('shuoshuo.html', title='说说', years=years, data=data)
+
