@@ -133,7 +133,7 @@
                     <ul>
                         {% for link in global_datas().social_links %}
                         <li>
-                            <a class="add-link" href="{{ link.link }}">{{ link.name }}</a>
+                            <a class="add-link" href="{{ link.link }}" target="_blank">{{ link.name }}</a>
                         </li>
                         {% endfor %}
                     </ul>
@@ -144,7 +144,7 @@
                     <ul>
                         {% for link in global_datas().friend_links %}
                         <li>
-                            <a href="{{ link.link }}"> {{ link.name }}</a>
+                            <a href="{{ link.link }}" target="_blank"> {{ link.name }}</a>
                         </li>
                         {% endfor %}
                     </ul>
