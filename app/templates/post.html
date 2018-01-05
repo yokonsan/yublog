@@ -11,6 +11,15 @@
 
 </style>
 {% endblock %}
+{% block plugin %}
+{{ super() }}
+    <div class="post-toc site-box">
+        <div class="side-title"><i class="demo-icon icon-doc-text-inv"></i> 文章目录</div>
+        <div class="toc-list">
+            <ol id="toc"></ol>
+        </div>
+    </div>
+{% endblock %}
 {% block content %}
     <div class="post-item site-box">
         <h1 class="post-title">
@@ -90,11 +99,12 @@
 {% endblock %}
 
 {% block script %}
-{{ super() }}
 <script src="{{url_for('static', filename='js/myStorage.js')}}"></script>
+{{ super() }}
 <script src="{{url_for('static', filename='js/comment.js')}}"></script>
 <!--<script src="{{url_for('static', filename='lib/highlight.min.js')}}"></script>-->
 <script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/myToc.js')}}"></script>
 <script src="{{ url_for('static',filename='editormd/lib/marked.min.js') }}"></script>
 <script src="{{ url_for('static',filename='editormd/lib/prettify.min.js') }}"></script>
 <script src="{{ url_for('static',filename='editormd/lib/raphael.min.js') }}"></script>
@@ -114,6 +124,14 @@
             donateImg.style.display = 'none';
         }
     };
+
+    // toc
+    $("#toc").toc({content: "div#content", headings: "h2,h3,h4"});
+    // sticky
+    var sticky = new Sticky(".post-toc", {
+        // 表示距离顶部 20px 的时候就固定
+        offset: 220
+    });
 
 </script>
 {% if global_datas().admin.changyan_id and global_datas().admin.changyan_key %}

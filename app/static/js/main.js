@@ -92,4 +92,44 @@
 
     clickEvent(mobileCate, mobileDrop);
 
+    // love me sidebar
+    var loveMeTitle = document.getElementsByClassName('love-title')[0];
+    var loveMe = document.getElementsByClassName('love-me-icon')[0];
+    var loveMeCount = document.getElementsByClassName('love-me-count')[0];
+    var counts = parseInt(loveMeCount.innerText);
+
+    var request;
+    if (window.XMLHttpRequest) {
+        request = new XMLHttpRequest();
+    } else {
+        request = new ActiveXObject('Microsoft.XMLHTTP');
+    }
+    // 判断本地是否有登录记录
+    var love = ms.get('love');
+
+    loveMe.onclick = function() {
+        if (love) {
+            loveMeTitle.innerHTML = '<i class="demo-icon icon-heart"></i> 我喜欢你';
+        } else {
+            ms.set('love', 'loved');
+            counts += 1;
+            loveMeTitle.innerHTML = '<i class="demo-icon icon-heart"></i> 我喜欢你';
+            loveMeCount.innerText = counts.toString();
+
+            // 发送请求:
+            request.open('GET', '/loveme');
+            request.send();
+        }
+    };
+    loveMe.onmouseenter = function() {
+        var icon = this.getElementsByTagName('i')[0];
+        icon.className = "demo-icon icon-heart";
+        this.style.color = "red";
+    };
+    loveMe.onmouseleave = function() {
+        var icon = this.getElementsByTagName('i')[0];
+        icon.className = "demo-icon icon-heart-empty";
+        this.style.color = "#666";
+    }
+
 })();

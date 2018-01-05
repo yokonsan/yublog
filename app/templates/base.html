@@ -129,7 +129,7 @@
                     </div>
                 </div>
                 <div class="social-links site-box">
-                    <div class="side-title"><i class="demo-icon icon-book"></i> 社交链接</div>
+                    <div class="side-title"><i class="demo-icon icon-link"></i> 社交链接</div>
                     <ul>
                         {% for link in global_datas().social_links %}
                         <li>
@@ -160,14 +160,19 @@
                     <div class="clear"></div>
                 </div>
 
-                <div id="sticky" class="love-me site-box">
-                    <div class="side-title love-title"><i class="demo-icon icon-heart"></i> 喜欢我吗</div>
-                    <div class="love-me-icon">
-                        <i class="demo-icon icon-heart"></i>
-                        <span class="love-me-count">{{global_datas().loves}}</span>
+                <div class="love-me site-box">
+                    <div class="love-title side-title"><i class="demo-icon icon-heart"></i> 喜欢我吗</div>
+                    <div class="love-me-con">
+                        <span class="love-me-icon">
+                            <i class="demo-icon icon-heart-empty"></i>
+                            <span class="love-me-count">{{global_datas().loves}}</span>
+                        </span>
                     </div>
                     <div class="clear"></div>
                 </div>
+
+                {% block plugin %}
+                {% endblock %}
 
             </div>
 
@@ -196,34 +201,10 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/sticky.js') }}"></script>
     <script>
-        var sticky = new Sticky("#sticky", {
+        var sticky = new Sticky(".love-me", {
             // 表示距离顶部 20px 的时候就固定
             offset: 70
         });
-    </script>
-    <script>
-        var loveMeTitle = document.getElementsByClassName('love-title')[0];
-        var loveMe = document.getElementsByClassName('love-me-icon')[0];
-        var loveMeCount = document.getElementsByClassName('love-me-count')[0];
-        var counts = parseInt(loveMeCount.innerText);
-
-        var request;
-        if (window.XMLHttpRequest) {
-            request = new XMLHttpRequest();
-        } else {
-            request = new ActiveXObject('Microsoft.XMLHTTP');
-        }
-
-        loveMe.onclick = function() {
-            counts += 1;
-            loveMeTitle.innerHTML = '<i class="demo-icon icon-heart"></i> 我喜欢你';
-            loveMeCount.innerText = counts.toString();
-
-            // 发送请求:
-            request.open('GET', '/loveme');
-            request.send();
-        };
-
     </script>
     <script>
         var addPage = document.getElementsByClassName('mobile-add-page');
