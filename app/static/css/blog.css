@@ -295,13 +295,11 @@ ul#drop a:hover {
 }
 
 /*side love me*/
-.love-me-icon {
+.love-me-con {
     text-align: center;
-    margin: 10px 10px 0;
-    font-size: 50px;
-    /*color: #ff0000d9;*/
-    /*color: #c70404;*/
-    color: #ff0000;
+    font-size: 40px;
+    padding: 10px 20px;
+    color: #666;
 }
 
 .love-me-icon {
@@ -309,15 +307,51 @@ ul#drop a:hover {
 }
 
 .love-me-icon:hover {
-    color: #fff;
-    background: #ff0000;
+    color: #ff0000;
 }
 
 .love-me-icon span.love-me-count {
     font-size: 33px;
-    margin-left: -18px;
+    margin-left: -10px;
 }
 
+/*post toc*/
+.post-toc .toc-list {
+    padding: 10px 20px;
+}
+
+ol#toc {
+    overflow: hidden;
+    padding: 0 10px;
+    margin: 0;
+    list-style: none;
+}
+
+ol#toc ol {
+    padding: 0 10px;
+}
+
+ol#toc li {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.8;
+}
+
+ol#toc a {
+    transition-duration: 0.2s;
+    transition-timing-function: ease-in-out;
+    transition-delay: 0.2s;
+    transition-property: all;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #999;
+}
+
+ol#toc a:hover {
+    color: #fc6423;
+    border-bottom: 1px solid #fc6423;
+}
 
 /*main*/
 .main {
