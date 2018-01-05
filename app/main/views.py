@@ -200,7 +200,6 @@ def comment(id):
     website = form['website'] or None
     com = form['comment']
     try:
-        isReply = form['isReply']
         replyTo = form['replyTo']
         comment = Comment(comment=com, author=nickname,
                           email=email, website=website,
