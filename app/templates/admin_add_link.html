@@ -2,18 +2,54 @@
 {% block content %}
 {% if current_user.is_authenticated %}
 
-<div class="admin-links site-box">
-    <h2>添加网站链接</h2>
-    <div class="links-ipt">
-        <form action="{{url_for('admin.add_link')}}" method="post">
-            {{form.hidden_tag()}}
-            <p>标题：{{form.name()}}</p>
-            <p>链接：{{form.link()}}</p>
-            <p>是否友链：{{form.isFriendLink}}</p>
-            <p><input class="but" type="submit" value="添加"></p>
-        </form>
-    </div>
+    <div class="admin-links">
+        <div class="change-nav">
+            <span class="current">社交链接</span>
+            <span>友情链接</span>
+        </div>
+        <div class="social links-ipt">
+            <form action="{{url_for('admin.add_link')}}" method="post">
+                {{form.hidden_tag()}}
+                <p>标题：{{form.name()}}</p>
+                <p>链接：{{form.link()}}</p>
+                <p><input class="but" type="submit" value="添加"></p>
+            </form>
+        </div>
 
-</div>
+        <div class="friend links-ipt">
+            <form action="{{url_for('admin.add_link')}}" method="post">
+                {{fr_form.hidden_tag()}}
+                <p>名称：{{fr_form.name()}}</p>
+                <p>链接：{{fr_form.link()}}</p>
+                <p>头像：{{fr_form.avatar()}}</p>
+                <p>描述：{{fr_form.info()}}</p>
+                <p><input class="but" type="submit" value="添加"></p>
+            </form>
+        </div>
+
+    </div>
 {% endif %}
+{% endblock %}
+{% block script %}
+{{ super() }}
+<script>
+    var changNav = document.getElementsByClassName('change-nav')[0];
+    var socialBtn = changNav.getElementsByTagName('span')[0];
+    var friendBtn = changNav.getElementsByTagName('span')[1];
+    var socialBox = document.getElementsByClassName('social')[0];
+    var friendBox = document.getElementsByClassName('friend')[0];
+
+    socialBtn.onclick = function() {
+        friendBtn.className = "";
+        this.className = "current";
+        friendBox.style.display = "none";
+        socialBox.style.display = "block";
+    };
+    friendBtn.onclick = function() {
+        socialBtn.className = "";
+        this.className = "current";
+        socialBox.style.display = "none";
+        friendBox.style.display = "block";
+    };
+</script>
 {% endblock %}

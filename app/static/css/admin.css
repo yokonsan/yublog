@@ -154,12 +154,30 @@ input.but:hover,.admin-menu button:hover,.write-body .write-btn:hover {
 
 
 /*admin profile and admin add links*/
+.change-nav span {
+    cursor: pointer;
+    margin: 0 10px;
+}
+
+.change-nav span:hover {
+    color: #df846c;
+}
+
+.change-nav span.current {
+    color: #df846c;
+    border-bottom: 2px solid #df846c;
+}
+
 .admin-profile,.admin-links {
     text-align: center;
     margin: 100px 0;
     border: 1px solid #ccc;
     background: #fff;
     padding: 30px;
+}
+
+.admin-links .friend {
+    display: none;
 }
 
 .profile-ipt,.links-ipt {

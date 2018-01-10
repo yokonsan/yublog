@@ -27,10 +27,15 @@ class AddPageForm(FlaskForm):
     is_nav = BooleanField('is_nav')
     submit = SubmitField('submit')
 
-class AddLinkForm(FlaskForm):
+class SocialLinkForm(FlaskForm):
     link = StringField('url', validators=[DataRequired()])
     name = StringField('name', validators=[DataRequired()])
-    isFriendLink = BooleanField('type', default=False)
+
+class FriendLinkForm(FlaskForm):
+    link = StringField('url', validators=[DataRequired()])
+    name = StringField('name', validators=[DataRequired()])
+    avatar = StringField('avatar_url', validators=[DataRequired()])
+    info = StringField('info', validators=[DataRequired()])
 
 class AdminSiteForm(FlaskForm):
     site_name = StringField('name', validators=[DataRequired()])
