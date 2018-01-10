@@ -132,4 +132,24 @@
         this.style.color = "#666";
     }
 
+    // 侧栏概览和文章目录的显示
+    var sideNav = document.getElementsByClassName('side-nav')[0];
+    var tocBtn = sideNav.getElementsByTagName('span')[0];
+    var viewBtn = sideNav.getElementsByTagName('span')[1];
+    var tocBox = document.getElementsByClassName('post-toc')[0];
+    var viewBox = document.getElementsByClassName('profile')[0];
+
+    tocBtn.onclick = function() {
+        viewBtn.className = "";
+        this.className = "current";
+        viewBox.style.display = "none";
+        tocBox.style.display = "block";
+    };
+    viewBtn.onclick = function() {
+        tocBtn.className = "";
+        this.className = "current";
+        tocBox.style.display = "none";
+        viewBox.style.display = "block";
+    };
+
 })();

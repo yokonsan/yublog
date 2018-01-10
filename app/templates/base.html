@@ -11,13 +11,16 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/blog.css') }}">
     <link media="(max-width: 960px)" href="{{ url_for('static', filename='css/mobile.css') }}" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/fontello.css') }}">
+    <style>
+        .side-nav {display: none;}
+    </style>
     {% endblock %}
 
 </head>
 <body>
     <div class="container">
 
-        <div class="site-header">
+        <div id="header" class="site-header headroom">
             <!-- PC -->
             <div class="site-wrap">
 
@@ -39,16 +42,12 @@
                                 </form>
                             </div>
                         </li>
-                        <!---->
-                        <!--<li class="menu-item"><a href="/">留言</a></li>-->
-                        <!--<li class="menu-item"><a href="/">关于</a></li>-->
                         {% for page in global_datas().pages %}
                         <li class="menu-item">
                             <a href="{{ url_for('main.page', page_url=page.url_name) }}">{{ page.page }}</a>
                         </li>
                         {% endfor %}
                         <li class="menu-item"><a href="{{url_for('main.shuoshuo')}}">说说</a></li>
-                        <li class="menu-item"><a href="{{url_for('main.archives')}}">归档</a></li>
                         <li class="menu-item category-nav"><a href="#">分类</a>
                             <ul id="drop">
                                 {% for category in global_datas().categories %}
@@ -119,56 +118,84 @@
 
         <div class="site-wrap">
             <div class="sidebar">
-                <div class="profile site-box">
-                    <div class="author-background"></div>
-                    <div class="author-image">
-                        <img src="{{url_for('static', filename='images/baifeng.jpg')}}" alt="author">
+                <div class="side-content">
+                    <div class="side-nav">
+                        <span>文章目录</span>
+                        <span class="current">站点概览</span>
                     </div>
-                    <div class="author-description">
-                        {% if global_datas().admin %}{{ global_datas().admin.profile }}{% else %}没有信息{% endif %}
-                    </div>
-                </div>
-                <div class="social-links site-box">
-                    <div class="side-title"><i class="demo-icon icon-link"></i> 社交链接</div>
-                    <ul>
-                        {% for link in global_datas().social_links %}
-                        <li>
-                            <a class="add-link" href="{{ link.link }}" target="_blank">{{ link.name }}</a>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    <div class="clear"></div>
-                </div>
-                <div class="friend-links site-box">
-                    <div class="side-title"><i class="demo-icon icon-globe"></i> 友情链接</div>
-                    <ul>
-                        {% for link in global_datas().friend_links %}
-                        <li>
-                            <a href="{{ link.link }}" target="_blank"> {{ link.name }}</a>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
+                    <div class="profile site-box">
+                        <div class="master-image">
+                            <img class="profile-avatar" src="{{url_for('static', filename='images/baifeng.jpg')}}" alt="author">
+                            <div class="master-info">
+                                <p class="profile-master">{% if global_datas().admin %}{{ global_datas().admin.name }}{% else %}意外{% endif %}</p>
+                                <p class="master-description">
+                                    {% if global_datas().admin %}{{ global_datas().admin.profile }}{% else %}没有信息{% endif %}
+                                </p>
+                            </div>
+                        </div>
 
-                <div class="blog-tags site-box">
-                    <div class="side-title"><i class="demo-icon icon-tags"></i> 标签</div>
-                    <ul>
-                        {% for tag in global_datas().tags %}
-                        <li><a href="{{ url_for('main.tag', tag_name = tag.tag) }}">{{ tag.tag }}</a></li>
-                        {% endfor %}
-                    </ul>
-                    <div class="clear"></div>
-                </div>
+                        <div class="new-shuo">
+                            <p>人不管长多大，都是在寻找容身之所的旅途上啊！！！</p>
+                        </div>
 
-                <div class="love-me site-box">
-                    <div class="love-title side-title"><i class="demo-icon icon-heart"></i> 喜欢我吗</div>
-                    <div class="love-me-con">
-                        <span class="love-me-icon">
-                            <i class="demo-icon icon-heart-empty"></i>
-                            <span class="love-me-count">{{global_datas().loves}}</span>
-                        </span>
+                        <div class="blog-info">
+                            <ul>
+                                <li><a href="{{url_for('main.archives')}}">
+                                    <strong>{% if global_datas().postCounts %}{{ global_datas().postCounts }}{% else %}0{% endif %}</strong>
+                                    <span>文章</span>
+                                </a></li>
+                                <li><a href="#">
+                                    <strong>2</strong>
+                                    <span>朋友</span>
+                                </a></li>
+                                <li class="last-li"><a href="#">
+                                    <strong>22</strong>
+                                    <span>留言</span>
+                                </a></li>
+                            </ul>
+                        </div>
+
+                        <div class="social-links">
+                            <ul>
+                                {% for link in global_datas().social_links %}
+                                <li>
+                                    <a class="add-link" href="{{ link.link }}" target="_blank">{{ link.name }}</a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            <div class="clear"></div>
+                        </div>
+
+                        <div id="rss">
+                            <a href="#"><i class="icon-rss"></i> RSS</a>
+                        </div>
+
+                        <div class="love-me">
+                            <div class="love-title">你喜欢我吗</div>
+                            <div class="love-me-con">
+                                <span class="love-me-icon">
+                                    <i class="icon-heart-empty"></i>
+                                    <span class="love-me-count">{{global_datas().loves}}</span>
+                                </span>
+                            </div>
+                            <div class="clear"></div>
+                        </div>
                     </div>
-                    <div class="clear"></div>
+                    <div class="post-toc site-box">
+                        <div class="toc-list">
+                            <ol id="toc"></ol>
+                        </div>
+                    </div>
+
+                    <div class="blog-tags site-box">
+                        <div class="side-title"><i class="demo-icon icon-tags"></i> 标签</div>
+                        <ul>
+                            {% for tag in global_datas().tags %}
+                            <li><a href="{{ url_for('main.tag', tag_name = tag.tag) }}">{{ tag.tag }}</a></li>
+                            {% endfor %}
+                        </ul>
+                        <div class="clear"></div>
+                    </div>
                 </div>
 
                 {% block plugin %}
@@ -198,13 +225,22 @@
 
     </div>
     {% block script %}
+    <script src="{{url_for('static', filename='js/myStorage.js')}}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/sticky.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/headroom.min.js') }}"></script>
     <script>
-        var sticky = new Sticky(".love-me", {
+        var sticky = new Sticky(".side-content", {
             // 表示距离顶部 20px 的时候就固定
-            offset: 70
+            offset: 20
         });
+
+        // headroom
+        var header = new Headroom(document.getElementById("header"), {
+            tolerance: 0,
+            offset : 70
+        });
+        header.init();
     </script>
     <script>
         var addPage = document.getElementsByClassName('mobile-add-page');
