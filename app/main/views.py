@@ -82,7 +82,6 @@ def post(year, month, article_name):
     page = request.args.get('page', 1, type=int)
     if page == -1:
         counts = post.comments.count()
-        print(counts)
         page = (counts - 1) / \
                current_app.config['COMMENTS_PER_PAGE'] + 1
     pagination = Comment.query.filter_by(post=post,isReply=False,disabled=True).order_by(Comment.timestamp.desc()).paginate(
@@ -236,4 +235,13 @@ def shuoshuo():
                 data[y] = year_shuo
         year_shuo = []
     return render_template('shuoshuo.html', title='说说', years=years, data=data)
+
+# friend link page
+@main.route('/friends')
+def friends():
+    pass
+# guest-book page
+@main.route('/guestbook')
+def guestbook():
+    pass
 

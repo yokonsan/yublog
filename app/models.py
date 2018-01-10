@@ -20,8 +20,6 @@ class Admin(UserMixin, db.Model):
     password_hash = db.Column(db.String(500))
 
     record_info = db.Column(db.String(255), nullable=True)
-    changyan_id = db.Column(db.String(500), nullable=True)
-    changyan_key = db.Column(db.String(500), nullable=True)
 
     def __init__(self, **kwargs):
         super(Admin, self).__init__(**kwargs)
@@ -172,6 +170,28 @@ class Comment(db.Model):
     def __repr__(self):
         return '<Comment %r>' %(self.comment)
 
+class Guestbook(db.Model):
+    __tablename__ = 'guestbooks'
+    id = db.Column(db.Integer, primary_key=True)
+    guestbook = db.Column(db.Text)
+    author = db.Column(db.String(25))
+    email = db.Column(db.String(255))
+    website = db.Column(db.String(255), nullable=True)
+    isReply = db.Column(db.Boolean, default=False)
+    replyTo = db.Column(db.Integer, nullable=True)
+    disabled = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
+
+    @property
+    def strptime(self):
+        return datetime.datetime.strftime(self.timestamp, '%Y-%m-%d')
+
+    # 获取Gravatar头像
+    def gravatar(self, size):
+        return 'http://www.gravatar.com/avatar/' + md5(self.email.encode('utf-8')).hexdigest() + '?d=mm&s=' + str(size)
+
+    def __repr__(self):
+        return '<Guestbook %r>' %(self.guestbook)
 
 class Tag(db.Model):
     __tablename__ = 'tags'
@@ -191,20 +211,17 @@ class Category(db.Model):
     def __repr__(self):
         return '<Category %r>' % (self.category)
 
-class SocialLink(db.Model):
-    __tablename__ = 'social_links'
+class SiteLink(db.Model):
+    __tablename__ = 'sitelinks'
     id = db.Column(db.Integer, primary_key=True)
     link = db.Column(db.String(125))
     name = db.Column(db.String(25))
     isFriendLink = db.Column(db.Boolean)
-
-    def __init__(self, link, isFriendLink, name):
-        self.link = link
-        self.isFriendLink = isFriendLink
-        self.name = name
+    avatar = db.Column(db.String(125), nullable=True)
+    info = db.Column(db.String(125), nullable=True)
 
     def __repr__(self):
-        return '<SocialLink %r>' % (self.link)
+        return '<SiteLink %r>' % (self.link)
 
 class Shuoshuo(db.Model):
     __tablename__ = 'shuos'

@@ -24,12 +24,12 @@ def global_datas():
     if admin:
         global_data['admin'] = admin[0]
 
-    all_links = SocialLink.query.order_by(SocialLink.link).all()
+    all_links = SiteLink.query.order_by(SiteLink.link).all()
     if all_links:
         social_links = [link for link in all_links if link.isFriendLink == False]
-        friend_links = [link for link in all_links if link.isFriendLink == True]
+        friend_links_counts = len([link for link in all_links if link.isFriendLink == True])
         global_data['social_links'] = social_links
-        global_data['friend_links'] = friend_links
+        global_data['friendCounts'] = friend_links_counts
 
     all_tags = Tag.query.all()
     if all_tags:
@@ -49,6 +49,16 @@ def global_datas():
     love_me_counts = LoveMe.query.all()[0]
     if love_me_counts:
         global_data['loves'] = love_me_counts.loveMe
+
+    posts = Post.query.all()
+    if posts:
+        post_counts = len([post for post in posts if post.draft==False])
+        global_data['postCounts'] = post_counts
+
+    guestbooks = Guestbook.query.all()
+    if guestbooks:
+        guestbook_counts = len([g for g in guestbooks])
+        global_data['guestbookCounts'] = guestbook_counts
 
     return global_data
 
