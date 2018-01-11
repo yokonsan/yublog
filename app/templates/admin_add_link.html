@@ -12,7 +12,7 @@
                 {{form.hidden_tag()}}
                 <p>标题：{{form.name()}}</p>
                 <p>链接：{{form.link()}}</p>
-                <p><input class="but" type="submit" value="添加"></p>
+                <p>{{form.submit(class="but",value="添加")}}</p>
             </form>
         </div>
 
@@ -21,9 +21,8 @@
                 {{fr_form.hidden_tag()}}
                 <p>名称：{{fr_form.name()}}</p>
                 <p>链接：{{fr_form.link()}}</p>
-                <p>头像：{{fr_form.avatar()}}</p>
                 <p>描述：{{fr_form.info()}}</p>
-                <p><input class="but" type="submit" value="添加"></p>
+                <p>{{fr_form.submit2(class="but",value="添加")}}</p>
             </form>
         </div>
 

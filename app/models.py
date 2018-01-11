@@ -217,7 +217,7 @@ class SiteLink(db.Model):
     link = db.Column(db.String(125))
     name = db.Column(db.String(25))
     isFriendLink = db.Column(db.Boolean)
-    avatar = db.Column(db.String(125), nullable=True)
+    isGreatLink = db.Column(db.Boolean, default=True)
     info = db.Column(db.String(125), nullable=True)
 
     def __repr__(self):

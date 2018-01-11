@@ -239,7 +239,13 @@ def shuoshuo():
 # friend link page
 @main.route('/friends')
 def friends():
-    pass
+    friends = SiteLink.query.filter_by(isFriendLink=True).order_by(SiteLink.id.desc()).all()
+    great_links = [link for link in friends if link.isGreatLink==True]
+    bad_links = [link for link in friends if link.isGreatLink==False]
+
+    return render_template('friends.html', title="朋友",
+                           great_links=great_links, bad_links=bad_links)
+
 # guest-book page
 @main.route('/guestbook')
 def guestbook():

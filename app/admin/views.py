@@ -70,7 +70,7 @@ def set_site():
 def add_link():
     form = SocialLinkForm()
     fr_form = FriendLinkForm()
-    if form.validate_on_submit():
+    if form.submit.data and form.validate_on_submit():
         exist_link = SiteLink.query.filter_by(link=form.link.data).first()
         if exist_link:
             flash('链接已经存在哦...')
@@ -80,10 +80,10 @@ def add_link():
                           name=form.name.data,
                           isFriendLink=False)
             db.session.add(link)
-            flash('添加成功')
             db.session.commit()
+            flash('添加成功')
             return redirect(url_for('admin.add_link'))
-    if fr_form.validate_on_submit():
+    if fr_form.submit2.data and fr_form.validate_on_submit():
         exist_link = SiteLink.query.filter_by(link=fr_form.link.data).first()
         if exist_link:
             flash('链接已经存在哦...')
@@ -91,14 +91,18 @@ def add_link():
         else:
             link = SiteLink(link=fr_form.link.data,
                           name=fr_form.name.data,
-                          avatar=fr_form.avatar.data,
                           info=fr_form.info.data,
                           isFriendLink=True)
             db.session.add(link)
-            flash('添加成功')
             db.session.commit()
+            flash('添加成功')
             return redirect(url_for('admin.add_link'))
     return render_template('admin_add_link.html', form=form, fr_form=fr_form)
+
+@admin.route('/admin-links')
+@login_required
+def admin_links():
+    pass
 
 def save_tags(tags, id):
     """

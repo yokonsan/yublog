@@ -30,12 +30,13 @@ class AddPageForm(FlaskForm):
 class SocialLinkForm(FlaskForm):
     link = StringField('url', validators=[DataRequired()])
     name = StringField('name', validators=[DataRequired()])
+    submit = SubmitField('submit')
 
 class FriendLinkForm(FlaskForm):
     link = StringField('url', validators=[DataRequired()])
     name = StringField('name', validators=[DataRequired()])
-    avatar = StringField('avatar_url', validators=[DataRequired()])
     info = StringField('info', validators=[DataRequired()])
+    submit2 = SubmitField('submit2')
 
 class AdminSiteForm(FlaskForm):
     site_name = StringField('name', validators=[DataRequired()])
