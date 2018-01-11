@@ -11,7 +11,7 @@ from .forms import *
 @admin.route('/index')
 @login_required
 def index():
-    return render_template('admin_menu.html')
+    return render_template('admin/admin_menu.html')
 
 @admin.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -22,7 +22,7 @@ def login():
             login_user(user, form.remember_me.data)
             return redirect(url_for('admin.index'))
         flash('账号或密码无效。')
-    return render_template('login.html',
+    return render_template('admin/login.html',
                            title='登录',
                            form=form)
 
@@ -39,17 +39,14 @@ def set_site():
     form = AdminSiteForm()
     user = Admin.query.all()[0]
     if form.validate_on_submit():
-        print('a')
         user.name = form.username.data
         user.profile = form.profile.data
         user.site_name = form.site_name.data
         user.site_title = form.site_title.data
         user.record_info = form.record_info.data or None
-        print(user.record_info)
         user.changyan_id = form.changyanID.data or None
         user.changyan_key = form.changyanKEY.data or None
         db.session.add(user)
-        print('b')
         db.session.commit()
         flash('设置成功')
         return redirect(url_for('admin.index'))
@@ -60,7 +57,7 @@ def set_site():
     form.record_info.data = user.record_info or None
     form.changyanID.data = user.changyan_id or None
     form.changyanKEY.data = user.changyan_key or None
-    return render_template('admin_profile.html',
+    return render_template('admin/admin_profile.html',
                            title='设置网站信息',
                            form=form)
 
@@ -97,7 +94,7 @@ def add_link():
             db.session.commit()
             flash('添加成功')
             return redirect(url_for('admin.add_link'))
-    return render_template('admin_add_link.html', form=form, fr_form=fr_form)
+    return render_template('admin/admin_add_link.html', form=form, fr_form=fr_form)
 
 @admin.route('/admin-links')
 @login_required
@@ -167,7 +164,7 @@ def write():
             flash('发布成功！')
         db.session.commit()
         return redirect(url_for('admin.write'))
-    return render_template('admin_write.html',
+    return render_template('admin/admin_write.html',
                            form=form,
                            title='写文章')
 
@@ -208,7 +205,7 @@ def admin_edit(time, name):
     form.time.data = post.timestamp
     form.title.data = post.title
     form.body.data = post.body
-    return render_template('admin_write.html',
+    return render_template('admin/admin_write.html',
                            form=form,
                            post=post,
                            title='编辑文章')
@@ -227,7 +224,7 @@ def add_page():
         db.session.commit()
         flash('添加成功')
         return redirect(url_for('admin.add_page'))
-    return render_template('admin_add_page.html',
+    return render_template('admin/admin_add_page.html',
                            form=form,
                            title='添加页面')
 
@@ -251,7 +248,7 @@ def edit_page(name):
     form.can_comment.data = page.canComment
     form.is_nav.data = page.isNav
     form.url_name.data = page.url_name
-    return render_template('admin_add_page.html',
+    return render_template('admin/admin_add_page.html',
                            title="编辑页面",
                            form=form,
                            page=page)
@@ -270,7 +267,7 @@ def delete_page(name):
 def admin_drafts():
     posts = Post.query.order_by(Post.id.desc()).all()
     drafts = [post for post in posts if post.draft]
-    return render_template('admin_draft.html',
+    return render_template('admin/admin_draft.html',
                            drafts=drafts,
                            title='管理草稿')
 
@@ -278,7 +275,7 @@ def admin_drafts():
 @login_required
 def admin_pages():
     pages = Page.query.order_by(Page.id.desc()).all()
-    return render_template('admin_page.html',
+    return render_template('admin/admin_page.html',
                            pages=pages,
                            title='管理页面')
 
@@ -291,7 +288,7 @@ def admin_posts():
         error_out=False
     )
     posts = [post for post in pagination.items if post.draft == False]
-    return render_template('admin_post.html',
+    return render_template('admin/admin_post.html',
                            title='管理文章',
                            posts=posts,
                            pagination=pagination)
@@ -315,7 +312,7 @@ def admin_comments():
         error_out=False
     )
     comments = pagination.items
-    return render_template('admin_comment.html',
+    return render_template('admin/admin_comment.html',
                            title='管理评论',
                            comments=comments,
                            pagination=pagination)
@@ -359,14 +356,14 @@ def write_shuoshuo():
         db.session.commit()
         flash('发布成功')
         return redirect(url_for('admin.write_shuoshuo'))
-    return render_template('admin_write_shuoshuo.html',
+    return render_template('admin/admin_write_shuoshuo.html',
                            title='写说说', form=form)
 
 @admin.route('/shuos')
 @login_required
 def admin_shuos():
     shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
-    return render_template('admin_shuoshuo.html',
+    return render_template('admin/admin_shuoshuo.html',
                            title='管理说说',
                            shuos=shuos)
 

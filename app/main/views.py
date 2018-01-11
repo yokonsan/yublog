@@ -31,7 +31,7 @@ def index():
     )
     posts = [post for post in pagination.items if post.draft == False]
 
-    return render_template('index.html',
+    return render_template('main/index.html',
                            title='首页',
                            posts=posts,
                            pagination=pagination)
@@ -90,7 +90,7 @@ def post(year, month, article_name):
     )
     comments = pagination.items
     replys = post.comments.filter_by(isReply=True,disabled=True).all()
-    return render_template('post.html', post=post, tags=tags, title=post.title,
+    return render_template('main/post.html', post=post, tags=tags, title=post.title,
                            next_post=next_post, prev_post=prev_post, pagination=pagination,
                            comments=comments, replys=replys, counts=len(comments)+len(replys))
 
@@ -99,7 +99,7 @@ def post(year, month, article_name):
 def page(page_url):
     page = Page.query.filter_by(url_name=page_url).first()
 
-    return render_template('page.html', page=page)
+    return render_template('main/page.html', page=page)
 
 @main.route('/tag/<tag_name>/')
 def tag(tag_name):
@@ -107,14 +107,14 @@ def tag(tag_name):
     all_posts = Post.query.order_by(Post.timestamp.desc()).all()
     posts = [post for post in all_posts if post.tag_in_post(tag) and post.draft==False]
 
-    return render_template('tag.html', tag=tag, posts=posts)
+    return render_template('main/tag.html', tag=tag, posts=posts)
 
 @main.route('/category/<category_name>/')
 def category(category_name):
     category = Category.query.filter_by(category=category_name).first()
 
     posts = Post.query.filter_by(category=category, draft=False).order_by(Post.timestamp.desc()).all()
-    return render_template('category.html',
+    return render_template('main/category.html',
                            category=category,
                            posts=posts,
                            title='分类：' + category.category)
@@ -139,7 +139,7 @@ def archives():
                 data[y] = year_post
         year_post = []
 
-    return render_template('archives.html',
+    return render_template('main/archives.html',
                            title='归档',
                            posts=posts,
                            year= year,
@@ -168,7 +168,7 @@ def search_result():
         error_out=False
     )
     results = [post for post in pagination.items if post.draft == False]
-    return render_template('results.html',
+    return render_template('main/results.html',
                            results=results,
                            query=query,
                            pagination=pagination,
@@ -234,7 +234,7 @@ def shuoshuo():
                 year_shuo.append(s)
                 data[y] = year_shuo
         year_shuo = []
-    return render_template('shuoshuo.html', title='说说', years=years, data=data)
+    return render_template('main/shuoshuo.html', title='说说', years=years, data=data)
 
 # friend link page
 @main.route('/friends')
@@ -243,7 +243,7 @@ def friends():
     great_links = [link for link in friends if link.isGreatLink==True]
     bad_links = [link for link in friends if link.isGreatLink==False]
 
-    return render_template('friends.html', title="朋友",
+    return render_template('main/friends.html', title="朋友",
                            great_links=great_links, bad_links=bad_links)
 
 # guest-book page

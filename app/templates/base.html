@@ -144,8 +144,8 @@
                                     <strong>{% if global_datas().postCounts %}{{ global_datas().postCounts }}{% else %}0{% endif %}</strong>
                                     <span>文章</span>
                                 </a></li>
-                                <li><a href="#">
-                                    <strong>2</strong>
+                                <li><a href="{{url_for('main.friends')}}">
+                                    <strong>{% if global_datas().friendCounts %}{{ global_datas().friendCounts }}{% else %}0{% endif %}</strong>
                                     <span>朋友</span>
                                 </a></li>
                                 <li class="last-li"><a href="#">

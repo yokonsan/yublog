@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="links-content site-box">
+    <h2>朋友</h2>
+    <div class="page-info">
+        有朋自远方来，不亦乐乎！
+    </div>
+    {% if great_links %}
+    <h3>时常交流的朋友</h3>
+    <div class="great-friends">
+        <ul>
+            {% for link in great_links %}
+            <li>
+                <a href="{{ link.link }}">{{ link.name }}</a>
+                <span>{{ link.info }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="clear"></div>
+    </div>
+    {% endif %}
+    <div class="clear"></div>
+    {% if bad_links %}
+    <h3>许久不见的朋友</h3>
+    <div class="great-friends">
+        <ul>
+            {% for link in bad_links %}
+            <li>
+                <a href="{{ link.link }}">{{ link.name }}</a>
+                <span>{{ link.info }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="clear"></div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
