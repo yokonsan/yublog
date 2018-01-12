@@ -46,8 +46,6 @@ class AdminSiteForm(FlaskForm):
     profile = StringField('profile', validators=[DataRequired()])
 
     record_info = StringField('record info')
-    changyanID = StringField('chang yan id')
-    changyanKEY = StringField('chang yan key')
 
 class ShuoForm(FlaskForm):
     shuoshuo = TextAreaField('shuoshuo', validators=[DataRequired()])

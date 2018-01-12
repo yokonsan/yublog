@@ -44,8 +44,6 @@ def set_site():
         user.site_name = form.site_name.data
         user.site_title = form.site_title.data
         user.record_info = form.record_info.data or None
-        user.changyan_id = form.changyanID.data or None
-        user.changyan_key = form.changyanKEY.data or None
         db.session.add(user)
         db.session.commit()
         flash('设置成功')
@@ -55,8 +53,6 @@ def set_site():
     form.site_name.data = user.site_name
     form.site_title.data = user.site_title
     form.record_info.data = user.record_info or None
-    form.changyanID.data = user.changyan_id or None
-    form.changyanKEY.data = user.changyan_key or None
     return render_template('admin/admin_profile.html',
                            title='设置网站信息',
                            form=form)
@@ -94,12 +90,37 @@ def add_link():
             db.session.commit()
             flash('添加成功')
             return redirect(url_for('admin.add_link'))
-    return render_template('admin/admin_add_link.html', form=form, fr_form=fr_form)
+    return render_template('admin/admin_add_link.html', title="站点链接",
+                           form=form, fr_form=fr_form)
 
 @admin.route('/admin-links')
 @login_required
 def admin_links():
-    pass
+    links = SiteLink.query.order_by(SiteLink.id.desc()).all()
+    social_links = [link for link in links if link.isFriendLink==False]
+    friend_links = [link for link in links if link.isFriendLink==True]
+    return render_template('admin/admin_link.html', title="管理链接",
+                           social_links=social_links, friend_links=friend_links)
+
+@admin.route('/delete/link/<int:id>')
+@login_required
+def delete_link(id):
+    link = SiteLink.query.get_or_404(id)
+    db.session.delete(link)
+    db.session.commit()
+    return redirect(url_for('admin.admin_links'))
+
+@admin.route('/great/link/<int:id>')
+@login_required
+def great_link(id):
+    link = SiteLink.query.get_or_404(id)
+    if link.isGreatLink:
+        link.isGreatLink = False
+    else:
+        link.isGreatLink = True
+    db.session.add(link)
+    db.session.commit()
+    return redirect(url_for('admin.admin_links'))
 
 def save_tags(tags, id):
     """
@@ -215,7 +236,7 @@ def admin_edit(time, name):
 def add_page():
     form = AddPageForm()
     if form.validate_on_submit():
-        page = Page(page=form.title.data,
+        page = Page(title=form.title.data,
                     url_name=form.url_name.data,
                     body=form.body.data,
                     canComment=form.can_comment.data,
@@ -234,7 +255,7 @@ def edit_page(name):
     page = Page.query.filter_by(url_name=name).first()
     form = AddPageForm()
     if form.validate_on_submit():
-        page.page = form.title.data
+        page.title = form.title.data
         page.body = form.body.data
         page.canComment = form.can_comment.data
         page.isNav = form.is_nav.data
@@ -243,7 +264,7 @@ def edit_page(name):
         db.session.commit()
         flash('更新成功')
         return redirect(url_for('admin.edit_page', name=page.url_name))
-    form.title.data = page.page
+    form.title.data = page.title
     form.body.data = page.body
     form.can_comment.data = page.canComment
     form.is_nav.data = page.isNav
@@ -256,7 +277,7 @@ def edit_page(name):
 @admin.route('/page/delete/<name>')
 @login_required
 def delete_page(name):
-    page = Page.query.filter_by(page=name).first()
+    page = Page.query.filter_by(title=name).first()
     db.session.delete(page)
     db.session.commit()
     flash('删除成功')

@@ -8,7 +8,7 @@
         {% for page in pages %}
         <li>
             <a class="article-title" href="{{url_for('admin.edit_page',name=page.url_name)}}">
-                {{ page.page }}
+                {{ page.title }}
             </a>
             <a href="{{url_for('admin.delete_page',name=page.url_name)}}">
                 <button class="delete-btn">删除</button>

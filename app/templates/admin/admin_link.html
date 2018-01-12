@@ -1,0 +1,44 @@
+{% extends "admin.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+
+<div class="admin-title site-box">管理链接<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
+
+<div class="admin-post site-box">
+    <h2>社交链接</h2>
+    <ul>
+        {% for link in social_links %}
+        <li>
+            {{ link.name }}
+            <a href="{{url_for('admin.delete_link',id=link.id)}}">
+                <button class="delete-btn">删除</button>
+            </a>
+            <p>{{link.link}}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    <h2>友情链接</h2>
+    <ul>
+        {% for link in friend_links %}
+        <li>
+            {{ link.name }}
+            <a href="{{url_for('admin.delete_link',id=link.id)}}">
+                <button class="delete-btn">删除</button>
+            </a>
+            {% if link.isGreatLink %}
+            <a href="{{url_for('admin.great_link',id=link.id)}}">
+                <button class="edit-btn">设为死链</button>
+            </a>
+            {% else %}
+            <a href="{{url_for('admin.great_link',id=link.id)}}">
+                <button class="edit-btn">设为活链</button>
+            </a>
+            {% endif %}
+            <p>{{link.link}}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% endblock %}
