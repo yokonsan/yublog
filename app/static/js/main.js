@@ -104,10 +104,10 @@
     } else {
         request = new ActiveXObject('Microsoft.XMLHTTP');
     }
-    // 判断本地是否有登录记录
-    var love = ms.get('love');
 
     loveMe.onclick = function() {
+        // 判断本地是否有登录记录
+        var love = ms.get('love');
         if (love) {
             loveMeTitle.innerHTML = '<i class="demo-icon icon-heart"></i> 我喜欢你';
         } else {
@@ -121,16 +121,6 @@
             request.send();
         }
     };
-    loveMe.onmouseenter = function() {
-        var icon = this.getElementsByTagName('i')[0];
-        icon.className = "demo-icon icon-heart";
-        this.style.color = "red";
-    };
-    loveMe.onmouseleave = function() {
-        var icon = this.getElementsByTagName('i')[0];
-        icon.className = "demo-icon icon-heart-empty";
-        this.style.color = "#666";
-    }
 
     // 侧栏概览和文章目录的显示
     var sideNav = document.getElementsByClassName('side-nav')[0];

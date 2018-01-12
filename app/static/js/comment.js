@@ -114,13 +114,13 @@
     submitBtn.onclick = function() {
         var replyId = this.attributes["replyid"].value;
         var replyTo = this.attributes["replyto"].value;
-        var postId = this.attributes["postid"].value;
+        var postUrl = this.attributes["posturl"].value;
 
         resetForm(submitBtn);
-        postClick(postId, replyId, replyTo);
+        postClick(postUrl, replyId, replyTo);
     };
 
-    function postClick(id, replyId, replyName) {
+    function postClick(url, replyId, replyName) {
         var request;
         if (window.XMLHttpRequest) {
             request = new XMLHttpRequest();
@@ -143,7 +143,7 @@
             }
         };
         if (replyId) {
-            request.open('POST', '/'+ id +'/comment');
+            request.open('POST', '/'+ url +'/comment');
             request.setRequestHeader('Content-Type', 'application/json');
             FormData= JSON.stringify({
                 nickname: userIpt.value,
@@ -157,7 +157,7 @@
             saveUser('user', val1);
             request.send(FormData);
         } else {
-            request.open('POST', '/'+ id +'/comment');
+            request.open('POST', '/'+ url +'/comment');
             request.setRequestHeader('Content-Type', 'application/json');
             FormData= JSON.stringify({
                 nickname: userIpt.value,
