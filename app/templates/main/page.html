@@ -8,12 +8,19 @@
     .editormd-html-preview, .editormd-preview-container {padding: 0;}
     .post-body {padding: 0;}
     .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6 {position: static;}
-
+    h1.post-title {text-align: left;}
+    #content {
+        overflow-y: hidden;
+        padding: 30px 0;
+        border-top: 1px dashed #ccc;
+        border-bottom: 1px dashed #ccc;
+        margin-top: 20px;
+    }
 </style>
 {% endblock %}
 {% block content %}
 <div class="post-item site-box">
-    <h1 class="post-title">{{page.page}}</h1>
+    <h1 class="post-title">{{page.title}}</h1>
 
     <div id="content" class="content post-body">
         {{ page.body_to_html | safe }}
