@@ -57,13 +57,13 @@ class LoveMe(db.Model):
 class Page(db.Model):
     __tablename__ = 'pages'
     id = db.Column(db.Integer, primary_key=True)
-    page = db.Column(db.String(3))
+    title = db.Column(db.String(3))
     url_name = db.Column(db.String(25))
     canComment = db.Column(db.Boolean, default=False)
     isNav = db.Column(db.Boolean, default=False)
     body = db.Column(db.Text)
 
-    comments = db.relationship('Comment', backref='page')
+    comments = db.relationship('Comment', backref='page', lazy='dynamic')
 
     @property
     def body_to_html(self):
@@ -84,7 +84,7 @@ class Page(db.Model):
         return body_html
 
     def __repr__(self):
-        return '<Page %r>' % (self.page)
+        return '<Page %r>' % (self.title)
 
 @whooshee.register_model('title', 'body')
 class Post(db.Model):
@@ -169,29 +169,6 @@ class Comment(db.Model):
 
     def __repr__(self):
         return '<Comment %r>' %(self.comment)
-
-class Guestbook(db.Model):
-    __tablename__ = 'guestbooks'
-    id = db.Column(db.Integer, primary_key=True)
-    guestbook = db.Column(db.Text)
-    author = db.Column(db.String(25))
-    email = db.Column(db.String(255))
-    website = db.Column(db.String(255), nullable=True)
-    isReply = db.Column(db.Boolean, default=False)
-    replyTo = db.Column(db.Integer, nullable=True)
-    disabled = db.Column(db.Boolean, default=False)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
-
-    @property
-    def strptime(self):
-        return datetime.datetime.strftime(self.timestamp, '%Y-%m-%d')
-
-    # 获取Gravatar头像
-    def gravatar(self, size):
-        return 'http://www.gravatar.com/avatar/' + md5(self.email.encode('utf-8')).hexdigest() + '?d=mm&s=' + str(size)
-
-    def __repr__(self):
-        return '<Guestbook %r>' %(self.guestbook)
 
 class Tag(db.Model):
     __tablename__ = 'tags'

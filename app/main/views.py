@@ -84,12 +84,13 @@ def post(year, month, article_name):
         counts = post.comments.count()
         page = (counts - 1) / \
                current_app.config['COMMENTS_PER_PAGE'] + 1
-    pagination = Comment.query.filter_by(post=post,isReply=False,disabled=True).order_by(Comment.timestamp.desc()).paginate(
+    pagination = Comment.query.filter_by(post=post,isReply=False,disabled=True).order_by(
+        Comment.timestamp.desc()).paginate(
         page, per_page=current_app.config['COMMENTS_PER_PAGE'],
         error_out=False
     )
     comments = pagination.items
-    replys = post.comments.filter_by(isReply=True,disabled=True).all()
+    replys = post.comments.filter_by(isReply=True, disabled=True).all()
     return render_template('main/post.html', post=post, tags=tags, title=post.title,
                            next_post=next_post, prev_post=prev_post, pagination=pagination,
                            comments=comments, replys=replys, counts=len(comments)+len(replys))
@@ -98,8 +99,21 @@ def post(year, month, article_name):
 @main.route('/page/<page_url>/')
 def page(page_url):
     page = Page.query.filter_by(url_name=page_url).first()
+    p = request.args.get('page', 1, type=int)
+    if p == -1:
+        counts = page.comments.count()
+        p = (counts - 1) / \
+               current_app.config['COMMENTS_PER_PAGE'] + 1
+    pagination = Comment.query.filter_by(page=page, isReply=False, disabled=True).order_by(
+        Comment.timestamp.desc()).paginate(
+        p, per_page=current_app.config['COMMENTS_PER_PAGE'],
+        error_out=False
+    )
+    comments = pagination.items
+    replys = page.comments.filter_by(isReply=True, disabled=True).all()
 
-    return render_template('main/page.html', page=page)
+    return render_template('main/page.html', page=page, title=page.title, pagination=pagination,
+                           comments=comments, replys=replys, counts=len(comments)+len(replys))
 
 @main.route('/tag/<tag_name>/')
 def tag(tag_name):
@@ -183,17 +197,16 @@ def love_me():
     db.session.commit()
     return jsonify(counts=love_me_counts.loveMe)
 
-@main.route('/<int:id>/comment', methods=['POST'])
-def comment(id):
-    # 邮件配置
-    from_addr = current_app.config['MAIL_USERNAME']
-    password = current_app.config['MAIL_PASSWORD']
-    to_addr = current_app.config['ADMIN_MAIL']
-    smtp_server = current_app.config['MAIL_SERVER']
-    mail_port = current_app.config['MAIL_PORT']
 
-    post = Post.query.get_or_404(id)
-    form = request.get_json()
+# 保存评论的函数
+def save_comment(post, form):
+    # 邮件配置
+    # from_addr = current_app.config['MAIL_USERNAME']
+    # password = current_app.config['MAIL_PASSWORD']
+    # to_addr = current_app.config['ADMIN_MAIL']
+    # smtp_server = current_app.config['MAIL_SERVER']
+    # mail_port = current_app.config['MAIL_PORT']
+
     nickname = form['nickname']
     email = form['email']
     website = form['website'] or None
@@ -202,25 +215,41 @@ def comment(id):
         replyTo = form['replyTo']
         comment = Comment(comment=com, author=nickname,
                           email=email, website=website,
-                          isReply=True, replyTo=replyTo,
-                          post=post)
-        db.session.add(comment)
-        db.session.commit()
-        msg = nickname + '在文章：' + post.title + '\n' + '中发布一条评论：' + com + '\n' + '请前往查看。'
-        send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg)
-        return jsonify(nickname=nickname, email=email, website=website,
-                       isReply=True, replyTo=replyTo,
-                       post=post.title)
+                          isReply=True, replyTo=replyTo)
+
+        # msg = nickname + '在文章：' + post.title + '\n' + '中发布一条评论：' + com + '\n' + '请前往查看。'
+        # send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg)
+        data = {'nickname': nickname, 'email': email, 'website': website,
+                'comment': com, 'isReply': True, 'replyTo': replyTo}
     except:
         comment = Comment(comment=com, author=nickname,
-                          email=email, website=website,
-                          post=post)
+                          email=email, website=website)
+
+        # msg = nickname + '在文章：' + post.title + '\n' + '中发布一条评论：' + com + '\n' + '请前往查看。'
+        # send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg)
+        data = {'nickname': nickname, 'email': email, 'website': website, 'comment': com}
+    finally:
+        try:
+            comment.post = post
+        except:
+            comment.page = post
         db.session.add(comment)
         db.session.commit()
-        msg = nickname + '在文章：' + post.title + '\n' + '中发布一条评论：' + com + '\n' + '请前往查看。'
-        send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg)
-        return jsonify(nickname=nickname, email=email, website=website,
-                       post=post.title)
+    return data
+
+@main.route('/<url>/comment', methods=['POST'])
+def comment(url):
+    post = Post.query.filter_by(url_name=url).first()
+    if not post:
+        post = Page.query.filter_by(url_name=url).first()
+    form = request.get_json()
+    data = save_comment(post, form)
+    if data.get('replyTo'):
+        return jsonify(nickname=data['nickname'], email=data['email'],
+                       website=data['website'], body=data['comment'],
+                       isReply=data['isReply'], replyTo=data['replyTo'], post=post.title)
+    return jsonify(nickname=data['nickname'], email=data['email'],
+                       website=data['website'], body=data['comment'], post=post.title)
 
 @main.route('/shuoshuo')
 def shuoshuo():
@@ -246,8 +275,10 @@ def friends():
     return render_template('main/friends.html', title="朋友",
                            great_links=great_links, bad_links=bad_links)
 
-# guest-book page
-@main.route('/guestbook')
-def guestbook():
-    pass
+# # guest-book page
+# @main.route('/guestbook')
+# def guestbook():
+#     form = CommentForm()
+#     if form.validate_on_submit():
+#         guestbook = Guestbook()
 

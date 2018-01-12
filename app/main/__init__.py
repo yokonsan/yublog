@@ -55,9 +55,13 @@ def global_datas():
         post_counts = len([post for post in posts if post.draft==False])
         global_data['postCounts'] = post_counts
 
-    guestbooks = Guestbook.query.all()
-    if guestbooks:
-        guestbook_counts = len([g for g in guestbooks])
+    shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
+    if shuos:
+        global_data['newShuo'] = shuos[0].shuo
+
+    guestbook = Page.query.filter_by(url_name='guestbook').first()
+    if guestbook:
+        guestbook_counts = guestbook.comments.count()
         global_data['guestbookCounts'] = guestbook_counts
 
     return global_data
