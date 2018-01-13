@@ -4,6 +4,8 @@
 <link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.preview.min.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.min.css') }}"/>
     {{super()}}
+    <meta name="keywords" content="{{ post.tags }}">
+    <meta name="description" content="{{ post.title }}">
 <style>
     .editormd-html-preview, .editormd-preview-container {padding: 0;}
     .editormd-html-preview, .editormd-preview-container {padding: 0;}
