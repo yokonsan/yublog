@@ -16,24 +16,24 @@
 }
 
 .site-header {
-    position: relative;
-    padding: 20px 0;
-    color: #fff;
-    background: #222;
+    position: fixed;
+    padding: 10px 0;
+    color: #666;
+    background: #fff;
     height: 35px;
     box-shadow: 0 0 16px rgba(0,0,0,0.5);
 }
 
 .mobile-site-logo {
-    text-align: center;
+    text-align: left;
     display: block;
+    padding-left: 20px;
 }
 
 .mobile-site-logo a {
     text-decoration: none;
-    color: #fff;
+    color: #df846c;
     font-size: 24px;
-    font-weight: 600;
 }
 
 /*mobile nav*/
@@ -52,15 +52,33 @@
     background: transparent;
     border: none;
     cursor: pointer;
+    outline: none;
 }
 
 .btn-bar {
-    background: #fff;
+    background: #999;
     display: block;
     width: 22px;
     height: 2px;
     margin-bottom: 4px;
     border-radius: 1px;
+}
+
+.mobile-menu-btn button:hover > .btn-bar {
+    background: #666;
+}
+
+.mobile-menu-btn button.mobile-user {
+    padding: 5px;
+    top: -1px;
+    right: 40px;
+    position: absolute;
+    color: #999;
+    font-size: 20px;
+}
+
+.mobile-menu-btn button.mobile-user:hover {
+    color: #666;
 }
 
 .mobile-site-nav {
@@ -69,6 +87,7 @@
     padding-top: 20px;
     padding-bottom: 20px;
     background: rgba(255, 255, 255, .6);
+    border-bottom: 1px solid rgba(204, 204, 204, 0.5);
 }
 
 .mobile-site-nav ul {
@@ -114,6 +133,26 @@
     height: 18px;
     background: rgba(255, 255, 255, .6);
     color: #555;
+}
+
+/*mobile sidebar*/
+.sidebar {
+    display: none;
+    float: left;
+    width: 260px;
+    background: #fff;
+    border-right: 2px solid #ccc;
+    margin-top: 0;
+    z-index: 9999;
+    position: fixed;
+    overflow-y: auto;
+    top: 0;
+    left: 0;
+    bottom: 0;
+}
+
+.sidebar .side-nav,.sidebar .profile,.sidebar .post-toc,.sidebar .blog-tags {
+    width: 240px;
 }
 
 /*mobile main*/
@@ -198,3 +237,9 @@ left: 1%;
     display: inline-block;
 }
 
+/*sticky*/
+.sticky {
+    position: absolute!important;
+    top: 0!important;
+    width: 240px!important;
+}

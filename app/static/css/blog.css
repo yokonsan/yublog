@@ -10,8 +10,6 @@ body {
 
 p {
     letter-spacing: 1px;
-    line-height: 2;
-    font-size: 15px;
 }
 
 blockquote {
@@ -96,7 +94,7 @@ code {
 
 .site-logo .logo {
     text-decoration: none;
-    color: #111;
+    color: #df846c;
     font-size: 24px;
 }
 
@@ -126,7 +124,7 @@ li.menu-item a {
 }
 
 li.menu-item a:hover,.search-btn:hover {
-    color: #333;
+    color: #df846c;
     font-weight: 600;
 }
 
@@ -654,6 +652,11 @@ ul.pages a:hover {
 }
 
 /*post detail*/
+#content p {
+    line-height: 2;
+    font-size: 15px;
+}
+
 .post-body a,.post-tags a {
     text-decoration: none;
     color: #222;

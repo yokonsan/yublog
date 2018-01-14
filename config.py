@@ -29,6 +29,16 @@ class Config(object):
     # 管理员简介
     ADMIN_PROFILE = '克制力，执行力'
 
+    # RSS站点信息
+    # 站点协议
+    WEB_PROTOCOL = 'http'
+    # 站点域名
+    WEB_URL = 'www.yukunweb.com'
+    # 站点创建时间
+    WEB_START_TIME = '2017-05-25'
+    # 显示条数
+    RSS_COUNTS = 10
+
     # email
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')

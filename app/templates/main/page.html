@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% block styles %}
-{{super()}}
 <link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.preview.min.css') }}"/>
 <link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.min.css') }}"/>
+    {{super()}}
 <style>
     .editormd-html-preview, .editormd-preview-container {padding: 0;}
     .editormd-html-preview, .editormd-preview-container {padding: 0;}

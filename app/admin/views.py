@@ -5,6 +5,7 @@ from .. import db
 from ..models import *
 from . import admin
 from .forms import *
+from ..utils import get_sitemap, save_file, get_rss_xml
 
 
 @admin.route('/')
@@ -122,12 +123,11 @@ def great_link(id):
     db.session.commit()
     return redirect(url_for('admin.admin_links'))
 
-def save_tags(tags, id):
+def save_tags(tags):
     """
     保存标签到模型
     :param tags: 标签集合，创建时间，文章ID
     """
-    id = id
     for tag in tags:
         exist_tag = Tag.query.filter_by(tag=tag).first()
         if not exist_tag:
@@ -166,9 +166,32 @@ def save_post(form, draft=False):
                 timestamp=form.time.data,
                 draft=False)
         # 保存标签模型
-        save_tags(tags, post.id)
+        save_tags(tags)
+        # 更新xml
+        update_xml(post.timestamp)
 
     return post
+
+# 更新sitemap
+def update_xml(update_time):
+    # 获取配置信息
+    author_name = current_app.config['ADMIN_NAME']
+    title = current_app.config['SITE_NAME']
+    subtitle = current_app.config['SITE_TITLE']
+    protocol = current_app.config['WEB_PROTOCOL']
+    url = current_app.config['WEB_URL']
+    web_time = current_app.config['WEB_START_TIME']
+    count = current_app.config['RSS_COUNTS']
+
+    post_list = Post.query.order_by(Post.timestamp.desc()).all()
+    posts = [post for post in post_list if post.draft == False]
+    # sitemap
+    sitemap = get_sitemap(posts)
+    save_file(sitemap, 'sitemap.xml')
+    # rss
+    rss_posts = posts[:count]
+    rss = get_rss_xml(author_name, protocol, url, title, subtitle, web_time, update_time, rss_posts)
+    save_file(rss, 'atom.xml')
 
 @admin.route('/write', methods=['GET', 'POST'])
 @login_required
@@ -214,11 +237,13 @@ def admin_edit(time, name):
                 db.session.add(post)
                 db.session.commit()
                 flash('发布成功')
+                update_xml(post.timestamp)
             return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))
         else:
             db.session.add(post)
             db.session.commit()
             flash('更新成功')
+            update_xml(post.timestamp)
             return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))
     form.category.data = post.category.category
     form.tags.data = post.tags
