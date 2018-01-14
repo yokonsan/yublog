@@ -21,7 +21,7 @@
     color: #666;
     background: #fff;
     height: 35px;
-    box-shadow: 0 0 16px rgba(0,0,0,0.5);
+    box-shadow: 0 0 8px rgba(0,0,0,0.5);
 }
 
 .mobile-site-logo {
@@ -40,7 +40,7 @@
 .mobile-menu-btn {
     display: block;
     position: absolute;
-    left: 20px;
+    right: 20px;
     top: 50%;
     transform: translateY(-50%);
 
@@ -158,7 +158,7 @@
 /*mobile main*/
 .main {
     width: 100%;
-    margin-top: 30px;
+    margin-top: 70px;
 }
 
 span.post-comments-count {

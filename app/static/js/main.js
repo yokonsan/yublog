@@ -82,7 +82,8 @@
     // width < 960px
     // 导航事件
     var mobileNav = document.getElementsByClassName('mobile-site-nav')[0];
-    var mobileNavBtn = document.getElementsByClassName('mobile-menu-btn')[0];
+    var mobileBtnDiv = document.getElementsByClassName('mobile-menu-btn')[0];
+    var mobileNavBtn = mobileBtnDiv.getElementsByTagName('button')[0];
 
     clickEvent(mobileNavBtn, mobileNav);
 
@@ -91,6 +92,20 @@
     var mobileDrop = document.getElementsByClassName('mobile-drop-category')[0];
 
     clickEvent(mobileCate, mobileDrop);
+
+    // width < 960px user button
+    var mobileUserBtn = mobileBtnDiv.getElementsByTagName('button')[1];
+    var mobileUser = document.getElementsByClassName('sidebar')[0];
+
+    mobileUserBtn.onclick = function() {
+        if (mobileUser.style.display === "none") {
+            mobileUser.style.display = "block";
+        } else if (mobileUser.style.display === "") {
+            mobileUser.style.display = "block";
+        } else {
+            mobileUser.style.display = "none";
+        }
+    }
 
     // love me sidebar
     var loveMeTitle = document.getElementsByClassName('love-title')[0];
