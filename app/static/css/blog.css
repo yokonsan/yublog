@@ -1139,7 +1139,7 @@ ul.comment-children {
 }
 
 .comment-children .comment-text {
-    line-height: 28px;
+    line-height: 1.5;
     border: 0;
     padding: 0;
 }

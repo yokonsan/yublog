@@ -124,11 +124,11 @@
         // 判断本地是否有登录记录
         var love = ms.get('love');
         if (love) {
-            loveMeTitle.innerHTML = '<i class="demo-icon icon-heart"></i> 我喜欢你';
+            loveMeTitle.innerHTML = '我知道你喜欢我';
         } else {
             ms.set('love', 'loved');
             counts += 1;
-            loveMeTitle.innerHTML = '<i class="demo-icon icon-heart"></i> 我喜欢你';
+            loveMeTitle.innerHTML = '我也喜欢你';
             loveMeCount.innerText = counts.toString();
 
             // 发送请求:
