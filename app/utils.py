@@ -60,7 +60,7 @@ def get_rss_xml(name, protocol, url, title, subtitle, time, update_time, posts):
         for p in posts:
             body = '  <entry>' + '\n' + \
               '    <title>' + str(p.title) + '</title>' + '\n' + \
-              '    <link rel="alternate" type="text/html" href="' + protocol + '://' + url + '/' + str(p.url_name) + '"/>' + '\n' + \
+              '    <link rel="alternate" type="text/html" href="' + protocol + '://' + url + '/' + str(p.year) + '/' + str(p.month) + '/' + str(p.url_name) + '"/>' + '\n' + \
               '    <id>tag:' + url + ',' + str(p.year) + '://1.' + str(p.id) + '</id>' + '\n' + \
               '    <published>' + str(p.timestamp) + 'T00:00:00Z</published>' + '\n' + \
               '    <updated>' + update_time + 'T00:00:00Z</updated>' + '\n' + \
