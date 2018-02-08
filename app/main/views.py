@@ -24,7 +24,6 @@ def internal_server_error(e):
 
 @main.route('/')
 @main.route('/index')
-@cache.cached(timeout=60*60*10, key_prefix='index', unless=None)
 def index():
     page = request.args.get('page', 1, type=int)
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
@@ -140,7 +139,6 @@ def category(category_name):
                            title='分类：' + category.category)
 
 @main.route('/archives/')
-@cache.cached(timeout=60*60*24*30, key_prefix='archives', unless=None)
 def archives():
     count = Post.query.count()
     page = request.args.get('page', 1, type=int)

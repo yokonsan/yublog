@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy, SignallingSession
+from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_whooshee import Whooshee
 from flask_cache import Cache
@@ -16,7 +16,7 @@ lm = LoginManager()
 lm.login_view = 'admin.login'
 
 whooshee = Whooshee()
-cache = Cache(config={'CACHE_TYPE': 'simple'})
+cache = Cache()
 
 def create_app(config_name):
     app = Flask(__name__)
