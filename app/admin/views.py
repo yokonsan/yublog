@@ -1,11 +1,26 @@
-from flask import render_template, redirect, url_for, g, request, flash, current_app
-from flask_login import login_required, current_user, login_user, logout_user
+from flask import render_template, redirect, url_for, request, flash, current_app
+from flask_login import login_required, login_user, logout_user
 
-from .. import db
+from .. import cache
 from ..models import *
 from . import admin
 from .forms import *
 from ..utils import get_sitemap, save_file, get_rss_xml
+
+
+def clean_cache(key):
+    """
+    在发布文章后删除首页，归档，分类，标签缓存，
+    在更新文章后删除对应文章缓存
+    在添加说说，更改友链页后删除对应缓存
+    :param key: cache prefix
+    """
+    if key == 'all':
+        cache.clear()
+    elif key != 'all' and cache.get(key):
+        cache.delete(key)
+    else:
+        pass
 
 
 @admin.route('/')
@@ -48,6 +63,8 @@ def set_site():
         db.session.add(user)
         db.session.commit()
         flash('设置成功')
+        # 清除所有缓存
+        clean_cache('all')
         return redirect(url_for('admin.index'))
     form.username.data = user.name
     form.profile.data = user.profile
@@ -64,6 +81,7 @@ def set_site():
 def add_link():
     form = SocialLinkForm()
     fr_form = FriendLinkForm()
+    # 社交链接
     if form.submit.data and form.validate_on_submit():
         exist_link = SiteLink.query.filter_by(link=form.link.data).first()
         if exist_link:
@@ -77,6 +95,7 @@ def add_link():
             db.session.commit()
             flash('添加成功')
             return redirect(url_for('admin.add_link'))
+    # 友链
     if fr_form.submit2.data and fr_form.validate_on_submit():
         exist_link = SiteLink.query.filter_by(link=fr_form.link.data).first()
         if exist_link:
@@ -90,6 +109,8 @@ def add_link():
             db.session.add(link)
             db.session.commit()
             flash('添加成功')
+            # 清除缓存
+            clean_cache('friends')
             return redirect(url_for('admin.add_link'))
     return render_template('admin/admin_add_link.html', title="站点链接",
                            form=form, fr_form=fr_form)
@@ -98,8 +119,8 @@ def add_link():
 @login_required
 def admin_links():
     links = SiteLink.query.order_by(SiteLink.id.desc()).all()
-    social_links = [link for link in links if link.isFriendLink==False]
-    friend_links = [link for link in links if link.isFriendLink==True]
+    social_links = [link for link in links if link.isFriendLink is False]
+    friend_links = [link for link in links if link.isFriendLink is True]
     return render_template('admin/admin_link.html', title="管理链接",
                            social_links=social_links, friend_links=friend_links)
 
@@ -109,6 +130,8 @@ def delete_link(id):
     link = SiteLink.query.get_or_404(id)
     db.session.delete(link)
     db.session.commit()
+    # 清除缓存
+    clean_cache('all')
     return redirect(url_for('admin.admin_links'))
 
 @admin.route('/great/link/<int:id>')
@@ -121,6 +144,8 @@ def great_link(id):
         link.isGreatLink = True
     db.session.add(link)
     db.session.commit()
+    # 清除缓存
+    clean_cache('friends')
     return redirect(url_for('admin.admin_links'))
 
 def save_tags(tags):
@@ -142,6 +167,7 @@ def save_post(form, draft=False):
     :param draft: article is or not draft
     :return: post object
     """
+
     category = Category.query.filter_by(category=form.category.data).first()
     if not category:
         category = Category(category=form.category.data)
@@ -172,7 +198,7 @@ def save_post(form, draft=False):
 
     return post
 
-# 更新sitemap
+# 编辑文章后更新sitemap
 def update_xml(update_time):
     # 获取配置信息
     author_name = current_app.config['ADMIN_NAME']
@@ -184,7 +210,7 @@ def update_xml(update_time):
     count = current_app.config['RSS_COUNTS']
 
     post_list = Post.query.order_by(Post.timestamp.desc()).all()
-    posts = [post for post in post_list if post.draft == False]
+    posts = [post for post in post_list if post.draft is False]
     # sitemap
     sitemap = get_sitemap(posts)
     save_file(sitemap, 'sitemap.xml')
@@ -198,14 +224,20 @@ def update_xml(update_time):
 def write():
     form = AdminWrite()
     if form.validate_on_submit():
+        # 保存草稿
         if 'save_draft' in request.form and form.validate():
             post = save_post(form, True)
             db.session.add(post)
             flash('保存成功！')
+        # 发布文章
         elif 'submit' in request.form and form.validate():
+            body_html = request.form['editormd-html-code']
             post = save_post(form)
+            post.body_html = body_html
             db.session.add(post)
             flash('发布成功！')
+            # 清除缓存
+            clean_cache('all')
         db.session.commit()
         return redirect(url_for('admin.write'))
     return render_template('admin/admin_write.html',
@@ -228,21 +260,32 @@ def admin_edit(time, name):
         post.timestamp = form.time.data
         post.title = form.title.data
         post.body = form.body.data
+        body_html = request.form['editormd-html-code']
+        # 编辑草稿
         if post.draft == True:
             if 'save_draft' in request.form and form.validate():
                 db.session.add(post)
                 flash('保存成功！')
             elif 'submit' in request.form and form.validate():
                 post.draft = False
+                post.body_html = body_html
                 db.session.add(post)
                 db.session.commit()
                 flash('发布成功')
+                # 清除缓存
+                clean_cache('all')
+                # 更新 xml
                 update_xml(post.timestamp)
             return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))
+        # 编辑文章
         else:
+            post.body_html = body_html
             db.session.add(post)
             db.session.commit()
             flash('更新成功')
+            # 清除对应文章缓存
+            key = 'post/{path}/'.format(path='/'+str(post.year)+'/'+str(post.month)+'/'+str(post.url_name))
+            clean_cache(key)
             update_xml(post.timestamp)
             return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))
     form.category.data = post.category.category
@@ -261,14 +304,19 @@ def admin_edit(time, name):
 def add_page():
     form = AddPageForm()
     if form.validate_on_submit():
+        body_html = request.form['editormd-html-code']
         page = Page(title=form.title.data,
                     url_name=form.url_name.data,
                     body=form.body.data,
                     canComment=form.can_comment.data,
-                    isNav=form.is_nav.data)
+                    isNav=form.is_nav.data,
+                    body_html=body_html)
         db.session.add(page)
         db.session.commit()
         flash('添加成功')
+        if page.isNav == True:
+            # 清除缓存
+            clean_cache('all')
         return redirect(url_for('admin.add_page'))
     return render_template('admin/admin_add_page.html',
                            form=form,
@@ -278,8 +326,11 @@ def add_page():
 @login_required
 def edit_page(name):
     page = Page.query.filter_by(url_name=name).first()
+    start_title = page.title
     form = AddPageForm()
     if form.validate_on_submit():
+        body_html = request.form['editormd-html-code']
+        page.body_html = body_html
         page.title = form.title.data
         page.body = form.body.data
         page.canComment = form.can_comment.data
@@ -288,8 +339,13 @@ def edit_page(name):
         db.session.add(page)
         db.session.commit()
         flash('更新成功')
+        # 清除缓存
+        if page.title == start_title:
+            clean_cache('page//page/{path}/'.format(path=page.url_name))
+        else:
+            clean_cache('all')
         return redirect(url_for('admin.edit_page', name=page.url_name))
-    form.title.data = page.title
+    form.title.data = start_title
     form.body.data = page.body
     form.can_comment.data = page.canComment
     form.is_nav.data = page.isNav
@@ -306,6 +362,9 @@ def delete_page(name):
     db.session.delete(page)
     db.session.commit()
     flash('删除成功')
+    if page.isNav == True:
+        # 清除缓存
+        clean_cache('all')
     return redirect(url_for('admin.admin_pages'))
 
 @admin.route('/draft')
@@ -333,7 +392,7 @@ def admin_posts():
         page, per_page=current_app.config['ADMIN_POSTS_PER_PAGE'],
         error_out=False
     )
-    posts = [post for post in pagination.items if post.draft == False]
+    posts = [post for post in pagination.items if post.draft is False]
     return render_template('admin/admin_post.html',
                            title='管理文章',
                            posts=posts,
@@ -347,6 +406,8 @@ def delete(time, name):
     db.session.delete(post)
     db.session.commit()
     flash('删除成功')
+    # 清除缓存
+    clean_cache('all')
     return redirect(url_for('admin.admin_posts'))
 
 @admin.route('/comments')
@@ -363,6 +424,7 @@ def admin_comments():
                            comments=comments,
                            pagination=pagination)
 
+# 管理评论后需要清除对应文章的缓存，由于文章只有5分钟缓存，不做清除
 @admin.route('/delete/comment/<int:id>')
 @login_required
 def delete_comment(id):
@@ -401,6 +463,8 @@ def write_shuoshuo():
         db.session.add(shuo)
         db.session.commit()
         flash('发布成功')
+        # 清除缓存
+        clean_cache('all')
         return redirect(url_for('admin.write_shuoshuo'))
     return render_template('admin/admin_write_shuoshuo.html',
                            title='写说说', form=form)
@@ -420,5 +484,7 @@ def delete_shuo(id):
     db.session.delete(shuo)
     db.session.commit()
     flash('删除成功')
+    # 清除缓存
+    clean_cache('all')
     return redirect(url_for('admin.admin_shuos'))
 
