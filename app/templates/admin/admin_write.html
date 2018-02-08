@@ -42,14 +42,16 @@
 <script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
 <script src="{{ url_for('static',filename='editormd/editormd.min.js') }}"></script>
 <script type="text/javascript">
-    var testEditor;
+    var myEditor;
     $(function () {
-        testEditor = editormd("editormd", {
+        myEditor = editormd("editormd", {
             width: "100%",
             height: "550px",
+            path: "{{ url_for('static',filename='editormd/lib/') }}",
             syncScrolling : "single",
-            path: "{{ url_for('static',filename='editormd/lib/') }}"
-            //saveHTMLToTextarea : true
+            codeFold : true,
+            saveHTMLToTextarea : true,    // 保存 HTML 到 Textarea
+            htmlDecode : true            // 开启 HTML 标签解析，为了安全性，默认不开启
         });
     });
 </script>

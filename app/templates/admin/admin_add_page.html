@@ -40,8 +40,10 @@
             width: "100%",
             height: "550px",
             syncScrolling : "single",
-            path: "{{ url_for('static',filename='editormd/lib/') }}"
-            //saveHTMLToTextarea : true
+            path: "{{ url_for('static',filename='editormd/lib/') }}",
+            codeFold : true,
+            saveHTMLToTextarea : true,
+            htmlDecode : true
         });
     });
 </script>

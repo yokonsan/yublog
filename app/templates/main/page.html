@@ -23,7 +23,11 @@
     <h1 class="post-title">{{page.title}}</h1>
 
     <div id="content" class="content post-body">
+        {% if page.body_html %}
+        {{ page.body_html | safe }}
+        {% else %}
         {{ page.body_to_html | safe }}
+        {% endif %}
     </div>
 </div>
 {% if page.canComment == true %}
@@ -40,7 +44,6 @@
 <script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
 <script src="{{ url_for('static',filename='editormd/lib/marked.min.js') }}"></script>
 <script src="{{ url_for('static',filename='editormd/lib/prettify.min.js') }}"></script>
-<script src="{{ url_for('static',filename='editormd/lib/raphael.min.js') }}"></script>
 <script src="{{ url_for('static',filename='editormd/editormd.min.js') }}"></script>
 <script type="text/javascript">
     editormd.markdownToHTML("content");

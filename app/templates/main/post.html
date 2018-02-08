@@ -33,7 +33,11 @@
             <span class="post-view-count"><i class="demo-icon icon-eye"></i> 阅读：{{ post.view_num }}</span>
         </div>
         <div id="content" class="content post-body">
+            {% if post.body_html %}
+            {{ post.body_html | safe }}
+            {% else %}
             {{ post.body_to_html | safe }}
+            {% endif %}
         </div>
         <div class="post-tags">
             {% for tag in tags %}
@@ -97,7 +101,6 @@
 <script src="{{url_for('static', filename='js/myToc.js')}}"></script>
 <script src="{{ url_for('static',filename='editormd/lib/marked.min.js') }}"></script>
 <script src="{{ url_for('static',filename='editormd/lib/prettify.min.js') }}"></script>
-<script src="{{ url_for('static',filename='editormd/lib/raphael.min.js') }}"></script>
 <script src="{{ url_for('static',filename='editormd/editormd.min.js') }}"></script>
 <script type="text/javascript">
     editormd.markdownToHTML("content");
