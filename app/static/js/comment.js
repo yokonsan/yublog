@@ -115,9 +115,14 @@
         var replyId = this.attributes["replyid"].value;
         var replyTo = this.attributes["replyto"].value;
         var postUrl = this.attributes["posturl"].value;
+        var emailRe = /^(\w)+(\.\w+)*@(\w)+((\.\w+)+)$/;
+        if (userIpt.value && emailIpt.value && textarea.value !== null && emailRe.test(emailIpt.value)) {
+            resetForm(submitBtn);
+            postClick(postUrl, replyId, replyTo);
+        } else {
+            alert('请正确填写必填项...')
+        }
 
-        resetForm(submitBtn);
-        postClick(postUrl, replyId, replyTo);
     };
 
     function postClick(url, replyId, replyName) {
