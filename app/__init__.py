@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy, SignallingSession
 from flask_login import LoginManager
 from flask_whooshee import Whooshee
-from flask_pagedown import PageDown
+from flask_cache import Cache
 
 from config import config
 
@@ -16,7 +16,7 @@ lm = LoginManager()
 lm.login_view = 'admin.login'
 
 whooshee = Whooshee()
-pagedown = PageDown()
+cache = Cache(config={'CACHE_TYPE': 'simple'})
 
 def create_app(config_name):
     app = Flask(__name__)
@@ -24,7 +24,7 @@ def create_app(config_name):
     db.init_app(app)
     lm.init_app(app)
     whooshee.init_app(app)
-    pagedown.init_app(app)
+    cache.init_app(app)
 
     from .main import main as main_blueprint
     from .admin import admin as admin_blueprint

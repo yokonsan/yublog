@@ -1,9 +1,11 @@
 from flask import render_template, redirect, url_for, request, g, current_app, abort, jsonify
 
 from . import main
-from .forms import SearchForm, CommentForm
+from .forms import SearchForm
 from ..models import *
 from ..utils import send_mail
+from .. import cache
+
 
 @main.before_request
 def before_request():
@@ -22,14 +24,14 @@ def internal_server_error(e):
 
 @main.route('/')
 @main.route('/index')
+@cache.cached(timeout=60*60*10, key_prefix='index', unless=None)
 def index():
     page = request.args.get('page', 1, type=int)
-
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['POSTS_PER_PAGE'],
         error_out=False
     )
-    posts = [post for post in pagination.items if post.draft == False]
+    posts = [post for post in pagination.items if post.draft is False]
 
     return render_template('main/index.html',
                            title='首页',
@@ -43,7 +45,7 @@ def nextPost(post):
     :return: next post
     """
     post_list = Post.query.order_by(Post.timestamp.desc()).all()
-    posts = [post for post in post_list if post.draft == False]
+    posts = [post for post in post_list if post.draft is False]
     if posts[-1] != post:
         next_post = posts[posts.index(post) + 1]
         return next_post
@@ -55,13 +57,14 @@ def prevPost(post):
     :return: prev post
     """
     post_list = Post.query.order_by(Post.timestamp.desc()).all()
-    posts = [post for post in post_list if post.draft == False]
+    posts = [post for post in post_list if post.draft is False]
     if posts[0] != post:
         prev_post = posts[posts.index(post) - 1]
         return prev_post
     return None
 
 @main.route('/<int:year>/<int:month>/<article_name>/')
+@cache.cached(timeout=60*5, key_prefix='post/%s', unless=None)
 def post(year, month, article_name):
     time = str(year) + '-' + str(month)
     posts = Post.query.filter_by(url_name=article_name).all()
@@ -97,6 +100,7 @@ def post(year, month, article_name):
 
 
 @main.route('/page/<page_url>/')
+@cache.cached(timeout=60*60*24, key_prefix='page/%s', unless=None)
 def page(page_url):
     page = Page.query.filter_by(url_name=page_url).first()
     p = request.args.get('page', 1, type=int)
@@ -116,6 +120,7 @@ def page(page_url):
                            comments=comments, replys=replys, counts=len(comments)+len(replys))
 
 @main.route('/tag/<tag_name>/')
+@cache.cached(timeout=60*60*24*30, key_prefix='tag/%s', unless=None)
 def tag(tag_name):
     tag = tag_name
     all_posts = Post.query.order_by(Post.timestamp.desc()).all()
@@ -124,6 +129,7 @@ def tag(tag_name):
     return render_template('main/tag.html', tag=tag, posts=posts)
 
 @main.route('/category/<category_name>/')
+@cache.cached(timeout=60*60*24*30, key_prefix='category/%s', unless=None)
 def category(category_name):
     category = Category.query.filter_by(category=category_name).first()
 
@@ -134,6 +140,7 @@ def category(category_name):
                            title='分类：' + category.category)
 
 @main.route('/archives/')
+@cache.cached(timeout=60*60*24*30, key_prefix='archives', unless=None)
 def archives():
     count = Post.query.count()
     page = request.args.get('page', 1, type=int)
@@ -141,7 +148,7 @@ def archives():
         page, per_page=current_app.config['ACHIVES_POSTS_PER_PAGE'],
         error_out=False
     )
-    posts = [post for post in pagination.items if post.draft == False]
+    posts = [post for post in pagination.items if post.draft is False]
     # times = [post.timestamp for post in posts ]
     year = list(set([i.year for i in posts]))[::-1]
     data = {}
@@ -156,7 +163,7 @@ def archives():
     return render_template('main/archives.html',
                            title='归档',
                            posts=posts,
-                           year= year,
+                           year=year,
                            data=data,
                            count=count,
                            pagination=pagination)
@@ -168,7 +175,6 @@ def search():
         return redirect(url_for('main.search_result', keywords=query))
 
     elif g.search_form2.validate_on_submit():
-        print('a')
         query = g.search_form2.search.data
         return redirect(url_for('main.search_result', keywords=query))
 
@@ -181,7 +187,7 @@ def search_result():
         page, per_page=current_app.config['SEARCH_POSTS_PER_PAGE'],
         error_out=False
     )
-    results = [post for post in pagination.items if post.draft == False]
+    results = [post for post in pagination.items if post.draft is False]
     return render_template('main/results.html',
                            results=results,
                            query=query,
@@ -191,6 +197,13 @@ def search_result():
 # 侧栏 love me 插件
 @main.route('/loveme', methods=['GET'])
 def love_me():
+    """
+    由于请求一次就要更新一次页面，所以需要清除页面所有缓存，
+    这样做很蠢，有待改进
+    :return: json
+    """
+    # 清除所有页面缓存
+    cache.clear()
     love_me_counts = LoveMe.query.all()[0]
     love_me_counts.loveMe += 1
     db.session.add(love_me_counts)
@@ -252,6 +265,7 @@ def comment(url):
                        website=data['website'], body=data['comment'], post=post.title)
 
 @main.route('/shuoshuo')
+@cache.cached(timeout=60*60*24*30, key_prefix='shuoshuo', unless=None)
 def shuoshuo():
     shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
     years = list(set([y.year for y in shuos]))[::-1]
@@ -267,18 +281,13 @@ def shuoshuo():
 
 # friend link page
 @main.route('/friends')
+@cache.cached(timeout=60*60*24*30, key_prefix='friends', unless=None)
 def friends():
     friends = SiteLink.query.filter_by(isFriendLink=True).order_by(SiteLink.id.desc()).all()
-    great_links = [link for link in friends if link.isGreatLink==True]
-    bad_links = [link for link in friends if link.isGreatLink==False]
+    great_links = [link for link in friends if link.isGreatLink is True]
+    bad_links = [link for link in friends if link.isGreatLink is False]
 
     return render_template('main/friends.html', title="朋友",
                            great_links=great_links, bad_links=bad_links)
 
-# # guest-book page
-# @main.route('/guestbook')
-# def guestbook():
-#     form = CommentForm()
-#     if form.validate_on_submit():
-#         guestbook = Guestbook()
 

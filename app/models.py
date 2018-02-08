@@ -62,6 +62,8 @@ class Page(db.Model):
     canComment = db.Column(db.Boolean, default=False)
     isNav = db.Column(db.Boolean, default=False)
     body = db.Column(db.Text)
+    # 编辑器预览的 html 及其样式
+    body_html = db.Column(db.Text, default=None)
 
     comments = db.relationship('Comment', backref='page', lazy='dynamic')
 
@@ -97,6 +99,8 @@ class Post(db.Model):
     body = db.Column(db.Text)
     draft = db.Column(db.Boolean, default=False)
     disable = db.Column(db.Boolean, default=False)
+    # 编辑器预览的 html 及其样式
+    body_html = db.Column(db.Text, default=None)
 
     tags = db.Column(db.String(64))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
@@ -123,6 +127,7 @@ class Post(db.Model):
                 return True
             return False
 
+    # markdown 转 html
     @property
     def body_to_html(self):
         allowed_tags = [

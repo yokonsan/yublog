@@ -4,8 +4,10 @@ main = Blueprint('main', __name__)
 
 from . import views, site
 from ..models import *
+from .. import cache
 
 @main.app_context_processor
+@cache.cached(timeout=60*60*24*30, key_prefix='global', unless=None)
 def global_datas():
     """
     所有页面共有的，比如侧栏的标签集合，社交链接，博主信息，
