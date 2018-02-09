@@ -22,8 +22,22 @@ def internal_server_error(e):
     db.session.commit()
     return render_template('error/500.html', title='500'), 500
 
+def cache_key(*args, **kwargs):
+    """
+    自定义缓存键:
+        首页和归档页路由 url 是带参数的分页页数组成：/index?page=2
+        flask-cache 缓存的 key_prefix 默认值获取 path ：/index
+        需要自定义不同页面的 cache_key : /index/page/2
+    """
+    path = request.path
+    args = dict(request.args.items())
+
+    return (path + '/page/' + str(args['page'])) if args else path
+
+
 @main.route('/')
 @main.route('/index')
+@cache.cached(timeout=60*60*12, key_prefix=cache_key)
 def index():
     page = request.args.get('page', 1, type=int)
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
@@ -139,6 +153,7 @@ def category(category_name):
                            title='分类：' + category.category)
 
 @main.route('/archives/')
+@cache.cached(timeout=60*60*24*30, key_prefix=cache_key)
 def archives():
     count = Post.query.count()
     page = request.args.get('page', 1, type=int)
