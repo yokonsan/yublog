@@ -22,22 +22,23 @@ def internal_server_error(e):
     db.session.commit()
     return render_template('error/500.html', title='500'), 500
 
-def cache_key(*args, **kwargs):
-    """
-    自定义缓存键:
-        首页和归档页路由 url 是带参数的分页页数组成：/index?page=2
-        flask-cache 缓存的 key_prefix 默认值获取 path ：/index
-        需要自定义不同页面的 cache_key : /index/page/2
-    """
-    path = request.path
-    args = dict(request.args.items())
-
-    return (path + '/page/' + str(args['page'])) if args else path
+# def cache_key(*args, **kwargs):
+#     """
+#     以
+#     自定义缓存键:
+#         首页和归档页路由 url 是带参数的分页页数组成：/index?page=2
+#         flask-cache 缓存的 key_prefix 默认值获取 path ：/index
+#         需要自定义不同页面的 cache_key : /index/page/2
+#     """
+#     path = request.path
+#     args = dict(request.args.items())
+#
+#     return (path + '/page/' + str(args['page'])) if args else path
 
 
 @main.route('/')
 @main.route('/index')
-@cache.cached(timeout=60*60*12, key_prefix=cache_key)
+#@cache.cached(timeout=60*60*12, key_prefix=cache_key)
 def index():
     page = request.args.get('page', 1, type=int)
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
@@ -77,7 +78,7 @@ def prevPost(post):
     return None
 
 @main.route('/<int:year>/<int:month>/<article_name>/')
-@cache.cached(timeout=60*5, key_prefix='post/%s', unless=None)
+#@cache.cached(timeout=60*5, key_prefix='post/%s', unless=None)
 def post(year, month, article_name):
     time = str(year) + '-' + str(month)
     posts = Post.query.filter_by(url_name=article_name).all()
@@ -113,7 +114,7 @@ def post(year, month, article_name):
 
 
 @main.route('/page/<page_url>/')
-@cache.cached(timeout=60*60*24, key_prefix='page/%s', unless=None)
+#@cache.cached(timeout=60*60*24, key_prefix='page/%s', unless=None)
 def page(page_url):
     page = Page.query.filter_by(url_name=page_url).first()
     p = request.args.get('page', 1, type=int)
@@ -133,7 +134,7 @@ def page(page_url):
                            comments=comments, replys=replys, counts=len(comments)+len(replys))
 
 @main.route('/tag/<tag_name>/')
-@cache.cached(timeout=60*60*24*30, key_prefix='tag/%s', unless=None)
+#@cache.cached(timeout=60*60*24*30, key_prefix='tag/%s', unless=None)
 def tag(tag_name):
     tag = tag_name
     all_posts = Post.query.order_by(Post.timestamp.desc()).all()
@@ -142,7 +143,7 @@ def tag(tag_name):
     return render_template('main/tag.html', tag=tag, posts=posts)
 
 @main.route('/category/<category_name>/')
-@cache.cached(timeout=60*60*24*30, key_prefix='category/%s', unless=None)
+#@cache.cached(timeout=60*60*24*30, key_prefix='category/%s', unless=None)
 def category(category_name):
     category = Category.query.filter_by(category=category_name).first()
 
@@ -153,7 +154,7 @@ def category(category_name):
                            title='分类：' + category.category)
 
 @main.route('/archives/')
-@cache.cached(timeout=60*60*24*30, key_prefix=cache_key)
+#@cache.cached(timeout=60*60*24*30, key_prefix=cache_key)
 def archives():
     count = Post.query.count()
     page = request.args.get('page', 1, type=int)
@@ -181,18 +182,23 @@ def archives():
                            count=count,
                            pagination=pagination)
 
-@main.route('/search/', methods=['GET', 'POST'])
+@main.route('/search/', methods=['POST'])
 def search():
+    print(g.search_form)
+    print(1)
     if g.search_form.validate_on_submit():
+        print(2)
         query = g.search_form.search.data
         return redirect(url_for('main.search_result', keywords=query))
 
     elif g.search_form2.validate_on_submit():
+        print(3)
         query = g.search_form2.search.data
         return redirect(url_for('main.search_result', keywords=query))
+    return redirect(url_for('main.search_result', keywords='1'))
 
 # /search-result?keywords=query
-@main.route('/search-result/')
+@main.route('/search-result')
 def search_result():
     query = request.args.get('keywords')
     page = request.args.get('page', 1, type=int)
@@ -278,7 +284,7 @@ def comment(url):
                        website=data['website'], body=data['comment'], post=post.title)
 
 @main.route('/shuoshuo')
-@cache.cached(timeout=60*60*24*30, key_prefix='shuoshuo', unless=None)
+#@cache.cached(timeout=60*60*24*30, key_prefix='shuoshuo', unless=None)
 def shuoshuo():
     shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
     years = list(set([y.year for y in shuos]))[::-1]
@@ -294,7 +300,7 @@ def shuoshuo():
 
 # friend link page
 @main.route('/friends')
-@cache.cached(timeout=60*60*24*30, key_prefix='friends', unless=None)
+#@cache.cached(timeout=60*60*24*30, key_prefix='friends', unless=None)
 def friends():
     friends = SiteLink.query.filter_by(isFriendLink=True).order_by(SiteLink.id.desc()).all()
     great_links = [link for link in friends if link.isGreatLink is True]
