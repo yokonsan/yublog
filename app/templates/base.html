@@ -118,7 +118,7 @@
 
         </div>
 
-        <div class="site-wrap">
+        <div class="site-wrap main-container">
             <div class="sidebar">
                 <div id="mobile-user" class="side-content">
                     <div class="side-nav">
@@ -214,15 +214,17 @@
             <div class="clear"></div>
         </div>
 
-        <div class="footer">
-            <div class="copyright">
-                © 2017  <i class="demo-icon icon-heart"></i>
-                <span> {% if global_datas().admin %}{{ global_datas().admin.name }}{% else %}意外{% endif %}</span>
+        <div class="footer-box">
+            <div class="footer">
+                <div class="copyright">
+                    © 2017  <i class="demo-icon icon-heart"></i>
+                    <span> {% if global_datas().admin %}{{ global_datas().admin.name }}{% else %}意外{% endif %}</span>
+                </div>
+                <span class="powered-by"><a href="http://www.miitbeian.gov.cn/" target="_blank">{% if global_datas().admin.record_info %}{{ global_datas().admin.record_info }}{% else %}无备案信息{% endif %}</a></span>
+                <span class="powered-by">Flask </span>
+                <span><a href="https://github.com/Blackyukun/YuBlog" target="_blank">源码</a></span>
+                <!--<span class="cnzz-span"><script src="https://s22.cnzz.com/z_stat.php?id=1263956682&web_id=1263956682" language="JavaScript"></script></span>-->
             </div>
-            <span class="powered-by"><a href="http://www.miitbeian.gov.cn/" target="_blank">{% if global_datas().admin.record_info %}{{ global_datas().admin.record_info }}{% else %}无备案信息{% endif %}</a></span>
-            <span class="powered-by">Flask </span>
-            <span><a href="https://github.com/Blackyukun/YuBlog" target="_blank">源码</a></span>
-            <!--<span class="cnzz-span"><script src="https://s22.cnzz.com/z_stat.php?id=1263956682&web_id=1263956682" language="JavaScript"></script></span>-->
         </div>
 
         <div><span id="go-to-top"></span></div>

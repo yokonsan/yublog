@@ -169,7 +169,8 @@ span.post-comments-count {
 
 .footer {
     margin-top: 200px;
-    background: #eee;
+    background: #fff;
+    width: 100%;
 }
 
 /*mobile category page*/

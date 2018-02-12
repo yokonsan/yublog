@@ -57,7 +57,7 @@ code {
 .site-box {
     padding-bottom: 20px;
     background: #fff;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     border-radius: 3px;
     box-shadow: 0 1px 3px rgba(0,0,0,.1);
 }
@@ -201,6 +201,11 @@ ul#drop a:hover {
     float: right;
 }
 
+/**/
+.main-container {
+    padding-bottom: 200px;
+}
+
 
 /*sidebar*/
 .side-title {
@@ -211,7 +216,7 @@ ul#drop a:hover {
 }
 
 .sidebar {
-    margin-top: 70px;
+    margin-top: 65px;
     width: 240px;
     float: right;
     
@@ -496,8 +501,8 @@ ol#toc a:hover {
 
 /*main*/
 .main {
-    width: 700px;
-    margin-top: 70px;
+    width: 710px;
+    margin-top: 65px;
     float: left;
 }
 
@@ -507,13 +512,14 @@ ol#toc a:hover {
 }
 
 .post-item {
-    padding: 20px 25px;
+    padding: 30px 25px;
 }
 
 .post-title {
-    text-align: center;
-    font-size: 26px;
-    font-weight: 400;
+    /*text-align: center;*/
+    font-size: 20px;
+    font-weight: 600;
+    padding: 3px 5px;
 }
 
 .post-title a {
@@ -523,12 +529,12 @@ ol#toc a:hover {
 }
 
 .post-title a:hover {
-    color: #000;
-    border-bottom: 2px solid #333;
+    color: #e08972;
+    /*border-bottom: 2px solid #333;*/
 }
 
 .post-meta {
-    text-align: center;
+    /*text-align: center;*/
     font-size: 12px;
     color: #999;
     margin: 5px 0 30px 0;
@@ -566,15 +572,22 @@ span.post-time {
 .read-more-btn {
     margin-top: 30px;
     text-align: center;
+    display: none;
 }
 
 
 /*footer*/
+.footer-box {
+    width: 100%;
+    bottom: 0;
+}
+
 .footer {
     text-align: center;
-    margin-top: 50px;
+    margin: 0 auto;
     padding-top: 10px;
-    padding-bottom: 20px;
+    height: 60px;
+    width: 960px;
 }
 
 .footer a {
@@ -620,6 +633,7 @@ span.post-time {
 
 /*post pages*/
 .post-page {
+    margin-top: 10px;
     padding: 20px;
 }
 
