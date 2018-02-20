@@ -2,7 +2,7 @@
 
 ## 介绍
 
-功能强大的个人博客，功能齐全的管理后台，简洁大气的前端页面，集成`markdown`编辑器，优雅美观的评论栏。~~集成畅言评论~~。
+功能强大的个人博客，功能齐全的管理后台，简洁大气的前端页面，集成`markdown`编辑器（[editor.md](https://github.com/pandao/editor.md)），所见即所得，优雅美观的评论栏。~~集成畅言评论~~。
 
 使用`mysql`数据库存储博客数据，`redis`数据库做博客缓存。预览：[here](http://www.yukunweb.com)
 
@@ -18,7 +18,8 @@
 5. 创建迁移脚本：`python manage.py db migrate -m "v1.0"`；
 6. 更新仓库：`python manage.py db upgrade`；
 7. 创建管理员信息：`python manage.py addAdmin`；
-8. 运行程序：`python manage.py runserver --host 0.0.0.0`
+8. 运行程序：`python manage.py runserver --host 0.0.0.0`；
+9. 管理后台：`/admin`
 
 ## 其他
 
