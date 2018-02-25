@@ -2,11 +2,13 @@ import datetime
 from hashlib import md5
 
 import bleach
+from flask import url_for
 from flask_login import UserMixin
 from markdown import markdown
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db, lm, whooshee
+from .utils import markdown_to_html
 
 
 class Admin(UserMixin, db.Model):
@@ -62,28 +64,13 @@ class Page(db.Model):
     canComment = db.Column(db.Boolean, default=False)
     isNav = db.Column(db.Boolean, default=False)
     body = db.Column(db.Text)
-    # 编辑器预览的 html 及其样式
-    body_html = db.Column(db.Text, default=None)
 
     comments = db.relationship('Comment', backref='page', lazy='dynamic')
 
     @property
     def body_to_html(self):
-        allowed_tags = [
-            'a', 'abbr', 'acronym', 'b', 'img', 'blockquote', 'code',
-            'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2',
-            'h3', 'p'
-        ]
-        body_html = bleach.linkify(bleach.clean(
-            markdown(self.body, output_format='html'),
-            tags=allowed_tags, strip=True,
-            attributes={
-                '*': ['class'],
-                'a': ['href', 'rel'],
-                'img': ['src', 'alt'],  # 支持标签和属性
-            }
-        ))
-        return body_html
+        html = markdown_to_html(self.body)
+        return html
 
     def __repr__(self):
         return '<Page %r>' % (self.title)
@@ -99,8 +86,6 @@ class Post(db.Model):
     body = db.Column(db.Text)
     draft = db.Column(db.Boolean, default=False)
     disable = db.Column(db.Boolean, default=False)
-    # 编辑器预览的 html 及其样式
-    body_html = db.Column(db.Text, default=None)
 
     tags = db.Column(db.String(64))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
@@ -127,24 +112,10 @@ class Post(db.Model):
                 return True
             return False
 
-    # markdown 转 html
     @property
     def body_to_html(self):
-        allowed_tags = [
-            'a', 'abbr', 'acronym', 'b', 'img', 'blockquote', 'code',
-            'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2',
-            'h3', 'p'
-        ]
-        body_html = bleach.linkify(bleach.clean(
-            markdown(self.body, output_format='html'),
-            tags=allowed_tags, strip=True,
-            attributes={
-                '*': ['class'],
-                'a': ['href', 'rel'],
-                'img': ['src', 'alt'],  # 支持标签和属性
-            }
-        ))
-        return body_html
+        html = markdown_to_html(self.body)
+        return html
 
     def __repr__(self):
         return '<Post %r>' % (self.title)
@@ -168,6 +139,11 @@ class Comment(db.Model):
     def strptime(self):
         return datetime.datetime.strftime(self.timestamp, '%Y-%m-%d')
 
+    @property
+    def body_to_html(self):
+        html = markdown_to_html(self.comment)
+        return html
+
     # 获取Gravatar头像
     def gravatar(self, size):
         return 'http://www.gravatar.com/avatar/' + md5(self.email.encode('utf-8')).hexdigest() + '?d=mm&s=' + str(size)
@@ -180,6 +156,11 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String(6), index=True)
 
+    # def to_json(self):
+    #     tag = {
+    #         'tag': self.tag
+    #     }
+
     def __repr__(self):
         return '<Tag %r>' % (self.tag)
 
@@ -189,6 +170,14 @@ class Category(db.Model):
     category = db.Column(db.String(6), index=True)
 
     posts = db.relationship('Post', backref='category')
+
+    def to_json(self):
+        category = {
+            'category': self.category,
+            'post_count': self.posts.count(),
+            'posts': url_for('api.get_category_posts', category=self.category)
+        }
+        return category
 
     def __repr__(self):
         return '<Category %r>' % (self.category)
@@ -241,6 +230,18 @@ class Shuoshuo(db.Model):
             }
         ))
         return body_html
+
+    @property
+    def body_to_html(self):
+        html = markdown_to_html(self.shuo)
+        return html
+
+    def to_json(self):
+        shuo = {
+            'shuo': self.shuo,
+            'datetime': self.strptime
+        }
+        return shuo
 
     def __repr__(self):
         return '<Shuoshuo %r>' % (self.shuo)

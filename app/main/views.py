@@ -35,7 +35,6 @@ def internal_server_error(e):
 #
 #     return (path + '/page/' + str(args['page'])) if args else path
 
-
 @main.route('/')
 @main.route('/index')
 #@cache.cached(timeout=60*60*12, key_prefix=cache_key)
@@ -89,7 +88,6 @@ def post(year, month, article_name):
         post = [i for i in posts if time in i.timestamp][0]
     elif len(posts) < 1:
         abort(404)
-
     post.view_num += 1
     db.session.add(post)
     tags = [tag for tag in post.tags.split(',')]
@@ -138,7 +136,7 @@ def page(page_url):
 def tag(tag_name):
     tag = tag_name
     all_posts = Post.query.order_by(Post.timestamp.desc()).all()
-    posts = [post for post in all_posts if post.tag_in_post(tag) and post.draft==False]
+    posts = [post for post in all_posts if post.tag_in_post(tag) and post.draft is False]
 
     return render_template('main/tag.html', tag=tag, posts=posts)
 
@@ -184,18 +182,13 @@ def archives():
 
 @main.route('/search/', methods=['POST'])
 def search():
-    print(g.search_form)
-    print(1)
     if g.search_form.validate_on_submit():
-        print(2)
         query = g.search_form.search.data
         return redirect(url_for('main.search_result', keywords=query))
 
     elif g.search_form2.validate_on_submit():
-        print(3)
         query = g.search_form2.search.data
         return redirect(url_for('main.search_result', keywords=query))
-    return redirect(url_for('main.search_result', keywords='1'))
 
 # /search-result?keywords=query
 @main.route('/search-result')

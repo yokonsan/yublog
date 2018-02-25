@@ -88,9 +88,8 @@ def add_link():
             flash('链接已经存在哦...')
             return redirect(url_for('admin.add_link'))
         else:
-            link = SiteLink(link=form.link.data,
-                          name=form.name.data,
-                          isFriendLink=False)
+            link = SiteLink(link=form.link.data, name=form.name.data,
+                            isFriendLink=False)
             db.session.add(link)
             db.session.commit()
             flash('添加成功')
@@ -102,10 +101,8 @@ def add_link():
             flash('链接已经存在哦...')
             return redirect(url_for('admin.add_link'))
         else:
-            link = SiteLink(link=fr_form.link.data,
-                          name=fr_form.name.data,
-                          info=fr_form.info.data,
-                          isFriendLink=True)
+            link = SiteLink(link=fr_form.link.data, name=fr_form.name.data,
+                            info=fr_form.info.data, isFriendLink=True)
             db.session.add(link)
             db.session.commit()
             flash('添加成功')
@@ -175,22 +172,14 @@ def save_post(form, draft=False):
 
     tags = [tag for tag in form.tags.data.split(',')]
     # print(form.body.data)
-    if draft == True:
-        post = Post(body=form.body.data,
-                title=form.title.data,
-                url_name=form.url_name.data,
-                category=category,
-                tags = form.tags.data,
-                timestamp=form.time.data,
-                draft=True)
+    if draft is True:
+        post = Post(body=form.body.data, title=form.title.data,
+                    url_name=form.url_name.data, category=category,
+                    tags=form.tags.data, timestamp=form.time.data, draft=True)
     else:
-        post = Post(body=form.body.data,
-                title=form.title.data,
-                url_name=form.url_name.data,
-                category=category,
-                tags=form.tags.data,
-                timestamp=form.time.data,
-                draft=False)
+        post = Post(body=form.body.data, title=form.title.data,
+                    url_name=form.url_name.data, category=category,
+                    tags=form.tags.data, timestamp=form.time.data, draft=False)
         # 保存标签模型
         save_tags(tags)
         # 更新xml
@@ -231,9 +220,7 @@ def write():
             flash('保存成功！')
         # 发布文章
         elif 'submit' in request.form and form.validate():
-            body_html = request.form['editormd-html-code']
             post = save_post(form)
-            post.body_html = body_html
             db.session.add(post)
             flash('发布成功！')
             # 清除缓存
@@ -260,15 +247,13 @@ def admin_edit(time, name):
         post.timestamp = form.time.data
         post.title = form.title.data
         post.body = form.body.data
-        body_html = request.form['editormd-html-code']
         # 编辑草稿
-        if post.draft == True:
+        if post.draft is True:
             if 'save_draft' in request.form and form.validate():
                 db.session.add(post)
                 flash('保存成功！')
             elif 'submit' in request.form and form.validate():
                 post.draft = False
-                post.body_html = body_html
                 db.session.add(post)
                 db.session.commit()
                 flash('发布成功')
@@ -279,7 +264,6 @@ def admin_edit(time, name):
             return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))
         # 编辑文章
         else:
-            post.body_html = body_html
             db.session.add(post)
             db.session.commit()
             flash('更新成功')
@@ -314,7 +298,7 @@ def add_page():
         db.session.add(page)
         db.session.commit()
         flash('添加成功')
-        if page.isNav == True:
+        if page.isNav is True:
             # 清除缓存
             clean_cache('all')
         return redirect(url_for('admin.add_page'))
@@ -362,7 +346,7 @@ def delete_page(name):
     db.session.delete(page)
     db.session.commit()
     flash('删除成功')
-    if page.isNav == True:
+    if page.isNav is True:
         # 清除缓存
         clean_cache('all')
     return redirect(url_for('admin.admin_pages'))

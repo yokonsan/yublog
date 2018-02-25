@@ -4,6 +4,8 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 
+from markdown import Markdown
+
 def get_sitemap(posts):
     header = '<?xml version="1.0" encoding="UTF-8"?> '+ '\n' + \
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
@@ -78,5 +80,13 @@ def get_rss_xml(name, protocol, url, title, subtitle, time, update_time, posts):
         rss_xml = header + '\n' + item + '\n' + footer
         return rss_xml
     return None
+
+
+def markdown_to_html(body):
+
+    md = Markdown(extensions=['fenced_code', 'codehilite(css_class=highlight,linenums=None)',
+                              'admonition', 'tables', 'extra'])
+    content = md.convert(body)
+    return content
 
 
