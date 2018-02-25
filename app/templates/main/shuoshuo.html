@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+
 {% block content %}
 <div class="shuo-content site-box">
     {% for y in years %}
@@ -9,7 +10,7 @@
             <span class="point-time point-orange"></span>
             <span class="date-time">{{i.month_and_day}}</span>
             <aside>
-                <p class="things">{{i.shuo}}</p>
+                <p class="things">{{i.body_to_html|safe}}</p>
                 <p class="brief">---- <span>俞坤</span>
                 <span class="mobile-date-time">{{i.month_and_day}}</span>
                 </p>

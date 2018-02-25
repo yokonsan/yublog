@@ -27,7 +27,7 @@
                         <a class="comment-reply-link" curid="{{comment.id}}" replyid="{{comment.id}}" replyto="{{comment.author}}">回复</a>
                     </div>
                     <div class="comment-text">
-                        <p>{{ comment.comment }}</p>
+                        <p>{{ comment.body_to_html | safe }}</p>
                     </div>
                 </div>
             </div>
@@ -47,7 +47,7 @@
                                 <a class="comment-reply-link" curid="{{ reply.id }}" replyid="{{comment.id}}" replyto="{{reply.author}}">回复</a>
                             </div>
                             <div class="comment-text">
-                                    {{ reply.comment }}
+                                    {{ reply.body_to_html | safe }}
                             </div>
                         </div>
                     </div>
@@ -104,7 +104,7 @@
                     </div>
                 </div>
                 <i class="logined">已登录，<a class="delete-user">注销</a></i>
-                <textarea cols="80" name="comment" rows="5" placeholder="请自觉遵守互联网相关的政策法规，严禁发布色情、暴力、反动的言论。" class="ipt-txt"></textarea>
+                <textarea cols="80" name="comment" rows="5" placeholder="评论支持 Markdown 语法。" class="ipt-txt"></textarea>
                 <span class="cancel">取消</span>
                 <button type="submit" class="comment-submit" posturl="{%if post%}{{post.url_name}}{%else%}{{page.url_name}}{%endif%}" replyid="" replyto="">发表评论</button>
 

@@ -138,7 +138,7 @@
 
                         <div class="new-shuo">
                             <a href="{{url_for('main.shuoshuo')}}">
-                                <p>{% if global_datas().newShuo %}{{ global_datas().newShuo }}{% else %}无说说{% endif %}</p>
+                                <p>{% if global_datas().newShuo %}{{ global_datas().newShuo | striptags }}{% else %}无说说{% endif %}</p>
                             </a>
                         </div>
 

@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% block styles %}
-
-<link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.preview.min.css') }}"/>
-<link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.min.css') }}"/>
     {{super()}}
+    <link rel="stylesheet" href="{{ url_for('static',filename='lib/default.css') }}"/>
     <meta name="keywords" content="{{ post.tags }}">
     <meta name="description" content="{{ post.title }}">
 <style>
@@ -12,12 +10,8 @@
         font-size: 24px;
     }
     .post-meta { text-align: center; }
-    .editormd-html-preview, .editormd-preview-container {padding: 0;}
-    .editormd-html-preview, .editormd-preview-container {padding: 0;}
     .post-body {padding: 0;}
-    .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6 {position: static;}
     .side-nav {display: block;}
-    #content {overflow-y: hidden;}
 </style>
 {% endblock %}
 
@@ -37,10 +31,8 @@
             </span>
             <span class="post-view-count"><i class="demo-icon icon-eye"></i> 阅读：{{ post.view_num }}</span>
         </div>
-        <div id="content" class="content post-body">
-            {% if post.body_html %}
-            {{ post.body_html | safe }}
-            {% else %}
+        <div id="content" class="post-body">
+            {% if post.body %}
             {{ post.body_to_html | safe }}
             {% endif %}
         </div>
@@ -83,12 +75,12 @@
     <div class="pre-next-post site-box">
         {% if prev_post %}
         <a class="pre-post" href="{{url_for('main.post',year=prev_post.year,month=prev_post.month,article_name=prev_post.url_name)}}">
-            < {{ prev_post.title }}
+             {{ prev_post.title }}
         </a>
         {% endif %}
         {% if next_post %}
         <a class="next-post" href="{{url_for('main.post',year=next_post.year,month=next_post.month,article_name=next_post.url_name)}}">
-            {{ next_post.title }} >
+            {{ next_post.title }}
         </a>
         {% endif %}
         <div class="clear"></div>
@@ -101,19 +93,12 @@
 {% block script %}
 {{ super() }}
 <script src="{{url_for('static', filename='js/comment.js')}}"></script>
-<!--<script src="{{url_for('static', filename='lib/highlight.min.js')}}"></script>-->
 <script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
 <script src="{{url_for('static', filename='js/myToc.js')}}"></script>
-<script src="{{ url_for('static',filename='editormd/lib/marked.min.js') }}"></script>
-<script src="{{ url_for('static',filename='editormd/lib/prettify.min.js') }}"></script>
-<script src="{{ url_for('static',filename='editormd/editormd.min.js') }}"></script>
 <script type="text/javascript">
-    editormd.markdownToHTML("content");
-
     // donate button
     var donateBtn = document.getElementsByClassName('donate-btn')[0];
     var donateImg = document.getElementsByClassName('donate-img')[0];
-
     donateBtn.onclick = function() {
         if (donateImg.style.display === 'none') {
             donateImg.style.display = 'block';
@@ -121,9 +106,7 @@
             donateImg.style.display = 'none';
         }
     };
-
     // toc
     $("#toc").toc({content: "div#content", headings: "h2,h3,h4"});
-
 </script>
 {% endblock %}

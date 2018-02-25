@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 {% import "_pagination.html" as page %}
+
+{% block styles %}
+{{ super() }}
+    <style>
+        .post-item h1.post-title {font-weight: 600;}
+    </style>
+{% endblock %}
+
 {% block content %}
 {% for post in posts %}
 <div class="post-item site-box">

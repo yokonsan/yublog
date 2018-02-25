@@ -1,8 +1,5 @@
 {% extends "admin.html" %}
-{% block styles %}
-{{super()}}
-<link rel="stylesheet" href="{{ url_for('static',filename='editormd/css/editormd.css') }}"/>
-{% endblock %}
+
 {% block content %}
 <div class="admin-write">
     <div class="admin-title site-box">{{title}}<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
@@ -20,7 +17,7 @@
             <div class="write-body">
                 <p>{{form.title(class="aticle-title",placeholder="标题")}}</p>
                 <div id="editormd">
-                    {{form.body(style="display:none;")}}<br>
+                    {{form.body(style="display:block;",wrap="hard",cols="30")}}<br>
                 </div>
                 <p>{{ form.submit(class="write-btn",value="发布") }}</p>
             </div>
@@ -30,21 +27,3 @@
 </div>
 {% endblock %}
 
-{% block script %}
-<script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
-<script src="{{ url_for('static',filename='editormd/editormd.min.js') }}"></script>
-<script type="text/javascript">
-    var testEditor;
-    $(function () {
-        testEditor = editormd("editormd", {
-            width: "100%",
-            height: "550px",
-            syncScrolling : "single",
-            path: "{{ url_for('static',filename='editormd/lib/') }}",
-            codeFold : true,
-            saveHTMLToTextarea : true,
-            htmlDecode : true
-        });
-    });
-</script>
-{% endblock %}
