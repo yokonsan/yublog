@@ -6,6 +6,9 @@ body {
     font-family: 'Lato', "PingFang SC", "Microsoft YaHei", sans-serif;
     color: #555;
     font-size: 14px;
+    width: 100%;
+    min-height: 100%;
+    position: absolute;
 }
 
 p {
@@ -24,25 +27,63 @@ blockquote p {
     margin: 0;
 }
 
-pre {
-    white-space: inherit;
+pre, code {
+    font-family: Courier, 'Courier New', monospace;
 }
 
-h1,h2,h3,h4,h5,h6 {
-    margin: 0;
-    padding: 0;
-    font-weight: bold;
-    line-height: 1.5;
-    font-family: 'Lato', "PingFang SC", "Microsoft YaHei", sans-serif;
+pre {
+	padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: #f6f6f6;
+    overflow: auto;
 }
 
 code {
-    padding: 2px 5px;
-    word-wrap: break-word;
-    color: #555;
-    background: #eee;
-    border-radius: 3px;
-    font-size: 13px;
+    margin: 0 5px;
+    color: rgb(222, 152, 133);
+}
+
+a {
+    text-decoration: none;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin-bottom: 1.2em;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 0.5em 1em;
+    color: #666;
+}
+
+table th {
+    background: #f1f1f1;
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: PingFang SC, Verdana, Helvetica Neue, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
+    font-weight: 100;
+    color: #000;
+    line-height: 1.35;
+    margin: 0;
+    padding: 0;
+}
+
+h2:after,h3:after,h4:after,h5:after,h6:after {
+    display: block;
+    content: " ";
+    margin-top: 8px;
+    width: 40px;
+    border-bottom: 3px solid rgb(224, 137, 114);;
+}
+
+h3:after,h4:after,h5:after,h6:after {
+    border-bottom: 2px solid rgba(224, 137, 114, 0.77);
 }
 
 .clear {
@@ -478,8 +519,6 @@ ol#toc a:hover {
 .blog-tags li {
     max-width: 90px;
     border: 1px solid #ccc;
-    /* text-align: center; */
-    padding: 2px 0;
     border-radius: 3px;
     float: left;
     margin: 5px;
@@ -509,6 +548,9 @@ ol#toc a:hover {
 .main img {
     margin: 0 auto;
     display: block;
+    max-width: 100%;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 .post-item {
@@ -518,7 +560,7 @@ ol#toc a:hover {
 .post-title {
     /*text-align: center;*/
     font-size: 20px;
-    font-weight: 600;
+    font-weight: 500;
     padding: 3px 5px;
 }
 
@@ -564,9 +606,19 @@ span.post-time {
    text-align: justify;
 }
 
+.post-body a {
+    color: #df846c;
+    border-bottom: 1px solid #df846c;
+}
+
+.post-body a:hover {
+    border-bottom-color: #555;
+    color: #555;
+    text-decoration: none;
+}
+
 .post-body h2 {
     font-size: 20px;
-
 }
 
 .read-more-btn {
@@ -580,6 +632,7 @@ span.post-time {
 .footer-box {
     width: 100%;
     bottom: 0;
+    position: absolute;
 }
 
 .footer {
@@ -671,14 +724,25 @@ ul.pages a:hover {
     font-size: 15px;
 }
 
-.post-body a,.post-tags a {
-    text-decoration: none;
-    color: #222;
-    border-bottom: 1px solid #333;
+#content blockquote {
+    font-size: 14px;
+    font-style: italic;
+    position: relative;
+    color: #999;
+    font-weight: 400;
+    border-left: 2px solid #df846c;
+    padding: 0 15px;
+    margin: 1em 3em 1em 2em;
 }
 
-.post-body a:hover,.post-tags a:hover {
-    color: #666;
+.post-tags a {
+    text-decoration: none;
+    color: #555;
+    border-bottom: 1px solid #555;
+}
+
+.post-tags a:hover {
+    color: #999;
 }
 
 .read-more-btn a {
@@ -892,6 +956,16 @@ ul.pages a:hover {
 /*comment css*/
 #comments {
     padding: 20px;
+}
+
+#comments h1,#comments h2,#comments h3,
+#comments h4,#comments h5,#comments h6 {
+    font-size: 15px;
+}
+
+#comments h1:after,#comments h2:after,#comments h3:after,
+#comments h4:after,#comments h5:after,#comments h6:after {
+    display: none;
 }
 
 .comment-title {
@@ -1226,7 +1300,13 @@ ul.comment-children {
     font-size: 22px;
     color: #df846c;
     padding: 10px 0 20px;
+    font-weight: 600;
 }
+
+.shuo-content article > h3:after {
+    display: none;
+}
+
 .shuo-content article section {
     padding: 0 0 30px;
     position: relative;
