@@ -2,7 +2,8 @@
 
 ## 介绍
 
-功能强大的个人博客，功能齐全的管理后台，简洁大气的前端页面，集成`markdown`编辑器（[editor.md](https://github.com/pandao/editor.md)），所见即所得，优雅美观的评论栏。~~集成畅言评论~~。
+功能强大的个人博客，功能齐全的管理后台，简洁大气的前端页面。
+支持`markdown`文章编辑，代码高亮以及优雅美观的评论栏。
 
 使用`mysql`数据库存储博客数据，`redis`数据库做博客缓存。预览：[here](http://www.yukunweb.com)
 
