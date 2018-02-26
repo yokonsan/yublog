@@ -4,11 +4,12 @@ body {
     padding: 0;
     background: #f5f7f9;
     font-family: 'Lato', "PingFang SC", "Microsoft YaHei", sans-serif;
-    color: #555;
+    color: #1a1a1a;
     font-size: 14px;
     width: 100%;
     min-height: 100%;
     position: absolute;
+    -webkit-tap-highlight-color: rgba(26,26,26,0);
 }
 
 p {
@@ -27,19 +28,20 @@ blockquote p {
     margin: 0;
 }
 
-pre, code {
-    font-family: Courier, 'Courier New', monospace;
-}
-
 pre {
+    font-family: Menlo,Monaco,Consolas,Andale Mono,lucida console,Courier New,monospace;
 	padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 3px;
+    border: 1px solid #eee;
+    border-radius: 4px;
     background: #f6f6f6;
     overflow: auto;
+    word-wrap: normal;
+    line-height: 1.67;
+    font-size: 14px;
 }
 
 code {
+    font-family: Courier, 'Courier New', monospace;
     margin: 0 5px;
     color: rgb(222, 152, 133);
 }
@@ -67,23 +69,19 @@ table th {
 
 h1, h2, h3, h4, h5, h6 {
     font-family: PingFang SC, Verdana, Helvetica Neue, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
-    font-weight: 100;
+    font-weight: 400;
     color: #000;
     line-height: 1.35;
     margin: 0;
     padding: 0;
 }
 
-h2:after,h3:after,h4:after,h5:after,h6:after {
+h2:after {
     display: block;
     content: " ";
     margin-top: 8px;
-    width: 40px;
-    border-bottom: 3px solid rgb(224, 137, 114);;
-}
-
-h3:after,h4:after,h5:after,h6:after {
-    border-bottom: 2px solid rgba(224, 137, 114, 0.77);
+    width: 100%;
+    border-bottom: 1px solid #eee;
 }
 
 .clear {
@@ -607,13 +605,13 @@ span.post-time {
 }
 
 .post-body a {
-    color: #df846c;
-    border-bottom: 1px solid #df846c;
+    border-bottom: 1px solid #555;
+    color: #555;
 }
 
 .post-body a:hover {
-    border-bottom-color: #555;
-    color: #555;
+    color: #df846c;
+    border-bottom: 1px solid #df846c;
     text-decoration: none;
 }
 
@@ -730,9 +728,13 @@ ul.pages a:hover {
     position: relative;
     color: #999;
     font-weight: 400;
-    border-left: 2px solid #df846c;
+    border-left: 3px solid #ccc;
     padding: 0 15px;
     margin: 1em 3em 1em 2em;
+}
+
+#content blockquote p {
+    line-height: 1.5;
 }
 
 .post-tags a {
