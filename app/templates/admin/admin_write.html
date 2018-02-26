@@ -19,7 +19,7 @@
             <div class="write-body">
                 <p>{{form.title(class="aticle-title",placeholder="标题")}}</p>
                 <div id="editormd">
-                    {{form.body(style="display:block;",wrap="hard",cols="30")}}<br>
+                    {{form.body(style="display:block;",rows="5",cols="80")}}<br>
                 </div>
                 {% if title == '写文章' %}
                 <p>{{ form.save_draft(class="write-btn first-btn",value="保存草稿") }}</p>

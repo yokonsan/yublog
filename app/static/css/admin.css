@@ -126,15 +126,15 @@ input.but:hover,.admin-menu button:hover,.write-body .write-btn:hover {
 }
 
 .write-body textarea {
-    width: 650px;
-    height: 380px;
+    width: 640px;
     margin-top: 20px;
     padding: 10px;
     border: 1px solid #999;
-    border-radius: 3px;
+    border-radius: 2px;
     font-size: 16px;
     color: #444;
     height: 500px;
+    outline: none;
 }
 
 .write-body .write-btn {
