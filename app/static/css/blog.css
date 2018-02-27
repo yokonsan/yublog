@@ -31,7 +31,7 @@ blockquote p {
 pre {
     font-family: Menlo,Monaco,Consolas,Andale Mono,lucida console,Courier New,monospace;
 	padding: 15px;
-    border: 1px solid #eee;
+    /*border: 1px solid #eee;*/
     border-radius: 4px;
     background: #f6f6f6;
     overflow: auto;
