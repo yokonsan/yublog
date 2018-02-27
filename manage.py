@@ -17,8 +17,8 @@ if os.path.exists('.env'):
             os.environ[var[0]] = var[1]
 
 def make_shell_context():
-    return dict(app=app, db=db, Admin=Admin, Post=Post, Tag=Tag, \
-            Category=Category, SiteLink=SiteLink, Page=Page, \
+    return dict(app=app, db=db, Admin=Admin, Post=Post, Tag=Tag,
+            Category=Category, SiteLink=SiteLink, Page=Page,
             LoveMe=LoveMe, Comment=Comment, Shuoshuo=Shuoshuo)
 manager.add_command("shell", Shell(make_context=make_shell_context))
 manager.add_command('db', MigrateCommand)
@@ -32,12 +32,18 @@ def clearAlembic():
 def addAdmin():
     from app.models import Admin, LoveMe
     from config import Config
-    admin = Admin(site_name=Config.SITE_NAME, site_title=Config.SITE_TITLE ,name=Config.ADMIN_NAME, \
-                  profile=Config.ADMIN_PROFILE, login_name=Config.ADMIN_LOGIN_NAME, \
+    # 创建管理员
+    admin = Admin(site_name=Config.SITE_NAME, site_title=Config.SITE_TITLE ,name=Config.ADMIN_NAME,
+                  profile=Config.ADMIN_PROFILE, login_name=Config.ADMIN_LOGIN_NAME,
                   password=Config.ADMIN_PASSWORD)
+    # 创建love-me
     love = LoveMe(loveMe=666)
+    # 创建留言板
+    guestbook = Page(title='留言板', url_name='guestbook', canComment=True, isNav=False,
+                     body='留言板')
     db.session.add(admin)
     db.session.add(love)
+    db.session.add(guestbook)
     db.session.commit()
 
 

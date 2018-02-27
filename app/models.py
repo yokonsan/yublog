@@ -1,10 +1,8 @@
 import datetime
 from hashlib import md5
 
-import bleach
 from flask import url_for
 from flask_login import UserMixin
-from markdown import markdown
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db, lm, whooshee
@@ -212,24 +210,6 @@ class Shuoshuo(db.Model):
     @property
     def month_and_day(self):
         return [i for i in self.strptime.split('-')][1] + '/' + [i for i in self.strptime.split('-')][2]
-
-    @property
-    def body_to_html(self):
-        allowed_tags = [
-            'a', 'abbr', 'acronym', 'b', 'img', 'blockquote', 'code',
-            'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul', 'h1', 'h2',
-            'h3', 'p'
-        ]
-        body_html = bleach.linkify(bleach.clean(
-            markdown(self.shuo, output_format='html'),
-            tags=allowed_tags, strip=True,
-            attributes={
-                '*': ['class'],
-                'a': ['href', 'rel'],
-                'img': ['src', 'alt'],  # 支持标签和属性
-            }
-        ))
-        return body_html
 
     @property
     def body_to_html(self):

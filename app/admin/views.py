@@ -408,7 +408,6 @@ def admin_comments():
                            comments=comments,
                            pagination=pagination)
 
-# 管理评论后需要清除对应文章的缓存，由于文章只有5分钟缓存，不做清除
 @admin.route('/delete/comment/<int:id>')
 @login_required
 def delete_comment(id):
@@ -416,6 +415,11 @@ def delete_comment(id):
     db.session.delete(comment)
     db.session.commit()
     flash('删除成功')
+
+    page = comment.page
+    if page and page.url_name == 'guestbook':
+        # 清除缓存
+        clean_cache('all')
     return redirect(url_for('admin.admin_comments'))
 
 @admin.route('/allow/comment/<int:id>')
@@ -426,6 +430,11 @@ def allow_comment(id):
     db.session.add(comment)
     db.session.commit()
     flash('允许通过')
+
+    page = comment.page
+    if page and page.url_name == 'guestbook':
+        # 清除缓存
+        clean_cache('all')
     return redirect(url_for('admin.admin_comments'))
 
 @admin.route('/unable/comment/<int:id>')
@@ -436,6 +445,11 @@ def unable_comment(id):
     db.session.add(comment)
     db.session.commit()
     flash('隐藏成功')
+
+    page = comment.page
+    if page and page.url_name == 'guestbook':
+        # 清除缓存
+        clean_cache('all')
     return redirect(url_for('admin.admin_comments'))
 
 @admin.route('/write/shuoshuo', methods=['GET','POST'])
