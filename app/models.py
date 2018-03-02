@@ -70,6 +70,18 @@ class Page(db.Model):
         html = markdown_to_html(self.body)
         return html
 
+    def to_json(self):
+        page = {
+            'id': self.id,
+            'title': self.title,
+            'url': self.url_name,
+            'api': url_for('api.get_page', id=self.id, _external=True),
+            'isNav': self.isNav,
+            'comment_count': self.comments.count() if self.canComment else None,
+            'comments': url_for('api.get_page_comments', id=self.id, _external=True) if self.canComment else None
+        }
+        return page
+
     def __repr__(self):
         return '<Page %r>' % (self.title)
 
@@ -115,6 +127,20 @@ class Post(db.Model):
         html = markdown_to_html(self.body)
         return html
 
+    def to_json(self):
+        post = {
+            'id': self.id,
+            'title': self.title,
+            'api': url_for('api.get_post', id=self.id, _external=True),
+            'datetime': self.timestamp,
+            'category': self.category.category,
+            'tag': self.tags,
+            'views': self.view_num,
+            'comment_count': self.comments.count(),
+            'comments': url_for('api.get_post_comments', id=self.id, _external=True)
+        }
+        return post
+
     def __repr__(self):
         return '<Post %r>' % (self.title)
 
@@ -146,6 +172,15 @@ class Comment(db.Model):
     def gravatar(self, size):
         return 'http://www.gravatar.com/avatar/' + md5(self.email.encode('utf-8')).hexdigest() + '?d=mm&s=' + str(size)
 
+    def to_json(self):
+        comment = {
+            'id': self.id,
+            'author': self.author,
+            'datetime': self.strptime,
+            'comment': self.comment
+        }
+        return comment
+
     def __repr__(self):
         return '<Comment %r>' %(self.comment)
 
@@ -154,10 +189,12 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String(6), index=True)
 
-    # def to_json(self):
-    #     tag = {
-    #         'tag': self.tag
-    #     }
+    def to_json(self):
+        tag = {
+            'tag': self.tag,
+            'posts': url_for('api.get_tag_posts', tag=self.tag, _external=True)
+        }
+        return tag
 
     def __repr__(self):
         return '<Tag %r>' % (self.tag)
@@ -167,13 +204,13 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(6), index=True)
 
-    posts = db.relationship('Post', backref='category')
+    posts = db.relationship('Post', backref='category', lazy='dynamic')
 
     def to_json(self):
         category = {
             'category': self.category,
             'post_count': self.posts.count(),
-            'posts': url_for('api.get_category_posts', category=self.category)
+            'posts': url_for('api.get_category_posts', category=self.category, _external=True)
         }
         return category
 
