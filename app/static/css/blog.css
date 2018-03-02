@@ -616,7 +616,7 @@ span.post-time {
 }
 
 .post-body h2 {
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .read-more-btn {
@@ -1338,7 +1338,7 @@ ul.comment-children {
     color: #333;
     margin-left: 15%;
     padding: 10px;
-    border: 1px solid #eee;
+    /*border: 1px solid #eee;*/
     border-radius: 3px;
     background: #f5f7f9;
 }
