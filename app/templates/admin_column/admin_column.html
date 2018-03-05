@@ -1,0 +1,32 @@
+{% extends "admin.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+
+<div class="admin-title site-box">管理专题文章<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
+
+<div class="admin-post site-box">
+    <p>
+        <a href="{{ url_for('admin.write_column_article',url=column.url_name) }}">
+            <button>添加文章</button>
+        </a>
+    </p>
+    <ul>
+        {% for article in articles %}
+        <li>
+            {{ article.timestamp }}
+            <a class="article-title" href="{{url_for('admin.edit_column_article',url=column.url_name,id=article.id)}}">
+                {{ article.title }}
+            </a>
+            <a href="{{url_for('admin.delete_column_article',url=column.url_name,id=article.id)}}">
+                <button class="delete-btn">删除</button>
+            </a>
+            <a href="{{url_for('admin.edit_column_article',url=column.url_name,id=article.id)}}">
+                <button class="edit-btn">编辑</button>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% endblock %}
