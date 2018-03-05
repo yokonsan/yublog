@@ -49,3 +49,18 @@ class AdminSiteForm(FlaskForm):
 
 class ShuoForm(FlaskForm):
     shuoshuo = TextAreaField('shuoshuo', validators=[DataRequired()])
+
+
+# 专题表单
+class ColumnForm(FlaskForm):
+    column = StringField('column', validators=[DataRequired()])
+    date = StringField('datetime', validators=[DataRequired()])
+    url_name = StringField('urlName', validators=[DataRequired()])
+    body = TextAreaField('body', validators=[DataRequired()])
+    submit = SubmitField('submit')
+
+class ColumnArticleForm(FlaskForm):
+    title = StringField('title', validators=[DataRequired()])
+    date = StringField('datetime', validators=[DataRequired()])
+    body = TextAreaField('body', validators=[DataRequired()])
+    submit = SubmitField('submit')

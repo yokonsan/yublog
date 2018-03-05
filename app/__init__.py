@@ -29,9 +29,11 @@ def create_app(config_name):
     from .main import main as main_blueprint
     from .admin import admin as admin_blueprint
     from .api import api as api_blueprint
+    from .main import column as column_blueprint
 
     app.register_blueprint(main_blueprint)
     app.register_blueprint(admin_blueprint, url_prefix='/admin')
     app.register_blueprint(api_blueprint, url_prefix='/api')
+    app.register_blueprint(column_blueprint, url_prefix='/column')
 
     return app
