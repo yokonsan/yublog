@@ -264,6 +264,44 @@ class Shuoshuo(db.Model):
         return '<Shuoshuo %r>' % (self.shuo)
 
 
+class Column(db.Model):
+    __tablename__ = 'columns'
+    id = db.Column(db.Integer, primary_key=True)
+    column = db.Column(db.String(64))
+    url_name = db.Column(db.String(64))
+    body = db.Column(db.Text)
+    view_num = db.Column(db.Integer, default=0)
+    love_num = db.Column(db.Integer, default=0)
+    timestamp = db.Column(db.String(64))
+
+    articles = db.relationship('Article', backref='column', lazy='dynamic')
+
+    @property
+    def body_to_html(self):
+        html = markdown_to_html(self.body)
+        return html
+
+    def __repr__(self):
+        return '<Column %r>' % (self.column)
+
+class Article(db.Model):
+    __tablename__ = 'articles'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(64))
+    view_num = db.Column(db.Integer, default=0)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.String(64))
+
+    column_id = db.Column(db.Integer, db.ForeignKey('columns.id'))
+
+    @property
+    def body_to_html(self):
+        html = markdown_to_html(self.body)
+        return html
+
+    def __repr__(self):
+        return '<Article %r>' % (self.title)
+
 class Alembic(db.Model):
     __tablename__ = 'alembic_version'
     version_num = db.Column(db.String(32), primary_key=True, nullable=False)

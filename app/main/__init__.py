@@ -1,8 +1,9 @@
 from flask import Blueprint
 
 main = Blueprint('main', __name__)
+column = Blueprint('column', __name__)
 
-from . import views, site
+from . import views, site, column_views
 from ..models import *
 from .. import cache
 
