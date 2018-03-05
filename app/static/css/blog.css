@@ -43,7 +43,10 @@ pre {
 code {
     font-family: Courier, 'Courier New', monospace;
     margin: 0 5px;
-    color: rgb(222, 152, 133);
+    padding: 1px 3px;
+    color: #222;
+    background-color: rgba(0,0,0,.04);
+    border-radius: 3px;
 }
 
 a {
@@ -549,6 +552,8 @@ ol#toc a:hover {
     max-width: 100%;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+    border-radius: 6px;
+    box-shadow: 0 0 10px #ccc;
 }
 
 .post-item {
@@ -605,8 +610,9 @@ span.post-time {
 }
 
 .post-body a {
-    border-bottom: 1px solid #555;
-    color: #555;
+    border-bottom: 1px dashed #e08972;
+    color: #e08972;
+    margin: 0 3px;
 }
 
 .post-body a:hover {
