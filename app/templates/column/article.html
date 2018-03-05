@@ -1,0 +1,80 @@
+{% extends "column_base.html" %}
+
+{% block nav_btn %}
+<div class="column-menu-btn">
+    <button>
+        <span class="btn-bar"></span>
+        <span class="btn-bar"></span>
+        <span class="btn-bar"></span>
+    </button>
+</div>
+{% endblock %}
+
+{% block column_content %}
+<div class="menu-list" style="display: none;">
+    <div class="column-menu">主题目录</div>
+    <div class="menu-title">
+        <a href="{{ url_for('column._column',id=column.id) }}">{{ column.column }}</a>
+    </div>
+    <ul>
+        {% for i in data %}
+        <li>
+            <span>{{ i.num }}</span>
+            <a href="{{ url_for('column.article',url=column.url_name,id=i.item.id) }}" class="{% if i.item==article %}current{% else %}{% endif %}">
+                {{ i.item.title }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="article-main site-box">
+
+    <div class="column-item">
+        <div class="article-title">
+            <h1>{{ article.title }}</h1>
+        </div>
+
+        <div class="article-meta">
+            <span class="post-time"><i class="demo-icon icon-calendar"></i> {{ article.timestamp }}</span>
+            <span class="post-comments-count">
+                <i class="demo-icon icon-comment-empty"></i> 评论： 0
+            </span>
+            <span class="post-view-count"><i class="demo-icon icon-eye"></i> 阅读：{{ article.view_num }}</span>
+        </div>
+
+        <div class="article-body">
+            <div class="article-desc">
+                {{ article.body_to_html | safe }}
+            </div>
+        </div>
+
+        <div class="article-btn">
+            {% if prev_article %}
+            <a href="{{ url_for('column.article',url=column.url_name,id=prev_article.id) }}" class="prev-btn">上一章</a>
+            {% endif %}
+            {% if next_article %}
+            <a href="{{ url_for('column.article',url=column.url_name,id=next_article.id) }}" class="next-btn">下一章</a>
+            {% endif %}
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+    var menuList = document.getElementsByClassName('menu-list')[0];
+    var menuBtn = document.getElementsByClassName('column-menu-btn')[0];
+    menuBtn.onclick = function() {
+        if (menuList.style.display === "block") {
+            menuList.style.display = "none";
+        } else {
+            menuList.style.display = "block";
+        }
+    }
+</script>
+{% endblock %}

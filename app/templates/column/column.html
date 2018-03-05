@@ -1,0 +1,71 @@
+{% extends "column_base.html" %}
+
+{% block column_content %}
+<div class="column-main site-box">
+
+    <div class="column-item">
+        <div class="column-title">
+            <h1>{{ column.column }}</h1>
+        </div>
+
+        <div class="column-meta">
+            <span class="post-time"><i class="demo-icon icon-calendar"></i> {{ column.timestamp }}</span>
+            <span class="love-count"><i class="demo-icon icon-heart-empty"></i> 喜欢：{{ column.love_num }}</span>
+            <span class="post-view-count"><i class="demo-icon icon-eye"></i> 阅读：{{ column.view_num }}</span>
+        </div>
+
+        <div class="column-body">
+            <div class="column-desc">
+                {{ column.body_to_html | safe }}
+                <div class="column-btn">
+                    <button class="love-column" href="{{ url_for('column.love_column',id=column.id) }}">喜欢主题</button>
+                    <a class="read-column" href="{{ url_for('column.article',url=column.url_name,id=first_id) }}">阅读主题</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="column-articles">
+        <div class="column-menu">主题目录</div>
+        {% for i in data %}
+        <div class="article-item">
+            <span class="article-num">{{ i.num }}</span>
+            <a href="{{ url_for('column.article',url=column.url_name,id=i.item.id) }}">{{ i.item.title }}</a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+{#    var loveBtn = document.getElementsByClassName('love-column')[0];#}
+{#    var loveCount = document.getElementsByClassName('love-count')[0];#}
+{#    var counts = parseInt(loveCount.innerText);#}
+{#    var request;#}
+{#    if (window.XMLHttpRequest) {#}
+{#        request = new XMLHttpRequest();#}
+{#    } else {#}
+{#        request = new ActiveXObject('Microsoft.XMLHTTP');#}
+{#    }#}
+{##}
+{#    loveBtn.onclick = function() {#}
+{#        // 判断本地是否有登录记录#}
+{#        var love = ms.get('love_'+column.column);#}
+{#        if (love) {#}
+{#            alert('您已喜欢过我了QAQ~')#}
+{#        } else {#}
+{#            ms.set('love_'+column.column, 'loved');#}
+{#            counts += 1;#}
+{#            loveMeTitle.innerHTML = '我也喜欢你';#}
+{#            loveMeCount.innerText = counts.toString();#}
+{##}
+{#            // 发送请求:#}
+{#            request.open('GET', '/loveme');#}
+{#            request.send();#}
+{#        }#}
+{#    };#}
+</script>
+{% endblock %}
