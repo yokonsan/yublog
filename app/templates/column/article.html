@@ -62,12 +62,15 @@
 
     </div>
 
+    {% include "_comment.html" %}
+
 </div>
 
 {% endblock %}
 
 {% block script %}
 {{ super() }}
+<script src="{{url_for('static', filename='js/comment.js')}}"></script>
 <script>
     var menuList = document.getElementsByClassName('menu-list')[0];
     var menuBtn = document.getElementsByClassName('column-menu-btn')[0];

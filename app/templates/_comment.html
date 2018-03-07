@@ -64,23 +64,23 @@
 
     <div class="comments-navi">
         <a {% if not pagination.has_prev %}style="display:none;"{% endif %} class="prev"
-           href="{%if pagination.has_prev%}{%if post%}{{url_for('main.post',year=post.year,month=post.month,article_name=post.url_name,page=pagination.prev_num)}}{%else%}{{url_for('main.page',page_url=page.url_name,page=pagination.prev_num)}}{%endif%}{%else%}#{%endif%}">
+           href="{%if pagination.has_prev%}{%if post%}{{url_for('main.post',year=post.year,month=post.month,article_name=post.url_name,page=pagination.prev_num)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=pagination.prev_num)}}{%else%}{{url_for('column.article',url=column.url_name,id=article.id,page=p)}}{%endif%}{%else%}#{%endif%}">
             上一页
         </a>
         {% for p in pagination.iter_pages() %}
             {% if p %}
                 {% if p == pagination.page %}
                     <a  class="current-page"
-                        href="{%if post%}{{url_for('main.post',year=post.year,month=post.month,article_name=post.url_name,page=p)}}{%else%}{{url_for('main.page',page_url=page.url_name,page=p)}}{%endif%}">{{ p }}</a>
+                        href="{%if post%}{{url_for('main.post',year=post.year,month=post.month,article_name=post.url_name,page=p)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=p)}}{%else%}{{url_for('column.article',url=column.url_name,id=article.id,page=p)}}{%endif%}">{{ p }}</a>
                 {% else %}
-                    <a href="{%if post%}{{url_for('main.post',year=post.year,month=post.month,article_name=post.url_name,page=p)}}{%else%}{{url_for('main.page',page_url=page.url_name,page=p)}}{%endif%}">{{ p }}</a>
+                    <a href="{%if post%}{{url_for('main.post',year=post.year,month=post.month,article_name=post.url_name,page=p)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=p)}}{%else%}{{url_for('column.article',url=column.url_name,id=article.id,page=p)}}{%endif%}">{{ p }}</a>
                 {% endif %}
             {% else %}
             <a class="disabled" href="#">&hellip;</a>
             {% endif %}
         {% endfor %}
         <a {%if not pagination.has_next%}style="display:none;"{%endif%}
-           href="{%if pagination.has_next%}{%if post%}{{url_for('main.post',year=post.year,month=post.month,article_name=post.url_name,page=pagination.next_num)}}{%else%}{{url_for('main.page',page_url=page.url_name,page=pagination.next_num)}}{%endif%}{%else%}#{%endif%}">
+           href="{%if pagination.has_next%}{%if post%}{{url_for('main.post',year=post.year,month=post.month,article_name=post.url_name,page=pagination.next_num)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=pagination.next_num)}}{%else%}{{url_for('column.article',url=column.url_name,id=article.id,page=p)}}{%endif%}{%else%}#{%endif%}">
             下一页
         </a>
     </div>
@@ -106,7 +106,9 @@
                 <i class="logined">已登录，<a class="delete-user">注销</a></i>
                 <textarea cols="80" name="comment" rows="5" placeholder="评论支持 Markdown 语法。" class="ipt-txt"></textarea>
                 <span class="cancel">取消</span>
-                <button type="submit" class="comment-submit" posturl="{%if post%}{{post.url_name}}{%else%}{{page.url_name}}{%endif%}" replyid="" replyto="">发表评论</button>
+                <button type="submit" class="comment-submit"
+                        posturl="{%if post%}{{post.url_name}}{%elif page%}{{page.url_name}}{%else%}column/{{article.id}}{%endif%}"
+                        replyid="" replyto="">发表评论</button>
 
 
 

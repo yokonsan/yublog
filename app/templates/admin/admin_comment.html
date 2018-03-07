@@ -11,10 +11,10 @@
         <li>
             {{ comment.strptime }}
             <a class="comment-author" href="{{comment.website}}">{{comment.author}}</a>
-            在{%if comment.post%}文章{%else%}页面{%endif%}
+            在{%if comment.post%}文章{%elif comment.page%}页面{%else%}专栏文章{%endif%}
             <a class="comment-post"
-               href="{%if comment.post%}{{url_for('main.post',year=comment.post.year,month=comment.post.month,article_name=comment.post.url_name)}}{%else%}{{url_for('main.page',page_url=comment.page.url_name)}}{%endif%}">
-                {%if comment.post%}{{comment.post.title}}{%else%}{{comment.page.title}}{%endif%}
+               href="{%if comment.post%}{{url_for('main.post',year=comment.post.year,month=comment.post.month,article_name=comment.post.url_name)}}{%elif comment.page%}{{url_for('main.page',page_url=comment.page.url_name)}}{%else%}#{%endif%}">
+                {%if comment.post%}{{comment.post.title}}{%elif comment.page%}{{comment.page.title}}{%else%}{{comment.article.title}}{%endif%}
             </a>下发布评论：
             <p>{{comment.comment}}</p>
             <p>

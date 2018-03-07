@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block styles %}
     {{super()}}
+    <link rel="stylesheet" href="{{ url_for('static',filename='lib/default.css') }}"/>
     <style>
         .post-body {padding: 0;}
         h1.post-title {text-align: left;}

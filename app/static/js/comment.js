@@ -162,6 +162,7 @@
             saveUser('user', val1);
             request.send(FormData);
         } else {
+            console.log(url);
             request.open('POST', '/'+ url +'/comment');
             request.setRequestHeader('Content-Type', 'application/json');
             FormData= JSON.stringify({
