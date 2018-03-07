@@ -3,6 +3,7 @@
 import os
 import smtplib
 from email.mime.text import MIMEText
+from threading import Thread
 
 from markdown import Markdown
 
@@ -39,11 +40,15 @@ def save_file(sitemap, file):
 
 def send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg):
     content = MIMEText(msg, 'plain', 'utf-8')
-    server = smtplib.SMTP(smtp_server, mail_port)
-    server.starttls()
+    server = smtplib.SMTP_SSL(smtp_server, mail_port)
     server.login(from_addr, password)
     server.sendmail(from_addr, [to_addr], content.as_string())
     server.quit()
+
+def asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg):
+    t = Thread(target=send_mail, args=(from_addr, password, to_addr, smtp_server, mail_port, msg))
+    t.start()
+    t.join()
 
 def get_rss_xml(name, protocol, url, title, subtitle, time, update_time, posts):
     header = '<?xml version="1.0" encoding="UTF-8"?>' + '\n' + \
