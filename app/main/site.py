@@ -14,3 +14,7 @@ def robots():
 @main.route('/atom.xml')
 def rss():
     return send_from_directory('static', 'atom.xml')
+
+@main.route('/<filename>/')
+def get_file(filename):
+    return send_from_directory('static', 'upload/{0}'.format(filename))

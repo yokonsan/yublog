@@ -15,6 +15,8 @@ class Config(object):
     COMMENTS_PER_PAGE = 10
     ADMIN_COMMENTS_PER_PAGE = 50
 
+    UPLOAD_PATH = './app/static/upload/'
+
     # 博客信息
     # 管理员姓名
     ADMIN_NAME = '俞坤'
@@ -39,14 +41,16 @@ class Config(object):
     # 显示条数
     RSS_COUNTS = 10
 
-    # email
+    # 发送邮件用户登录
     MAIL_USERNAME = os.getenv('MAIL_USERNAME')
+    # 客户端登录密码非正常登录密码
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
     MAIL_SERVER = os.getenv('MAIL_SERVER') or 'smtp.qq.com'
-    MAIL_PORT = os.getenv('MAIL_PORT') or '25'
+    MAIL_PORT = os.getenv('MAIL_PORT') or '465'
 
     ADMIN_MAIL_SUBJECT_PREFIX = 'blog'
     ADMIN_MAIL_SENDER = 'admin 944682328@qq.com'
+    # 接收邮件通知的邮箱
     ADMIN_MAIL = os.getenv('ADMIN_MAIL')
     # 搜索最小字节
     WHOOSHEE_MIN_STRING_LEN = 1

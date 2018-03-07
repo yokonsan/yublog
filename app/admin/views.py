@@ -1,3 +1,5 @@
+import os
+
 from flask import render_template, redirect, request, flash, current_app, url_for
 from flask_login import login_required, login_user, logout_user
 
@@ -589,6 +591,21 @@ def delete_column_article(url, id):
     db.session.commit()
     flash('删除文章！')
     return redirect(url_for('admin.admin_column', id=column.id))
+
+
+# 上传文件到静态目录
+@admin.route('/upload/file', methods=['GET', 'POST'])
+@login_required
+def upload_file():
+    source_folder = current_app.config['UPLOAD_PATH']
+    if request.method == 'POST':
+        file = request.files['file']
+        filename = file.filename
+        path = os.path.join(source_folder, filename)
+        file.save(path)
+
+        return redirect(url_for('admin.index'))
+    return render_template('admin/upload_file.html', title="上传文件")
 
 
 
