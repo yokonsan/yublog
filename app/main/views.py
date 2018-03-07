@@ -3,7 +3,7 @@ from flask import render_template, redirect, url_for, request, g, current_app, a
 from . import main
 from .forms import SearchForm
 from ..models import *
-from ..utils import send_mail
+from ..utils import asyncio_send
 from .. import cache
 
 
@@ -232,6 +232,7 @@ def save_comment(post, form):
     # smtp_server = current_app.config['MAIL_SERVER']
     # mail_port = current_app.config['MAIL_PORT']
 
+
     nickname = form['nickname']
     email = form['email']
     website = form['website'] or None
@@ -243,7 +244,7 @@ def save_comment(post, form):
                           isReply=True, replyTo=replyTo)
 
         # msg = nickname + '在文章：' + post.title + '\n' + '中发布一条评论：' + com + '\n' + '请前往查看。'
-        # send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg)
+        # asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg)
         data = {'nickname': nickname, 'email': email, 'website': website,
                 'comment': com, 'isReply': True, 'replyTo': replyTo}
     except:
@@ -251,13 +252,15 @@ def save_comment(post, form):
                           email=email, website=website)
 
         # msg = nickname + '在文章：' + post.title + '\n' + '中发布一条评论：' + com + '\n' + '请前往查看。'
-        # send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg)
+        # asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg)
         data = {'nickname': nickname, 'email': email, 'website': website, 'comment': com}
     finally:
-        try:
+        if type(post) == Post:
             comment.post = post
-        except:
+        elif type(post) == Page:
             comment.page = post
+        elif type(post) == Article:
+            comment.article = post
         db.session.add(comment)
         db.session.commit()
     return data

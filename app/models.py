@@ -158,6 +158,7 @@ class Comment(db.Model):
 
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
     page_id = db.Column(db.Integer, db.ForeignKey('pages.id'))
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id'))
 
     @property
     def strptime(self):
@@ -293,6 +294,8 @@ class Article(db.Model):
     timestamp = db.Column(db.String(64))
 
     column_id = db.Column(db.Integer, db.ForeignKey('columns.id'))
+    comments = db.relationship('Comment', backref='article', lazy='dynamic')
+
 
     @property
     def body_to_html(self):
