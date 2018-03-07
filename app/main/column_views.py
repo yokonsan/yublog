@@ -73,7 +73,11 @@ def article(url, id):
 
 @column.route('/love/<int:id>')
 def love_column(id):
-    pass
+    column = Column.query.get_or_404(id)
+    column.love_num += 1
+    db.session.add(column)
+    db.session.commit()
+    return jsonify(counts=column.love_num)
 
 @column.route('/<int:id>/comment', methods=['POST'])
 def comment(id):
