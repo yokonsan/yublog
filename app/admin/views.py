@@ -290,13 +290,11 @@ def admin_edit(time, name):
 def add_page():
     form = AddPageForm()
     if form.validate_on_submit():
-        body_html = request.form['editormd-html-code']
         page = Page(title=form.title.data,
                     url_name=form.url_name.data,
                     body=form.body.data,
                     canComment=form.can_comment.data,
-                    isNav=form.is_nav.data,
-                    body_html=body_html)
+                    isNav=form.is_nav.data)
         db.session.add(page)
         db.session.commit()
         flash('添加成功')
@@ -315,8 +313,6 @@ def edit_page(name):
     start_title = page.title
     form = AddPageForm()
     if form.validate_on_submit():
-        body_html = request.form['editormd-html-code']
-        page.body_html = body_html
         page.title = form.title.data
         page.body = form.body.data
         page.canComment = form.can_comment.data
@@ -326,10 +322,7 @@ def edit_page(name):
         db.session.commit()
         flash('更新成功')
         # 清除缓存
-        if page.title == start_title:
-            clean_cache('page//page/{path}/'.format(path=page.url_name))
-        else:
-            clean_cache('all')
+        clean_cache('all')
         return redirect(url_for('admin.edit_page', name=page.url_name))
     form.title.data = start_title
     form.body.data = page.body
