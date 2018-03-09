@@ -160,6 +160,15 @@ class Comment(db.Model):
     page_id = db.Column(db.Integer, db.ForeignKey('pages.id'))
     article_id = db.Column(db.Integer, db.ForeignKey('articles.id'))
 
+    def __init__(self, **kwargs):
+        super(Comment, self).__init__(**kwargs)
+
+        if self.website:
+            if self.website.startswith('http://') or self.website.startswith('https://'):
+                self.website = self.website
+            else:
+                self.website = 'http://' + self.website
+
     @property
     def strptime(self):
         return datetime.datetime.strftime(self.timestamp, '%Y-%m-%d')
