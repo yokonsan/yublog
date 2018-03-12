@@ -122,8 +122,8 @@
             <div class="sidebar">
                 <div id="mobile-user" class="side-content">
                     <div class="side-nav">
-                        <span>文章目录</span>
-                        <span class="current">站点概览</span>
+                        <span class="current">文章目录</span>
+                        <span>站点概览</span>
                     </div>
                     <div class="profile site-box">
                         <div class="master-image">
@@ -152,7 +152,7 @@
                                     <strong>{% if global_datas().friendCounts %}{{ global_datas().friendCounts }}{% else %}0{% endif %}</strong>
                                     <span>朋友</span>
                                 </a></li>
-                                <li class="last-li"><a href="/page/guestbook/">
+                                <li class="last-li"><a href="{{ url_for('main.page',page_url='guestbook') }}">
                                     <strong>{% if global_datas().guestbookCounts %}{{ global_datas().guestbookCounts }}{% else %}0{% endif %}</strong>
                                     <span>留言</span>
                                 </a></li>
@@ -233,14 +233,8 @@
     {% block script %}
     <script src="{{url_for('static', filename='js/myStorage.js')}}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/sticky.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/headroom.min.js') }}"></script>
     <script>
-        var sticky = new Sticky(".side-content", {
-            // 表示距离顶部 20px 的时候就固定
-            offset: 20
-        });
-
         // headroom
         var header = new Headroom(document.getElementById("header"), {
             tolerance: 0,

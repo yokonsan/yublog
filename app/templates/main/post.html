@@ -11,7 +11,8 @@
     }
     .post-meta { text-align: center; }
     .post-body {padding: 0;}
-    .side-nav {display: block;}
+    .side-nav,.post-toc {display: block;}
+    .blog-tags,.profile {display: none;}
 </style>
 {% endblock %}
 
@@ -93,9 +94,14 @@
 {% block script %}
 {{ super() }}
 <script src="{{url_for('static', filename='js/comment.js')}}"></script>
+<script src="{{ url_for('static', filename='js/sticky.js') }}"></script>
 <script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
 <script src="{{url_for('static', filename='js/myToc.js')}}"></script>
 <script type="text/javascript">
+    var sticky = new Sticky(".side-content", {
+                // 表示距离顶部 20px 的时候就固定
+                offset: 20
+            });
     // donate button
     var donateBtn = document.getElementsByClassName('donate-btn')[0];
     var donateImg = document.getElementsByClassName('donate-img')[0];

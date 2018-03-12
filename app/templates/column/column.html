@@ -19,7 +19,10 @@
                 {{ column.body_to_html | safe }}
                 <div class="column-btn">
                     <button class="love-column" href="{{ url_for('column.love_column',id=column.id) }}">喜欢主题</button>
-                    <a class="read-column" href="{{ url_for('column.article',url=column.url_name,id=first_id) }}">阅读主题</a>
+                    <a class="read-column"
+                       href="{% if first_id %}{{ url_for('column.article',url=column.url_name,id=first_id) }}{% else %}#{% endif %}">
+                        阅读主题
+                    </a>
                 </div>
             </div>
         </div>
@@ -27,12 +30,16 @@
 
     <div class="column-articles">
         <div class="column-menu">主题目录</div>
+        {% if data %}
         {% for i in data %}
         <div class="article-item">
             <span class="article-num">{{ i.num }}</span>
             <a href="{{ url_for('column.article',url=column.url_name,id=i.item.id) }}">{{ i.item.title }}</a>
         </div>
         {% endfor %}
+        {% else %}
+        <p>专题还没有文章</p>
+        {% endif %}
     </div>
 
 </div>
