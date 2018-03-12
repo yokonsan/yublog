@@ -28,12 +28,15 @@ def _column(id):
     column = Column.query.get_or_404(id)
     column.view_num += 1
     db.session.add(column)
-    articles = Article.query.order_by(Article.timestamp.asc()).all()
+    articles = column.articles.order_by(Article.timestamp.asc()).all()
 
     data = enum_list(list(articles))
+    first_id = None
+    if articles:
+        first_id = articles[0].id
 
     return render_template('column/column.html', column=column,
-                           title=column.column, data=data, first_id=articles[0].id)
+                           title=column.column, data=data, first_id=first_id)
 
 
 @column.route('/<url>/<int:id>')

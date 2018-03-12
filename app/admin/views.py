@@ -526,7 +526,7 @@ def admin_columns():
 @login_required
 def admin_column(id):
     column = Column.query.get_or_404(id)
-    articles = Article.query.order_by(Article.timestamp.desc()).all()
+    articles = column.articles.order_by(Article.timestamp.desc()).all()
     return render_template('admin_column/admin_column.html', column=column,
                            articles=articles, title=column.column)
 

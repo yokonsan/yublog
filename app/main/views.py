@@ -172,12 +172,8 @@ def archives():
                 data[y] = year_post
         year_post = []
 
-    return render_template('main/archives.html',
-                           title='归档',
-                           posts=posts,
-                           year=year,
-                           data=data,
-                           count=count,
+    return render_template('main/archives.html', title='归档', posts=posts,
+                           year=year, data=data, count=count,
                            pagination=pagination)
 
 @main.route('/search/', methods=['POST'])
@@ -200,10 +196,8 @@ def search_result():
         error_out=False
     )
     results = [post for post in pagination.items if post.draft is False]
-    return render_template('main/results.html',
-                           results=results,
-                           query=query,
-                           pagination=pagination,
+    return render_template('main/results.html', results=results,
+                           query=query, pagination=pagination,
                            title=query + '的搜索结果')
 
 # 侧栏 love me 插件
@@ -237,6 +231,7 @@ def save_comment(post, form):
     email = form['email']
     website = form['website'] or None
     com = form['comment']
+    comment = ''
     try:
         replyTo = form['replyTo']
         comment = Comment(comment=com, author=nickname,
@@ -255,11 +250,11 @@ def save_comment(post, form):
         # asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg)
         data = {'nickname': nickname, 'email': email, 'website': website, 'comment': com}
     finally:
-        if type(post) == Post:
+        if isinstance(post, Post):
             comment.post = post
-        elif type(post) == Page:
+        elif isinstance(post, Page):
             comment.page = post
-        elif type(post) == Article:
+        elif isinstance(post, Article):
             comment.article = post
         db.session.add(comment)
         db.session.commit()
