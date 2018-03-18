@@ -44,7 +44,7 @@ def index():
         page, per_page=current_app.config['POSTS_PER_PAGE'],
         error_out=False
     )
-    posts = [post for post in pagination.items if post.draft is False]
+    posts = (post for post in pagination.items if post.draft is False)
 
     return render_template('main/index.html',
                            title='首页',
@@ -90,7 +90,7 @@ def post(year, month, article_name):
         abort(404)
     post.view_num += 1
     db.session.add(post)
-    tags = [tag for tag in post.tags.split(',')]
+    tags = (tag for tag in post.tags.split(','))
     next_post = nextPost(post)
     prev_post = prevPost(post)
 
@@ -118,8 +118,7 @@ def page(page_url):
     p = request.args.get('page', 1, type=int)
     if p == -1:
         counts = page.comments.count()
-        p = (counts - 1) / \
-               current_app.config['COMMENTS_PER_PAGE'] + 1
+        p = (counts - 1) / current_app.config['COMMENTS_PER_PAGE'] + 1
     pagination = Comment.query.filter_by(page=page, isReply=False, disabled=True).order_by(
         Comment.timestamp.desc()).paginate(
         p, per_page=current_app.config['COMMENTS_PER_PAGE'],
@@ -136,7 +135,7 @@ def page(page_url):
 def tag(tag_name):
     tag = tag_name
     all_posts = Post.query.order_by(Post.timestamp.desc()).all()
-    posts = [post for post in all_posts if post.tag_in_post(tag) and post.draft is False]
+    posts = (post for post in all_posts if post.tag_in_post(tag) and post.draft is False)
 
     return render_template('main/tag.html', tag=tag, posts=posts)
 
@@ -160,7 +159,7 @@ def archives():
         page, per_page=current_app.config['ACHIVES_POSTS_PER_PAGE'],
         error_out=False
     )
-    posts = [post for post in pagination.items if post.draft is False]
+    posts = (post for post in pagination.items if post.draft is False)
     # times = [post.timestamp for post in posts ]
     year = list(set([i.year for i in posts]))[::-1]
     data = {}
@@ -195,7 +194,7 @@ def search_result():
         page, per_page=current_app.config['SEARCH_POSTS_PER_PAGE'],
         error_out=False
     )
-    results = [post for post in pagination.items if post.draft is False]
+    results = (post for post in pagination.items if post.draft is False)
     return render_template('main/results.html', results=results,
                            query=query, pagination=pagination,
                            title=query + '的搜索结果')

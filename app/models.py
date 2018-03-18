@@ -197,7 +197,7 @@ class Comment(db.Model):
 class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
-    tag = db.Column(db.String(6), index=True)
+    tag = db.Column(db.String(16), index=True)
 
     def to_json(self):
         tag = {
