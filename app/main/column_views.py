@@ -87,7 +87,7 @@ def enter_password(url, id):
         password = form.password.data
         if password == current_app.config['ARTICLE_PASSWORD']:
             resp = make_response(redirect(url_for('column.article', url=url, id=id)))
-            resp.set_cookie('secrecy', password)
+            resp.set_cookie('secrecy', password, max_age=7*24*60*60)
             return resp
         return redirect(url_for('column.enter_password', url=url, id=id))
     return render_template('column/enter_password.html', form=form,
