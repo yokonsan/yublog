@@ -546,7 +546,7 @@ def write_column_article(url):
     form = ColumnArticleForm()
     if form.validate_on_submit():
         article = Article(title=form.title.data, timestamp=form.date.data,
-                          body=form.body.data, column=column)
+                          body=form.body.data, secrecy=form.secrecy.data, column=column)
         db.session.add(article)
         db.session.commit()
         flash('添加文章成功！')
@@ -563,7 +563,7 @@ def edit_column_article(url, id):
     form = ColumnArticleForm()
     if form.validate_on_submit():
         article = Article(title=form.title.data, timestamp=form.date.data,
-                          body=form.body.data, column=column)
+                          body=form.body.data, secrecy=form.secrecy.data, column=column)
         db.session.add(article)
         db.session.commit()
         flash('更新文章成功！')
@@ -572,6 +572,7 @@ def edit_column_article(url, id):
     form.title.data = article.title
     form.date.data = article.timestamp
     form.body.data = article.body
+    form.secrecy.data = article.secrecy
     return render_template('admin_column/write_article.html', form=form,
                            title='更新文章', column=column, article=article)
 

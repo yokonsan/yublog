@@ -12,3 +12,6 @@ class CommentForm(FlaskForm):
     website = StringField('website')
     comment = TextAreaField('comment', validators=[DataRequired()])
 
+class ArticlePasswordForm(FlaskForm):
+    password = StringField('password', validators=[DataRequired()])
+

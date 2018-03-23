@@ -1,9 +1,11 @@
-from flask import render_template, request, jsonify, current_app
+from flask import render_template, request, jsonify, \
+    current_app, redirect, url_for, make_response
 
 from . import column
 from app import db
 from ..models import Column, Article, Comment
 from .views import save_comment
+from  .forms import ArticlePasswordForm
 
 
 def enum_list(list):
@@ -45,6 +47,10 @@ def article(url, id):
 
     articles = Article.query.filter_by(column=column).order_by(Article.timestamp.asc()).all()
     article = Article.query.get_or_404(id)
+
+    if article.secrecy and not request.cookies.get('secrecy'):
+        return redirect(url_for('column.enter_password', url=url, id=id))
+
     article.view_num += 1
     db.session.add(article)
 
@@ -73,6 +79,19 @@ def article(url, id):
                            article=article, prev_article=prev_article, next_article=next_article,
                            pagination=pagination, comments=comments, replys=replys,
                            counts=len(comments)+len(replys))
+
+@column.route('/article/<url>/<int:id>/password', methods=['GET', 'POST'])
+def enter_password(url, id):
+    form = ArticlePasswordForm()
+    if form.validate_on_submit():
+        password = form.password.data
+        if password == current_app.config['ARTICLE_PASSWORD']:
+            resp = make_response(redirect(url_for('column.article', url=url, id=id)))
+            resp.set_cookie('secrecy', password)
+            return resp
+        return redirect(url_for('column.enter_password', url=url, id=id))
+    return render_template('column/enter_password.html', form=form,
+                           url=url, id=id, title='输如密码')
 
 @column.route('/love/<int:id>')
 def love_column(id):

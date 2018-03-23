@@ -63,4 +63,5 @@ class ColumnArticleForm(FlaskForm):
     title = StringField('title', validators=[DataRequired()])
     date = StringField('datetime', validators=[DataRequired()])
     body = TextAreaField('body', validators=[DataRequired()])
+    secrecy = BooleanField('secrecy')
     submit = SubmitField('submit')

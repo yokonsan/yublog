@@ -62,6 +62,9 @@ class Config(object):
     CACHE_REDIS_DB = os.getenv('CACHE_REDIS_DB') or ''
     CHCHE_REDIS_PASSWORD = os.getenv('CHCHE_REDIS_PASSWORD') or ''
 
+    # 专题保密文章的密码
+    ARTICLE_PASSWORD = os.getenv('ARTICLE_PASSWORD') or 'password'
+
     @staticmethod
     def init_app(app):
         pass

@@ -300,6 +300,7 @@ class Article(db.Model):
     title = db.Column(db.String(64))
     view_num = db.Column(db.Integer, default=0)
     body = db.Column(db.Text)
+    secrecy = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.String(64))
 
     column_id = db.Column(db.Integer, db.ForeignKey('columns.id'))
