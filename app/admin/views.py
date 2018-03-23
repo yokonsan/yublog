@@ -576,7 +576,7 @@ def edit_column_article(url, id):
     return render_template('admin_column/write_article.html', form=form,
                            title='更新文章', column=column, article=article)
 
-@admin.route('/<url>/edit/article/<int:id>')
+@admin.route('/<url>/delete/article/<int:id>')
 @login_required
 def delete_column_article(url, id):
     column = Column.query.filter_by(url_name=url).first()
