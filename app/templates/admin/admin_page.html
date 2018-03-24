@@ -10,9 +10,7 @@
             <a class="article-title" href="{{url_for('admin.edit_page',name=page.url_name)}}">
                 {{ page.title }}
             </a>
-            <a href="{{url_for('admin.delete_page',name=page.url_name)}}">
-                <button class="delete-btn">删除</button>
-            </a>
+            <button onclick="firm('{{url_for('admin.delete_page',name=page.url_name)}}')" class="delete-btn">删除</button>
             <a href="{{url_for('admin.edit_page',name=page.url_name)}}">
                 <button class="edit-btn">编辑</button>
             </a>

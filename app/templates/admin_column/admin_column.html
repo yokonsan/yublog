@@ -17,9 +17,11 @@
             <a class="article-title" href="{{url_for('admin.edit_column_article',url=column.url_name,id=article.id)}}">
                 {{ article.title }}
             </a>
-            <a href="{{url_for('admin.delete_column_article',url=column.url_name,id=article.id)}}">
-                <button class="delete-btn">删除</button>
-            </a>
+
+            <button class="delete-btn" onclick="firm('{{url_for('admin.delete_column_article',url=column.url_name,id=article.id)}}')">
+                删除
+            </button>
+
             <a href="{{url_for('admin.edit_column_article',url=column.url_name,id=article.id)}}">
                 <button class="edit-btn">编辑</button>
             </a>
@@ -29,4 +31,27 @@
 </div>
 {% endif %}
 
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+    <script>
+        function firm(url) {
+            var request;
+            if (window.XMLHttpRequest) {
+                request = new XMLHttpRequest();
+            } else {
+                request = new ActiveXObject('Microsoft.XMLHTTP');
+            }
+            //利用对话框返回的值 （true 或者 false）
+            if (confirm("你确定删除吗？")) {
+                // 发送请求:
+                request.open('GET', url);
+                request.send();
+                location.reload();
+            }
+            else { }
+
+        }
+    </script>
 {% endblock %}

@@ -13,9 +13,11 @@
             <a class="article-title" href="{{url_for('admin.admin_edit',time=post.timestampInt, name=post.url_name)}}">
                 {{ post.title }}
             </a>
-            <a href="{{url_for('admin.delete',time=post.timestampInt,name=post.url_name)}}">
-                <button class="delete-btn">删除</button>
-            </a>
+
+            <button onclick="firm('{{url_for('admin.delete',time=post.timestampInt,name=post.url_name)}}')" class="delete-btn">
+                删除
+            </button>
+
             <a href="{{url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name)}}">
                 <button class="edit-btn">编辑</button>
             </a>

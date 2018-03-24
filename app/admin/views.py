@@ -583,7 +583,7 @@ def delete_column_article(url, id):
     article = Article.query.filter_by(id=id).first()
     db.session.delete(article)
     db.session.commit()
-    flash('删除文章！')
+    flash('删除文章成功！')
     return redirect(url_for('admin.admin_column', id=column.id))
 
 

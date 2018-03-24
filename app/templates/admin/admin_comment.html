@@ -18,7 +18,7 @@
             </a>下发布评论：
             <p>{{comment.comment}}</p>
             <p>
-                <a href="{{url_for('admin.delete_comment',id=comment.id)}}"><button class="delete-btn">删除</button></a>
+                <button onclick="firm('{{url_for('admin.delete_comment',id=comment.id)}}')" class="delete-btn">删除</button>
                 {% if comment.disabled == False %}
                 <a href="{{url_for('admin.allow_comment',id=comment.id)}}"><button class="allow-btn">通过</button></a>
                 {% else %}
