@@ -165,7 +165,7 @@ def archives():
         page, per_page=current_app.config['ACHIVES_POSTS_PER_PAGE'],
         error_out=False
     )
-    posts = (post for post in pagination.items if post.draft is False)
+    posts = [post for post in pagination.items if post.draft is False]
     # times = [post.timestamp for post in posts ]
     year = list(set([i.year for i in posts]))[::-1]
     data = {}
