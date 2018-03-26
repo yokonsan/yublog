@@ -28,8 +28,11 @@ def index():
 @column.route('/<int:id>')
 def _column(id):
     column = Column.query.get_or_404(id)
-    column.view_num += 1
-    db.session.add(column)
+
+    if not request.cookies.get('column_' + str(id)):
+        column.view_num += 1
+        db.session.add(column)
+
     articles = column.articles.order_by(Article.timestamp.asc()).all()
 
     data = enum_list(list(articles))
@@ -37,8 +40,10 @@ def _column(id):
     if articles:
         first_id = articles[0].id
 
-    return render_template('column/column.html', column=column,
-                           title=column.column, data=data, first_id=first_id)
+    resp =  make_response(render_template('column/column.html', column=column,
+                           title=column.column, data=data, first_id=first_id))
+    resp.set_cookie('column_' + str(id), '1', max_age=1*24*60*60)
+    return resp
 
 
 @column.route('/<url>/<int:id>')
@@ -48,11 +53,13 @@ def article(url, id):
     articles = Article.query.filter_by(column=column).order_by(Article.timestamp.asc()).all()
     article = Article.query.get_or_404(id)
 
-    if article.secrecy and not request.cookies.get('secrecy'):
+    secrecy = request.cookies.get('secrecy')
+    if article.secrecy and not secrecy and secrecy != current_app.config['ARTICLE_PASSWORD']:
         return redirect(url_for('column.enter_password', url=url, id=id))
 
-    article.view_num += 1
-    db.session.add(article)
+    if not request.cookies.get('article_' + str(id)):
+        article.view_num += 1
+        db.session.add(article)
 
     prev_article = next_article = None
     if articles[0] != article:
@@ -65,8 +72,8 @@ def article(url, id):
     page = request.args.get('page', 1, type=int)
     if page == -1:
         counts = article.comments.count()
-        page = (counts - 1) / \
-               current_app.config['COMMENTS_PER_PAGE'] + 1
+        page = (counts - 1) / current_app.config['COMMENTS_PER_PAGE'] + 1
+
     pagination = Comment.query.filter_by(article=article, isReply=False, disabled=True).order_by(
         Comment.timestamp.desc()).paginate(
         page, per_page=current_app.config['COMMENTS_PER_PAGE'],
@@ -75,10 +82,13 @@ def article(url, id):
     comments = pagination.items
     replys = article.comments.filter_by(isReply=True, disabled=True).all()
 
-    return render_template('column/article.html', column=column, data=data, title=article.title,
-                           article=article, prev_article=prev_article, next_article=next_article,
-                           pagination=pagination, comments=comments, replys=replys,
-                           counts=len(comments)+len(replys))
+    resp = make_response(render_template('column/article.html', column=column, data=data, title=article.title,
+                   article=article, prev_article=prev_article, next_article=next_article,
+                   pagination=pagination, comments=comments, replys=replys,
+                   counts=len(comments)+len(replys))
+                 )
+    resp.set_cookie('article_' + str(id), '1', max_age=1*24*60*60)
+    return resp
 
 @column.route('/article/<url>/<int:id>/password', methods=['GET', 'POST'])
 def enter_password(url, id):

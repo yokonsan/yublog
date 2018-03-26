@@ -1,4 +1,5 @@
-from flask import render_template, redirect, url_for, request, g, current_app, abort, jsonify
+from flask import render_template, redirect, url_for, request, \
+                g, current_app, abort, jsonify, make_response
 
 from . import main
 from .forms import SearchForm
@@ -88,8 +89,11 @@ def post(year, month, article_name):
         post = [i for i in posts if time in i.timestamp][0]
     elif len(posts) < 1:
         abort(404)
-    post.view_num += 1
-    db.session.add(post)
+
+    if not request.cookies.get('post_' + str(post.id)):
+        post.view_num += 1
+        db.session.add(post)
+
     tags = (tag for tag in post.tags.split(','))
     next_post = nextPost(post)
     prev_post = prevPost(post)
@@ -97,8 +101,8 @@ def post(year, month, article_name):
     page = request.args.get('page', 1, type=int)
     if page == -1:
         counts = post.comments.count()
-        page = (counts - 1) / \
-               current_app.config['COMMENTS_PER_PAGE'] + 1
+        page = (counts - 1) / current_app.config['COMMENTS_PER_PAGE'] + 1
+
     pagination = Comment.query.filter_by(post=post,isReply=False,disabled=True).order_by(
         Comment.timestamp.desc()).paginate(
         page, per_page=current_app.config['COMMENTS_PER_PAGE'],
@@ -106,10 +110,12 @@ def post(year, month, article_name):
     )
     comments = pagination.items
     replys = post.comments.filter_by(isReply=True, disabled=True).all()
-    return render_template('main/post.html', post=post, tags=tags, title=post.title,
-                           next_post=next_post, prev_post=prev_post, pagination=pagination,
-                           comments=comments, replys=replys, counts=len(comments)+len(replys))
-
+    resp =  make_response(render_template('main/post.html', post=post, tags=tags, title=post.title,
+                   next_post=next_post, prev_post=prev_post, pagination=pagination,
+                   comments=comments, replys=replys, counts=len(comments)+len(replys))
+                  )
+    resp.set_cookie('post_' + str(post.id), '1', max_age=1*24*60*60)
+    return resp
 
 @main.route('/page/<page_url>/')
 #@cache.cached(timeout=60*60*24, key_prefix='page/%s', unless=None)
