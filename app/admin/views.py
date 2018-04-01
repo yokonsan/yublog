@@ -95,6 +95,8 @@ def add_link():
             db.session.add(link)
             db.session.commit()
             flash('添加成功')
+            # 清除缓存
+            clean_cache('all')
             return redirect(url_for('admin.add_link'))
     # 友链
     if fr_form.submit2.data and fr_form.validate_on_submit():
@@ -109,7 +111,7 @@ def add_link():
             db.session.commit()
             flash('添加成功')
             # 清除缓存
-            clean_cache('friends')
+            clean_cache('all')
             return redirect(url_for('admin.add_link'))
     return render_template('admin/admin_add_link.html', title="站点链接",
                            form=form, fr_form=fr_form)
@@ -144,7 +146,7 @@ def great_link(id):
     db.session.add(link)
     db.session.commit()
     # 清除缓存
-    clean_cache('friends')
+    clean_cache('all')
     return redirect(url_for('admin.admin_links'))
 
 def save_tags(tags):
@@ -166,7 +168,6 @@ def save_post(form, draft=False):
     :param draft: article is or not draft
     :return: post object
     """
-
     category = Category.query.filter_by(category=form.category.data).first()
     if not category:
         category = Category(category=form.category.data)
@@ -601,5 +602,35 @@ def upload_file():
         return redirect(url_for('admin.index'))
     return render_template('admin/upload_file.html', title="上传文件")
 
+
+# 侧栏box
+@admin.route('/add/sidebox', methods=['GET', 'POST'])
+@login_required
+def add_side_box():
+    pass
+
+
+@admin.route('/edit/sidebox/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_side_box(id):
+    pass
+
+
+@admin.route('/sideboxs')
+@login_required
+def admin_side_box():
+    pass
+
+
+@admin.route('/unable/box/<int:id>')
+@login_required
+def unable_side_box(id):
+    pass
+
+
+@admin.route('/delete/box/<int:id>')
+@login_required
+def delete_side_box(id):
+    pass
 
 
