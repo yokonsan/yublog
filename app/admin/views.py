@@ -502,8 +502,10 @@ def edit_column(id):
     column = Column.query.get_or_404(id)
     form = ColumnForm()
     if form.validate_on_submit():
-        column = Column(column=form.column.data, timestamp=form.date.data,
-                        url_name=form.url_name.data, body=form.body.data)
+        column.column = form.column.data
+        column.timestamp = form.date.data
+        column.url_name = form.url_name.data
+        column.body = form.body.data
         db.session.add(column)
         db.session.commit()
         flash('专题更新成功！')
@@ -563,8 +565,10 @@ def edit_column_article(url, id):
 
     form = ColumnArticleForm()
     if form.validate_on_submit():
-        article = Article(title=form.title.data, timestamp=form.date.data,
-                          body=form.body.data, secrecy=form.secrecy.data, column=column)
+        article.title = form.title.data
+        article.timestamp = form.date.data
+        article.secrecy = form.secrecy.data
+        article.body = form.body.data
         db.session.add(article)
         db.session.commit()
         flash('更新文章成功！')
