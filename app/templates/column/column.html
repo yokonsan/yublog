@@ -35,6 +35,9 @@
         <div class="article-item">
             <span class="article-num">{{ i.num }}</span>
             <a href="{{ url_for('column.article',url=column.url_name,id=i.item.id) }}">{{ i.item.title }}</a>
+            {% if i.item.secrecy == True %}
+            <span style="float: right;color: #df846c;">保密</span>
+            {% endif %}
         </div>
         {% endfor %}
         {% else %}
