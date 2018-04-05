@@ -315,6 +315,19 @@ class Article(db.Model):
     def __repr__(self):
         return '<Article %r>' % (self.title)
 
+
+class SideBox(db.Model):
+    __tablename__ = 'side_boxes'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(64), nullable=True)
+    body = db.Column(db.Text)
+    unable = db.Column(db.Boolean, default=False)
+    is_advertising = db.Column(db.Boolean)
+
+    def __repr__(self):
+        return '<SideBox %r>' % (self.body)
+
+
 class Alembic(db.Model):
     __tablename__ = 'alembic_version'
     version_num = db.Column(db.String(32), primary_key=True, nullable=False)
