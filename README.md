@@ -32,7 +32,7 @@
 ## ToDo
 
 - 更加美观的页面；
-- 自定义侧栏插件；
+- 自定义侧栏插件；✔
 - 独立个性的评论系统；✔
 - 站点音乐播放器。
 
@@ -41,3 +41,4 @@
 1. 集成[editor.md](https://github.com/pandao/editor.md)编辑器，所见即所得。提交日志：[f33c33](https://github.com/Blackyukun/YuBlog/tree/f33c33bdbe192c1f4749cb736e9fe161dcaa19ca) 下载即用
 2. 弃用`editor.md`编辑器，使用`markdown`库支持编写文章。
 3. 加入系列文章功能，记录某一主题系列文章。
+4. 添加侧栏插件功能，可添加广告插件和普通插件，需要自己编写前端样式。
