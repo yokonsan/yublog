@@ -65,3 +65,9 @@ class ColumnArticleForm(FlaskForm):
     body = TextAreaField('body', validators=[DataRequired()])
     secrecy = BooleanField('secrecy')
     submit = SubmitField('submit')
+
+class SideBoxForm(FlaskForm):
+    title = StringField('title')
+    body = TextAreaField('body', validators=[DataRequired()])
+    is_advertising = BooleanField('is_advertising')
+    submit = SubmitField('submit')

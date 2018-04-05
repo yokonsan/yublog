@@ -27,7 +27,7 @@ def global_datas():
     if admin:
         global_data['admin'] = admin[0]
 
-    all_links = SiteLink.query.order_by(SiteLink.link).all()
+    all_links = SiteLink.query.order_by(SiteLink.id.desc()).all()
     if all_links:
         social_links = [link for link in all_links if link.isFriendLink == False]
         friend_links_counts = len([link for link in all_links if link.isFriendLink == True])
@@ -36,27 +36,27 @@ def global_datas():
 
     all_tags = Tag.query.all()
     if all_tags:
-        tags = [tag for tag in all_tags]
-        global_data['tags'] = tags
+        # tags = [tag for tag in all_tags]
+        global_data['tags'] = all_tags
 
     all_categories = Category.query.all()
     if all_categories:
-        categories = [category for category in all_categories]
-        global_data['categories'] = categories
+        #categories = [category for category in all_categories]
+        global_data['categories'] = all_categories
 
-    all_pages = Page.query.all()
+    all_pages = Page.query.filter_by(isNav=True).all()
     if all_pages:
-        pages = [page for page in all_pages if page.isNav==True]
-        global_data['pages'] = pages
+        #pages = (page for page in all_pages if page.isNav==True)
+        global_data['pages'] = all_pages
 
     love_me_counts = LoveMe.query.all()[0]
     if love_me_counts:
         global_data['loves'] = love_me_counts.loveMe
 
-    posts = Post.query.all()
+    posts = Post.query.filter_by(draft=False).count()
     if posts:
-        post_counts = len([post for post in posts if post.draft==False])
-        global_data['postCounts'] = post_counts
+        #post_counts = len([post for post in posts if post.draft==False])
+        global_data['postCounts'] = posts
 
     shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
     if shuos:
@@ -67,6 +67,14 @@ def global_datas():
         guestbook_counts = guestbook.comments.count()
         global_data['guestbookCounts'] = guestbook_counts
 
+    all_boxes = SideBox.query.order_by(SideBox.id.desc()).all()
+    if all_boxes:
+        adv_boxes = [box for box in all_boxes if box.unable is False and box.is_advertising is True]
+        global_data['ads_boxes'] = adv_boxes
+        my_boxes = [box for box in all_boxes if box.unable is False and box.is_advertising is False]
+        global_data['my_boxes'] = my_boxes
+
     return global_data
+
 
 main.add_app_template_global(global_datas, 'global_datas')
