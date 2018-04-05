@@ -1,0 +1,33 @@
+{% extends "admin.html" %}
+
+{% block content %}
+
+<div class="admin-write">
+    <div class="admin-title site-box">{{ title }}<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
+
+    <form action="{%if title== '添加插件'%}{{url_for('admin.add_side_box')}}{%else%}{{url_for('admin.edit_side_box',id=box.id)}}{%endif%}" method="post">
+        {{form.hidden_tag()}}
+        <div class="aticle-data site-box">
+            <div class="data-ipt">
+                <p>勾选广告，盒子会固定顶部</p>
+                <p>广告：{{form.is_advertising()}}</p>
+            </div>
+        </div>
+        <div class="aticle-body site-box">
+            <div class="write-body">
+                <p>{{form.title(class="aticle-title",placeholder="标题: 可以为空")}}</p>
+                <div id="editormd">
+                    {{form.body(style="display:block;",rows="5",cols="30",placeholder="支持原生html，css，js。请指定元素宽度不超过240px")}}<br>
+                </div>
+                {% if title == '添加插件' %}
+                <p>{{ form.submit(class="write-btn",value="添加") }}</p>
+                {% else %}
+                <p>{{ form.submit(class="write-btn",value="更新") }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+
+</div>
+{% endblock %}
+

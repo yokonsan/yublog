@@ -191,6 +191,8 @@
                         </div>
                     </div>
 
+
+                    {% block my_plugin %}
                     <div class="blog-tags site-box">
                         <div class="side-title"><i class="demo-icon icon-tags"></i> 标签</div>
                         <ul>
@@ -200,9 +202,38 @@
                         </ul>
                         <div class="clear"></div>
                     </div>
+                    {% if global_datas().my_boxes %}
+                    {% for box in global_datas().my_boxes %}
+                    <div class="blog-tags site-box">
+                        {% if box.title %}
+                        <div class="side-title"> {{ box.title }}</div>
+                        {% endif %}
+                        <div class="box-body">
+                            {{ box.body }}
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    {% endblock %}
                 </div>
 
-                {% block plugin %}
+                {% block ads_plugin %}
+                {% if global_datas().ads_boxes %}
+                <div class="ads_plugin">
+                    {% for box in global_datas().ads_boxes %}
+                    <div class="my-plugin">
+                        {% if box.title %}
+                        <div class="side-title"> {{ box.title }}</div>
+                        {% endif %}
+                            <div class="plugin-body">
+                                {{ box.body | safe}}
+                            </div>
+                        <div class="clear"></div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 {% endblock %}
 
             </div>
@@ -233,6 +264,7 @@
     {% block script %}
     <script src="{{url_for('static', filename='js/myStorage.js')}}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sticky.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/headroom.min.js') }}"></script>
     <script>
         // headroom
@@ -241,6 +273,11 @@
             offset : 70
         });
         header.init();
+
+        var sticky = new Sticky(".ads_plugin", {
+            // 表示距离顶部 20px 的时候就固定
+            offset: 10
+        });
     </script>
     <script>
         var addPage = document.getElementsByClassName('mobile-add-page');

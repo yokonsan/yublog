@@ -1424,10 +1424,28 @@ ul.comment-children {
 }
 
 
+/*plugin box*/
+.my-plugin {
+    background: #fff;
+    margin-bottom: 10px;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+}
+
+.plugin-body {
+    padding: 5px;
+    padding-bottom: 0;
+}
+
+.box-body {
+    padding: 10px;
+}
+
 /*cnzz*/
 .footer span.cnzz-span {
     display: none;
 }
+
 
 
 /*mobile disply*/
@@ -1438,3 +1456,5 @@ ul.comment-children {
 .shuo-content article section .brief span.mobile-date-time {
     display: none;
 }
+
+

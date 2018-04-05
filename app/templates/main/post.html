@@ -16,6 +16,11 @@
 </style>
 {% endblock %}
 
+{% block my_plugin %}
+{% endblock %}
+{% block ads_plugin %}
+{% endblock %}
+
 {% block content %}
     <div class="post-item site-box">
         <h1 class="post-title">
@@ -94,7 +99,6 @@
 {% block script %}
 {{ super() }}
 <script src="{{url_for('static', filename='js/comment.js')}}"></script>
-<script src="{{ url_for('static', filename='js/sticky.js') }}"></script>
 <script src="{{url_for('static', filename='lib/jquery.min.js')}}"></script>
 <script src="{{url_for('static', filename='js/myToc.js')}}"></script>
 <script type="text/javascript">
