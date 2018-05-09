@@ -16,8 +16,8 @@
         <div class="aticle-body site-box">
             <div class="write-body">
                 <p>{{form.column(class="aticle-title",placeholder="专题名")}}</p>
-                <div id="editormd">
-                    {{form.body(style="display:block;",rows="5",cols="80")}}<br>
+                <div>
+                    {{form.body(id="editormd",style="display:block;",rows="5",cols="80")}}<br>
                 </div>
                 {% if title == '编辑专题' %}
                 <p>{{ form.submit(class="write-btn",value="发布") }}</p>
@@ -31,3 +31,18 @@
 </div>
 {% endblock %}
 
+{% block script %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/simplemde/1.11.2/simplemde.min.css">
+    <script src="https://cdn.bootcss.com/simplemde/1.11.2/simplemde.min.js"></script>
+    <script>
+         new SimpleMDE({
+         element: document.getElementById("editormd"),
+         spellChecker: false,
+         autosave: {
+            enabled: true,
+            unique_id: "demo2"
+         }
+      });
+    </script>
+{% endblock %}

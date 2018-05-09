@@ -23,6 +23,9 @@
             <a href="{{ url_for('column.article',url=column.url_name,id=i.item.id) }}" class="{% if i.item==article %}current{% else %}{% endif %}">
                 {{ i.item.title }}
             </a>
+            {% if i.item.secrecy == True %}
+            <span style="color: red;float: right;"> ! </span>
+            {% endif %}
         </li>
         {% endfor %}
     </ul>

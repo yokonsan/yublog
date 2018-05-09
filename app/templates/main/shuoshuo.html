@@ -2,6 +2,7 @@
 
 {% block content %}
 <div class="shuo-content site-box">
+    {% if years %}
     {% for y in years %}
     <article>
         <h3>{{y}}</h3>
@@ -19,5 +20,8 @@
         {% endfor %}
     </article>
     {% endfor %}
+    {% else %}
+    <p>小主人你好啊，你还没有发过说说哦！</p>
+    {% endif %}
 </div>
 {% endblock %}

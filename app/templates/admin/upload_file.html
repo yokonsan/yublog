@@ -5,6 +5,7 @@
 <div class="admin-title site-box">上传文件<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
 
 <div class="upload-file site-box">
+    <p>上传的文件访问路径：/xxxx.jpg</p>
     <form id="upload_form" action="{{ url_for('admin.upload_file') }}" method="post" enctype="multipart/form-data">
         <p><input id="md-file" type="file" name="file"></p>
         <input id="submit" type="submit" value="上传" class="submit-btn">
