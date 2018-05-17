@@ -1,20 +1,29 @@
 /**
  * Created by Administrator on 2017/11/21 0021.
  */
-(function() {
-    var clickEvent = function(el1, el2) {
-        el1.onclick = function() {
-            if (el2.style.display === 'none') {
-                el2.style.display = 'block';
-            } else {
-                el2.style.display = 'none';
-            }
-        }
-    }
 
+function flashEvent() {
     // flash message div
     var flashDiv = document.getElementsByClassName('flash-msg')[0];
     var flashX = document.getElementsByClassName('flash-x')[0];
 
-    clickEvent(flashX, flashDiv);
-})();
+    flashDiv.style.display = 'none';
+}
+
+function firm(url) {
+    var request;
+    if (window.XMLHttpRequest) {
+        request = new XMLHttpRequest();
+    } else {
+        request = new ActiveXObject('Microsoft.XMLHTTP');
+    }
+    //利用对话框返回的值 （true 或者 false）
+    if (confirm("你确定删除吗？")) {
+        // 发送请求:
+        request.open('GET', url);
+        request.send();
+        location.reload();
+    }
+    else { }
+
+}

@@ -32,7 +32,8 @@
 {% endblock %}
 
 {% block script %}
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
+    {{ super() }}
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.bootcss.com/simplemde/1.11.2/simplemde.min.css">
     <script src="https://cdn.bootcss.com/simplemde/1.11.2/simplemde.min.js"></script>
     <script>
@@ -40,8 +41,7 @@
          element: document.getElementById("editormd"),
          spellChecker: false,
          autosave: {
-            enabled: true,
-            unique_id: "demo2"
+            enabled: false
          }
       });
     </script>
