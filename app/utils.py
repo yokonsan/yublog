@@ -7,6 +7,8 @@ from threading import Thread
 
 from markdown import Markdown
 
+
+# 拼接站点地图
 def get_sitemap(posts):
     header = '<?xml version="1.0" encoding="UTF-8"?> '+ '\n' + \
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
@@ -26,6 +28,7 @@ def get_sitemap(posts):
         return sitemap
     return None
 
+# 保存xml文件到静态文件目录
 def save_file(sitemap, file):
     path = os.getcwd().replace('\\', '/')
     filename = path + '/app/static/' + file
@@ -38,6 +41,7 @@ def save_file(sitemap, file):
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(sitemap)
 
+# 发送邮件
 def send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg):
     content = MIMEText(msg, 'plain', 'utf-8')
     server = smtplib.SMTP_SSL(smtp_server, mail_port)
@@ -50,6 +54,7 @@ def asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg):
     t.start()
     t.join()
 
+# 生成 rss xml
 def get_rss_xml(name, protocol, url, title, subtitle, time, update_time, posts):
     header = '<?xml version="1.0" encoding="UTF-8"?>' + '\n' + \
     '<feed xmlns="http://www.w3.org/2005/Atom">' + '\n' + \
@@ -86,12 +91,11 @@ def get_rss_xml(name, protocol, url, title, subtitle, time, update_time, posts):
         return rss_xml
     return None
 
-
+# 解析markdown
 def markdown_to_html(body):
 
     md = Markdown(extensions=['fenced_code', 'codehilite(css_class=highlight,linenums=None)',
                               'admonition', 'tables', 'extra'])
     content = md.convert(body)
     return content
-
 

@@ -5,6 +5,7 @@ from flask_whooshee import Whooshee
 from flask_cache import Cache
 
 from config import config
+from .qiniu_picbed import QiniuUpload
 
 # class MySQLAlchemy(SQLAlchemy):
 #     def create_session(self, options):
@@ -18,6 +19,8 @@ lm.login_view = 'admin.login'
 whooshee = Whooshee()
 cache = Cache()
 
+qn = QiniuUpload()
+
 def create_app(config_name):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
@@ -25,6 +28,8 @@ def create_app(config_name):
     lm.init_app(app)
     whooshee.init_app(app)
     cache.init_app(app)
+
+    qn.init_app(app)
 
     from .main import main as main_blueprint
     from .admin import admin as admin_blueprint

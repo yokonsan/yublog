@@ -65,6 +65,17 @@ class Config(object):
     # 专题保密文章的密码
     ARTICLE_PASSWORD = os.getenv('ARTICLE_PASSWORD') or 'password'
 
+    # 七牛云存储配置
+    NEED_PIC_BED = False
+    QN_ACCESS_KEY = os.getenv('QN_ACCESS_KEY') or ''
+    QN_SECRET_KEY = os.getenv('QN_SECRET_KEY') or ''
+    # 七牛空间名
+    QN_PIC_BUCKET = 'bucket-name'
+    # 七牛外链域名
+    QN_PIC_DOMAIN = 'domain-url'
+    # 上传七牛临时文件夹
+    QN_TEM_FOLDER = './app/static/upload/temImg/'
+
     @staticmethod
     def init_app(app):
         pass
