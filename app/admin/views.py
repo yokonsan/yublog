@@ -1,9 +1,10 @@
 import os
+import re
 
 from flask import render_template, redirect, request, flash, current_app, url_for
 from flask_login import login_required, login_user, logout_user
 
-from .. import cache
+from .. import cache, qn
 from ..models import *
 from . import admin
 from .forms import *
@@ -599,6 +600,11 @@ def upload_file():
     source_folder = current_app.config['UPLOAD_PATH']
     if request.method == 'POST':
         file = request.files['file']
+        # print(file)
+        # print(dir(file))
+        # print(file.mimetype)
+        # print(file.content_length)
+        # print(file.stream.read())
         filename = file.filename
         path = os.path.join(source_folder, filename)
         file.save(path)
@@ -607,7 +613,7 @@ def upload_file():
     return render_template('admin/upload_file.html', title="上传文件")
 
 
-# 侧栏box
+# 侧栏box---begin
 @admin.route('/add/sidebox', methods=['GET', 'POST'])
 @login_required
 def add_side_box():
@@ -680,4 +686,57 @@ def delete_side_box(id):
     # 清除缓存
     clean_cache('all')
     return redirect(url_for('admin.admin_side_box'))
+# 侧栏box---end
 
+# qiniu picture bed begin
+@admin.route('/qiniu/picbed', methods=['GET', 'POST'])
+@login_required
+def qiniu_picbed():
+    # 判断是否需要七牛图床
+    need_qiniu_picbed = current_app.config['NEED_PIC_BED']
+    if not need_qiniu_picbed:
+        flash('你没有设置七牛配置...')
+        return redirect(url_for('admin.index'))
+    if request.method == 'POST':
+
+        img_name = request.form.get('key', None)
+        file = request.files['file']
+        filename = file.filename
+        img_stream = file.stream.read()
+        if img_name:
+            filename = re.sub(r'[\/\\\:\*\?"<>|]', r'_', img_name)
+        if file.mimetype.startswith('image') and qn.upload_qn(filename, img_stream):
+            flash('upload image {0} successful'.format(filename))
+            return redirect(url_for('admin.qiniu_picbed'))
+
+        flash('upload image fail')
+        return redirect(url_for('admin.qiniu_picbed'))
+    # get all images
+    images = qn.get_all_images()
+    counts = len(images)
+
+    return render_template('plugin/picbed.html',
+                           title="七牛图床", images=images, counts=counts)
+
+@admin.route('/qiniu/delete', methods=['GET', 'POST'])
+@login_required
+def delete_img():
+    key = request.get_json()['key']
+    if qn.del_file(key):
+        flash('delete image {0} successful'.format(key))
+        return redirect(url_for('admin.qiniu_picbed'))
+    flash('delete image fail')
+    return redirect(url_for('admin.qiniu_picbed'))
+
+@admin.route('/qiniu/rename', methods=['GET', 'POST'])
+@login_required
+def rename_img():
+    key = request.get_json()['key']
+    key_to = request.get_json()['keyTo']
+    if qn.rename_file(key, key_to):
+        flash('rename image {0} successful'.format(key))
+        return redirect(url_for('admin.qiniu_picbed'))
+    flash('rename image fail')
+    return redirect(url_for('admin.qiniu_picbed'))
+
+# qiniu picture bed end

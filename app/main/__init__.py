@@ -5,7 +5,7 @@ column = Blueprint('column', __name__)
 
 from . import views, site, column_views
 from ..models import *
-from .. import cache
+from app import cache
 
 @main.app_context_processor
 @cache.cached(timeout=60*60*24*30, key_prefix='global', unless=None)
