@@ -315,4 +315,117 @@ button.allow-btn:hover {
     padding: 20px;
 }
 
+/*qiniu picbed styles*/
+.pic-bed {
+    padding: 20px;
+}
+
+.upload-img {
+    padding: 0 10px 10px;
+    font-size: 16px;
+    color: #da851d;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+.upload-img button {
+    float: right;
+    background: #ddd;
+    border: 1px solid #ccc;
+    width: 50px;
+    padding: 2px 0;
+    cursor: pointer;
+    color: #de7204;
+}
+
+.img-item {
+    width: 238px;
+    height: 380px;
+    margin: 0 23px 10px;
+    float: left;
+    display: inline-block;
+    position: relative;
+    border: 1px solid #eee;
+    padding: 10px;
+}
+
+.img-name {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.img-item a {
+    display: block;
+    text-align: center;
+    text-decoration: none;
+}
+
+.img-item img {
+    max-width: 238px;
+    max-height: 180px;
+}
+
+
+
+.img-desc span {
+    width: 192px;
+    display: inherit;
+    float: right;
+    word-wrap: break-word;
+    word-break: normal;
+    font-size: 13px;
+    color: #888;
+}
+
+.img-desc span.img-link {
+    color: #da7d0a;
+}
+
+.img-btn {
+    width: 240px;
+    bottom: 10px;
+    position: absolute;
+}
+
+.img-btn button {
+    background: #eee;
+    border: 1px solid #ddd;
+    color: #df846c;
+    border-radius: 3px;
+    width: 70px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.img-btn button.del-btn {
+    float: right;
+}
+
+.img-btn button:hover {
+    color: #fc6423;
+}
+
+.upload-input {
+    display: none;
+    width: 300px;
+    padding: 20px;
+    margin: 0 auto 10px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.upload-input input#name-ipt {
+    width: 100%;
+    box-sizing: border-box;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    padding: 5px 10px;
+    outline: none;
+    font-size: 14px;
+}
+
+.upload-input input#name-ipt:focus {
+    border-bottom: 1px solid #ec920c;
+}
+
 
