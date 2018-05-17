@@ -16,7 +16,7 @@
             {% for message in messages %}
                 <div class="flash-msg">
                     {{ message }}
-                    <span class="flash-x">x</span>
+                    <span class="flash-x" onclick="flashEvent()">x</span>
                 </div>
             {% endfor %}
             {% endif %}
@@ -29,23 +29,7 @@
     {% block script %}
     <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
     <script>
-        function firm(url) {
-            var request;
-            if (window.XMLHttpRequest) {
-                request = new XMLHttpRequest();
-            } else {
-                request = new ActiveXObject('Microsoft.XMLHTTP');
-            }
-            //利用对话框返回的值 （true 或者 false）
-            if (confirm("你确定删除吗？")) {
-                // 发送请求:
-                request.open('GET', url);
-                request.send();
-                location.reload();
-            }
-            else { }
 
-        }
     </script>
     {% endblock %}
 </body>

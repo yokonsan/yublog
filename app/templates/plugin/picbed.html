@@ -1,0 +1,50 @@
+{% extends "admin.html" %}
+{% block content %}
+{% if current_user.is_authenticated %}
+
+<div class="admin-title site-box">七牛图床<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
+
+<div class="pic-bed site-box">
+    <div class="upload-img">
+        共 {{ counts }} 张图片
+        <button onclick="showIpt(this)">上传</button>
+    </div>
+    <div class="upload-input">
+        <form action="{{ url_for('admin.qiniu_picbed') }}" method="post" enctype="multipart/form-data">
+            <p><input id="name-ipt" type="text" placeholder="图片名，默认为文件名" name="key"></p>
+            <p><input id="md-file" type="file" name="file"></p>
+            <p><input id="submit" type="submit" value="上传" class="submit-btn"></p>
+        </form>
+    </div>
+    <div class="img-list">
+        {% if images %}
+        {% for item in images %}
+        <div class="img-item">
+            <div class="img-name">{{ item.name }}</div>
+            <a href="{{ item.url }}" target="_blank">
+                <img class="qiniu-img" src="{{ item.url }}" alt="{{ item.name }}">
+            </a>
+            <div class="img-desc">
+                <p>大小：<span>{{ item.size }}kb</span></p>
+                <p>时间：<span>{{ item.time }}</span></p>
+                <p>外链：<span class="img-link">{{ item.url }}</span></p>
+                <p></p>
+            </div>
+
+            <div class="img-btn">
+                <button onclick="renameImg(this)">更名</button>
+                <button onclick="deleteImg(this)" class="del-btn">删除</button>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+    <div class="clear"></div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script src="{{ url_for('static', filename='js/picbed.js') }}"></script>
+{% endblock %}
