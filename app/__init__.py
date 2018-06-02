@@ -29,7 +29,8 @@ def create_app(config_name):
     whooshee.init_app(app)
     cache.init_app(app)
 
-    qn.init_app(app)
+    if app.config.get('NEED_PIC_BED', False):
+        qn.init_app(app)
 
     from .main import main as main_blueprint
     from .admin import admin as admin_blueprint
