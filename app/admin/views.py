@@ -407,11 +407,12 @@ def admin_comments():
 @login_required
 def delete_comment(id):
     comment = Comment.query.get_or_404(id)
+    page = comment.page
     db.session.delete(comment)
     db.session.commit()
     flash('删除成功')
 
-    page = comment.page
+    print(page.url_name)
     if page and page.url_name == 'guestbook':
         # 清除缓存
         clean_cache('all')
