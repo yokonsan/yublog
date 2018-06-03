@@ -7,6 +7,7 @@ from . import views, site, column_views
 from ..models import *
 from app import cache
 
+
 @main.app_context_processor
 @cache.cached(timeout=60*60*24*30, key_prefix='global', unless=None)
 def global_datas():
@@ -76,5 +77,9 @@ def global_datas():
 
     return global_data
 
-
-main.add_app_template_global(global_datas, 'global_datas')
+"""
+add_app_template_global is the problem of legacy slowing down the program.
+add_app_template_global is register a custom template global application.
+app_context_processor decorator is register a custom template global dict.
+"""
+# main.add_app_template_global(global_datas, 'global_datas')
