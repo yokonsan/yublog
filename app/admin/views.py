@@ -412,7 +412,6 @@ def delete_comment(id):
     db.session.commit()
     flash('删除成功')
 
-    print(page.url_name)
     if page and page.url_name == 'guestbook':
         # 清除缓存
         clean_cache('all')
