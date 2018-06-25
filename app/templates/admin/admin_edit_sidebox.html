@@ -1,5 +1,19 @@
 {% extends "admin.html" %}
-
+{% block styles %}
+{{ super() }}
+    <style>
+        .write-body textarea {
+            width: 640px;
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #999;
+            border-radius: 2px;
+            font-size: 16px;
+            color: #444;
+            outline: none;
+        }
+    </style>
+{% endblock %}
 {% block content %}
 
 <div class="admin-write">
