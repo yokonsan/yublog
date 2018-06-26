@@ -3,8 +3,8 @@ import unittest
 from flask import current_app
 
 from app import create_app, db
-from app.models import Post, Page, Admin, Comment, Column, Article, \
-        Category, Tag, Shuoshuo, SiteLink, SideBox, LoveMe
+from app.models import Post, Page, Admin, Column, Article, \
+        Category, Tag, Shuoshuo, SiteLink, SideBox
 
 
 class AdminTestCase(unittest.TestCase):
@@ -57,10 +57,8 @@ class AdminTestCase(unittest.TestCase):
 
     def test_add_page(self):
         """添加页面"""
-        test_page = Page(title='test',
-                    url_name='test-page',
-                    body='This is a test page.',
-                    canComment=False,
+        test_page = Page(title='test', url_name='test-page',
+                    body='This is a test page.', canComment=False,
                     isNav=False)
         db.session.add(test_page)
         db.session.commit()
@@ -114,7 +112,135 @@ class AdminTestCase(unittest.TestCase):
                       is_advertising=False)
         db.session.add(test_box)
         db.session.commit()
-        box = SideBox(title='test-box')
+        box = SideBox.query.filter_by(title='test-box').first()
         self.assertIsNotNone(box)
+
+    def test_admin_post(self):
+        """管理文章"""
+        test_post = Post.query.filter_by(title='test').first()
+        test_post.title = 'test_admin'
+        db.session.add(test_post)
+        db.session.commit()
+        post = Post.query.filter_by(url_name='test-post').first()
+        self.assertEqual(post.title, 'test_admin')
+
+    def test_delete_post(self):
+        """删除文章"""
+        test_post = Post.query.filter_by(url_name='test-post').first()
+        db.session.delete(test_post)
+        db.session.commit()
+        post = Post.query.filter_by(url_name='test-post').first()
+        self.assertIsNone(post)
+
+    def test_admin_page(self):
+        """管理页面"""
+        test_page = Page.query.filter_by(title='test').first()
+        test_page.title = 'test_admin'
+        db.session.add(test_page)
+        db.session.commit()
+        page = Page.query.filter_by(url_name='test-page').first()
+        self.assertEqual(page.title, 'test_admin')
+
+    def test_delete_page(self):
+        """删除页面"""
+        test_page = Page.query.filter_by(url_name='test-page').first()
+        db.session.delete(test_page)
+        db.session.commit()
+        page = Post.query.filter_by(url_name='test-page').first()
+        self.assertIsNone(page)
+
+    def test_admin_shuoshuo(self):
+        """管理说说"""
+        test_shuo = Shuoshuo.query.filter_by(shuo='This a test shuoshuo.').first()
+        test_shuo.shuo = 'This a new shuoshuo.'
+        db.session.add(test_shuo)
+        db.session.commit()
+        shuo = Shuoshuo.query.filter_by(shuo='This a test shuoshuo.').first()
+        self.assertIsNone(shuo)
+
+    def test_delete_shuoshuo(self):
+        """删除说说"""
+        test_shuo = Shuoshuo.query.filter_by(shuo='This a new shuoshuo.').first()
+        db.session.delete(test_shuo)
+        db.session.commit()
+        shuo = Shuoshuo.query.filter_by(shuo='This a new shuoshuo.').first()
+        self.assertIsNone(shuo)
+
+    def test_admin_link(self):
+        """管理链接"""
+        test_social_link = SiteLink.query.filter_by(isFriendLink=False).first()
+        test_friend_link = SiteLink.query.filter_by(isFriendLink=True).first()
+        test_social_link.name = 'google'
+        test_friend_link.name ='kyu'
+        db.session.add(test_social_link)
+        db.session.add(test_friend_link)
+        db.session.commit()
+        social_link = SiteLink.query.filter_by(isFriendLink=False).first()
+        friend_link = SiteLink.query.filter_by(isFriendLink=True).first()
+        self.assertEqual(social_link.name, 'google')
+        self.assertNotEqual(friend_link.name, 'yukun')
+
+    def test_delete_link(self):
+        """删除链接"""
+        test_social_link = SiteLink.query.filter_by(isFriendLink=False).first()
+        test_friend_link = SiteLink.query.filter_by(isFriendLink=True).first()
+        db.session.delete(test_social_link)
+        db.session.delete(test_friend_link)
+        db.session.commit()
+        social_link = SiteLink.query.filter_by(isFriendLink=False).first()
+        friend_link = SiteLink.query.filter_by(isFriendLink=True).first()
+        self.assertIsNone(social_link)
+        self.assertIsNone(friend_link)
+
+    def test_admin_article(self):
+        """管理专栏文章"""
+        test_article = Article.query.filter_by(title='test-article').first()
+        test_article.title = 'test'
+        db.session.add(test_article)
+        db.session.commit()
+        article = Article.query.filter_by(title='test-article').first()
+        self.assertIsNone(article)
+
+    def test_delete_article(self):
+        """删除专栏文章"""
+        test_article = Article.query.filter_by(title='test').first()
+        db.session.delete(test_article)
+        db.session.commit()
+        article = Article.query.filter_by(title='test').first()
+        self.assertIsNone(article)
+
+    def test_admin_column(self):
+        """管理专栏"""
+        test_column = Column.query.filter_by(column='test')
+        test_column.column = 'test_admin'
+        db.session.add(test_column)
+        db.session.commit()
+        column = Column.query.filter_by(column='test').first()
+        self.assertIsNone(column)
+
+    def test_delete_column(self):
+        """删除专栏"""
+        test_column = Column.query.filter_by(column='test_admin')
+        db.session.delete(test_column)
+        db.session.commit()
+        column = Column.query.filter_by(column='test_admin').first()
+        self.assertIsNone(column)
+
+    def test_admin_plugin(self):
+        """管理插件"""
+        test_box = SideBox.query.filter_by(title='test-box').first()
+        test_box.title = 'test'
+        db.session.add(test_box)
+        db.session.commit()
+        box = SideBox.query.filter_by(title='test-box').first()
+        self.assertIsNone(box)
+
+    def test_delete_plugin(self):
+        """删除插件"""
+        test_box = SideBox.query.filter_by(title='test').first()
+        db.session.delete(test_box)
+        db.session.commit()
+        box = SideBox.query.filter_by(title='test').first()
+        self.assertIsNone(box)
 
 
