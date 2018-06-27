@@ -57,7 +57,7 @@ class LoveMe(db.Model):
 class Page(db.Model):
     __tablename__ = 'pages'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(3))
+    title = db.Column(db.String(6))
     url_name = db.Column(db.String(25))
     canComment = db.Column(db.Boolean, default=False)
     isNav = db.Column(db.Boolean, default=False)
@@ -305,7 +305,6 @@ class Article(db.Model):
 
     column_id = db.Column(db.Integer, db.ForeignKey('columns.id'))
     comments = db.relationship('Comment', backref='article', lazy='dynamic')
-
 
     @property
     def body_to_html(self):
