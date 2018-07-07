@@ -259,7 +259,7 @@ def love_me():
     :return: json
     """
     # 清除所有页面缓存
-    cache.clear()
+    cache.delete('global')
     love_me_counts = LoveMe.query.all()[0]
     love_me_counts.loveMe += 1
     db.session.add(love_me_counts)
