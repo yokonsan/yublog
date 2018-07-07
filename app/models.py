@@ -87,12 +87,13 @@ class Page(db.Model):
 
 @whooshee.register_model('title', 'body')
 class Post(db.Model):
+    """为了把文章缓存时间久一些，把文章浏览量模型分离"""
     __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
     url_name = db.Column(db.String(64))
     timestamp = db.Column(db.String(64))
-    view_num = db.Column(db.Integer, default=0)
+    # view_num = db.Column(db.Integer, default=0)
     body = db.Column(db.Text)
     draft = db.Column(db.Boolean, default=False)
     disable = db.Column(db.Boolean, default=False)
@@ -100,6 +101,7 @@ class Post(db.Model):
     tags = db.Column(db.String(64))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
+    # view_num = db.relationship('Comment', backref='post', lazy='dynamic')
 
     @property
     def timestampInt(self):
@@ -135,16 +137,53 @@ class Post(db.Model):
             'datetime': self.timestamp,
             'category': self.category.category,
             'tag': self.tags,
-            'views': self.view_num,
             'comment_count': self.comments.count(),
             'comments': url_for('api.get_post_comments', id=self.id, _external=True)
+        }
+        return post
+
+    def to_dict(self):
+        """缓存"""
+        post = {
+            'id': self.id,
+            'url': self.url_name,
+            'title': self.title,
+            'body': self.body_to_html,
+            'year': self.year,
+            'month': self.month,
+            'datetime': self.timestamp,
+            'category': self.category.category,
+            'tag': self.tags,
+            'comment_count': self.comments.count()
         }
         return post
 
     def __repr__(self):
         return '<Post %r>' % (self.title)
 
+class View(db.Model):
+    """文章浏览量"""
+    __tablename__ = 'views'
+    id = db.Column(db.Integer, primary_key=True)
+    count = db.Column(db.Integer, default=0)
+    type = db.Column(db.String(25), default='post')
+
+    relationship_id = db.Column(db.Integer)
+
+    def __repr__(self):
+        return '<View %r %r>' %(self.post_id, self.count)
+
 class Comment(db.Model):
+    """
+    缓存设计尝试：
+        取消原先的模型关联，
+        增加type键｛
+            'post': 博客文章评论
+            'page': 博客页面评论
+            'article': 专栏文章评论
+        ｝
+        以type和id来获取对于评论
+    """
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
     comment = db.Column(db.Text)
@@ -156,6 +195,8 @@ class Comment(db.Model):
     disabled = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
 
+    # type = db.Column(db.String(25), default='post')
+    # relationship_id = db.Column(db.Integer)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
     page_id = db.Column(db.Integer, db.ForeignKey('pages.id'))
     article_id = db.Column(db.Integer, db.ForeignKey('articles.id'))
