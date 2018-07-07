@@ -55,6 +55,7 @@ a {
 }
 
 table {
+    margin: 0 auto;
     border-collapse: collapse;
     border-spacing: 0;
     margin-bottom: 1.2em;
@@ -568,7 +569,7 @@ ol#toc a:hover {
 .post-title {
     /*text-align: center;*/
     font-size: 20px;
-    font-weight: 500;
+    font-weight: 600;
     padding: 3px 5px;
 }
 
@@ -654,8 +655,8 @@ span.post-time {
 
 .footer a {
     text-decoration: none;
-    color: #444;
-    border-bottom: 1px solid #555;
+    color: #888;
+    /*border-bottom: 1px solid #555;*/
 }
 
 .footer a:hover {

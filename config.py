@@ -49,7 +49,7 @@ class Config(object):
     MAIL_PORT = os.getenv('MAIL_PORT') or '465'
 
     ADMIN_MAIL_SUBJECT_PREFIX = 'blog'
-    ADMIN_MAIL_SENDER = 'admin 944682328@qq.com'
+    ADMIN_MAIL_SENDER = 'admin email'
     # 接收邮件通知的邮箱
     ADMIN_MAIL = os.getenv('ADMIN_MAIL')
     # 搜索最小字节
@@ -86,6 +86,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
 
 class TestingConfig(Config):
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@localhost:3306/testdb'
     TESTING = True
 
 

@@ -67,7 +67,7 @@ def set_site():
         db.session.commit()
         flash('设置成功')
         # 清除所有缓存
-        clean_cache('all')
+        clean_cache('global')
         return redirect(url_for('admin.index'))
     form.username.data = user.name
     form.profile.data = user.profile
@@ -97,7 +97,7 @@ def add_link():
             db.session.commit()
             flash('添加成功')
             # 清除缓存
-            clean_cache('all')
+            clean_cache('global')
             return redirect(url_for('admin.add_link'))
     # 友链
     if fr_form.submit2.data and fr_form.validate_on_submit():
@@ -112,7 +112,7 @@ def add_link():
             db.session.commit()
             flash('添加成功')
             # 清除缓存
-            clean_cache('all')
+            clean_cache('global')
             return redirect(url_for('admin.add_link'))
     return render_template('admin/admin_add_link.html', title="站点链接",
                            form=form, fr_form=fr_form)
@@ -133,7 +133,7 @@ def delete_link(id):
     db.session.delete(link)
     db.session.commit()
     # 清除缓存
-    clean_cache('all')
+    clean_cache('global')
     return redirect(url_for('admin.admin_links'))
 
 @admin.route('/great/link/<int:id>')
@@ -147,7 +147,7 @@ def great_link(id):
     db.session.add(link)
     db.session.commit()
     # 清除缓存
-    clean_cache('all')
+    clean_cache('global')
     return redirect(url_for('admin.admin_links'))
 
 def save_tags(tags):
@@ -175,7 +175,6 @@ def save_post(form, draft=False):
         db.session.add(category)
 
     tags = [tag for tag in form.tags.data.split(',')]
-    # print(form.body.data)
     if draft is True:
         post = Post(body=form.body.data, title=form.title.data,
                     url_name=form.url_name.data, category=category,
@@ -228,12 +227,11 @@ def write():
             db.session.add(post)
             flash('发布成功！')
             # 清除缓存
-            clean_cache('all')
+            clean_cache('global')
         db.session.commit()
         return redirect(url_for('admin.write'))
     return render_template('admin/admin_write.html',
-                           form=form,
-                           title='写文章')
+                           form=form, title='写文章')
 
 # 编辑文章或草稿
 @admin.route('/edit/<int:time>/<name>', methods=['GET', 'POST'])
@@ -262,7 +260,7 @@ def admin_edit(time, name):
                 db.session.commit()
                 flash('发布成功')
                 # 清除缓存
-                clean_cache('all')
+                clean_cache('global')
                 # 更新 xml
                 update_xml(post.timestamp)
             return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))
@@ -272,7 +270,7 @@ def admin_edit(time, name):
             db.session.commit()
             flash('更新成功')
             # 清除对应文章缓存
-            key = 'post/{path}/'.format(path='/'+str(post.year)+'/'+str(post.month)+'/'+str(post.url_name))
+            key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
             clean_cache(key)
             update_xml(post.timestamp)
             return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))
@@ -283,9 +281,7 @@ def admin_edit(time, name):
     form.title.data = post.title
     form.body.data = post.body
     return render_template('admin/admin_write.html',
-                           form=form,
-                           post=post,
-                           title='编辑文章')
+                           form=form, post=post, title='编辑文章')
 
 @admin.route('/add-page', methods=['GET', 'POST'])
 @login_required
@@ -302,7 +298,7 @@ def add_page():
         flash('添加成功')
         if page.isNav is True:
             # 清除缓存
-            clean_cache('all')
+            clean_cache('global')
         return redirect(url_for('admin.add_page'))
     return render_template('admin/admin_add_page.html',
                            form=form,
@@ -324,7 +320,7 @@ def edit_page(name):
         db.session.commit()
         flash('更新成功')
         # 清除缓存
-        clean_cache('all')
+        clean_cache('global')
         return redirect(url_for('admin.edit_page', name=page.url_name))
     form.title.data = start_title
     form.body.data = page.body
@@ -345,7 +341,7 @@ def delete_page(name):
     flash('删除成功')
     if page.isNav is True:
         # 清除缓存
-        clean_cache('all')
+        clean_cache('global')
     return redirect(url_for('admin.admin_pages'))
 
 @admin.route('/draft')
@@ -388,7 +384,7 @@ def delete(time, name):
     db.session.commit()
     flash('删除成功')
     # 清除缓存
-    clean_cache('all')
+    clean_cache('global')
     return redirect(url_for('admin.admin_posts'))
 
 @admin.route('/comments')
@@ -414,7 +410,7 @@ def delete_comment(id):
 
     if page and page.url_name == 'guestbook':
         # 清除缓存
-        clean_cache('all')
+        clean_cache('global')
     return redirect(url_for('admin.admin_comments'))
 
 @admin.route('/allow/comment/<int:id>')
@@ -429,7 +425,7 @@ def allow_comment(id):
     page = comment.page
     if page and page.url_name == 'guestbook':
         # 清除缓存
-        clean_cache('all')
+        clean_cache('global')
     return redirect(url_for('admin.admin_comments'))
 
 @admin.route('/unable/comment/<int:id>')
@@ -444,7 +440,7 @@ def unable_comment(id):
     page = comment.page
     if page and page.url_name == 'guestbook':
         # 清除缓存
-        clean_cache('all')
+        clean_cache('global')
     return redirect(url_for('admin.admin_comments'))
 
 @admin.route('/write/shuoshuo', methods=['GET','POST'])
@@ -457,7 +453,7 @@ def write_shuoshuo():
         db.session.commit()
         flash('发布成功')
         # 清除缓存
-        clean_cache('all')
+        clean_cache('global')
         return redirect(url_for('admin.write_shuoshuo'))
     return render_template('admin/admin_write_shuoshuo.html',
                            title='写说说', form=form)
@@ -478,7 +474,7 @@ def delete_shuo(id):
     db.session.commit()
     flash('删除成功')
     # 清除缓存
-    clean_cache('all')
+    clean_cache('global')
     return redirect(url_for('admin.admin_shuos'))
 
 
@@ -625,7 +621,7 @@ def add_side_box():
         db.session.commit()
         flash('添加侧栏插件成功')
         # 清除缓存
-        clean_cache('all')
+        clean_cache('global')
         return redirect(url_for('admin.admin_side_box'))
     return render_template('admin/admin_edit_sidebox.html', form=form,
                            title='添加插件')
@@ -644,7 +640,7 @@ def edit_side_box(id):
         db.session.commit()
         flash('更新侧栏插件成功')
         # 清除缓存
-        clean_cache('all')
+        clean_cache('global')
         return redirect(url_for('admin.admin_side_box'))
 
     form.title.data = box.title
@@ -672,7 +668,7 @@ def unable_side_box(id):
     db.session.add(box)
     db.session.commit()
     # 清除缓存
-    clean_cache('all')
+    clean_cache('global')
     return redirect(url_for('admin.admin_side_box'))
 
 
@@ -684,7 +680,7 @@ def delete_side_box(id):
     db.session.commit()
     flash('删除插件成功')
     # 清除缓存
-    clean_cache('all')
+    clean_cache('global')
     return redirect(url_for('admin.admin_side_box'))
 # 侧栏box---end
 
