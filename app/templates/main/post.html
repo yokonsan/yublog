@@ -130,17 +130,13 @@ function getViewCount(id) {
     request.onreadystatechange = function () { // 状态发生变化时，函数被回调
         if (request.readyState === 4) {
             if (request.status === 200) {
-                console.log('success');
-                console.log(request.status);
-                console.log(request.responseText);
                 respText = JSON.parse(request.responseText);
                 viewSpans.innerHTML += respText.count;
             } else {
-                console.log('fail');
+                console.log('Ajax fail');
             }
         }
     };
-    console.log('ajax begin');
     request.open('GET', '/view/post/'+id);
     request.send();
 }
