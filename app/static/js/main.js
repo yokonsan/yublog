@@ -105,7 +105,7 @@
         } else {
             mobileUser.style.display = "none";
         }
-    }
+    };
 
     // love me sidebar
     var loveMeTitle = document.getElementsByClassName('love-title')[0];
@@ -158,3 +158,5 @@
     };
 
 })();
+
+
