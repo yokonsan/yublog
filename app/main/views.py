@@ -8,6 +8,47 @@ from ..utils import asyncio_send
 from .. import cache
 
 
+def get_post_cache(key):
+    """获取博客文章缓存"""
+    data = cache.get(key)
+    if data:
+        return data
+    else:
+        items = key.split('_')
+        return set_post_cache(items[1], items[2], items[3])
+
+def set_post_cache(year, month, url):
+    """设置博客文章缓存"""
+    time = str(year) + '-' + str(month)
+    posts = Post.query.filter_by(url_name=url).all()
+    post = ''
+    if len(posts) == 1:
+        post = posts[0]
+    elif len(posts) > 1:
+        post = [i for i in posts if time in i.timestamp][0]
+    elif len(posts) < 1:
+        abort(404)
+    tags = [tag for tag in post.tags.split(',')]
+    next_post = nextPost(post)
+    prev_post = prevPost(post)
+    data = post.to_dict()
+    data['tags'] = tags
+    data['next_post'] = {
+        'year': next_post.year,
+        'month': next_post.month,
+        'url': next_post.url_name,
+        'title': next_post.title
+    } if next_post else None
+    data['prev_post'] = {
+        'year': prev_post.year,
+        'month': prev_post.month,
+        'url': prev_post.url_name,
+        'title': prev_post.title
+    } if prev_post else None
+    cache_key = '_'.join(map(str, ['post', year, month, url]))
+    cache.set(cache_key, data, timeout=60 * 60 * 24 * 30)
+    return data
+
 @main.before_request
 def before_request():
     g.search_form = SearchForm()
@@ -38,19 +79,22 @@ def internal_server_error(e):
 
 @main.route('/')
 @main.route('/index')
-#@cache.cached(timeout=60*60*12, key_prefix=cache_key)
 def index():
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
-        page, per_page=current_app.config['POSTS_PER_PAGE'],
-        error_out=False
-    )
-    posts = (post for post in pagination.items if post.draft is False)
+    per_page = current_app.config['POSTS_PER_PAGE']
 
-    return render_template('main/index.html',
-                           title='首页',
-                           posts=posts,
-                           pagination=pagination)
+    counts = Post.query.filter_by(draft=False).count()
+    max_page = counts // per_page + 1 if counts%per_page!=0 else counts // per_page
+    post_list = Post.query.order_by(Post.timestamp.desc()).limit(per_page).offset((page-1)*per_page).all()
+    all = (post for post in post_list if post.draft is False)
+    posts = []
+    for post in all:
+        cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
+        post = get_post_cache(cache_key)
+        posts.append(post)
+    return render_template('main/index.html', title='首页',
+                           posts=posts, page=page, max_page=max_page,
+                           pagination=range(1, max_page+1))
 
 def nextPost(post):
     """
@@ -78,47 +122,51 @@ def prevPost(post):
     return None
 
 @main.route('/<int:year>/<int:month>/<article_name>/')
-#@cache.cached(timeout=60*5, key_prefix='post/%s', unless=None)
 def post(year, month, article_name):
-    time = str(year) + '-' + str(month)
-    posts = Post.query.filter_by(url_name=article_name).all()
-    post = ''
-    if len(posts) == 1:
-        post = posts[0]
-    elif len(posts) > 1:
-        post = [i for i in posts if time in i.timestamp][0]
-    elif len(posts) < 1:
-        abort(404)
-
-    if not request.cookies.get('post_' + str(post.id)):
-        post.view_num += 1
-        db.session.add(post)
-
-    tags = (tag for tag in post.tags.split(','))
-    next_post = nextPost(post)
-    prev_post = prevPost(post)
+    cache_key = '_'.join(map(str, ['post', year, month, article_name]))
+    post = get_post_cache(cache_key)
 
     page = request.args.get('page', 1, type=int)
     if page == -1:
-        counts = post.comments.count()
+        counts = post.get('comment_count', 0)
         page = (counts - 1) / current_app.config['COMMENTS_PER_PAGE'] + 1
 
-    pagination = Comment.query.filter_by(post=post,isReply=False,disabled=True).order_by(
+    pagination = Comment.query.filter_by(post_id=post['id'],isReply=False,disabled=True).order_by(
         Comment.timestamp.desc()).paginate(
         page, per_page=current_app.config['COMMENTS_PER_PAGE'],
         error_out=False
     )
     comments = pagination.items
-    replys = post.comments.filter_by(isReply=True, disabled=True).all()
-    resp =  make_response(render_template('main/post.html', post=post, tags=tags, title=post.title,
-                   next_post=next_post, prev_post=prev_post, pagination=pagination,
-                   comments=comments, replys=replys, counts=len(comments)+len(replys))
-                  )
-    resp.set_cookie('post_' + str(post.id), '1', max_age=1*24*60*60)
-    return resp
+    replys = Comment.query.filter_by(post_id=post['id'], isReply=True, disabled=True).all()
+    return render_template('main/post.html', post=post, title=post['title'],
+                   pagination=pagination, comments=comments, replys=replys,
+                   counts=len(comments)+len(replys))
+
+@main.route('/view/<type>/<int:id>', methods=['GET'])
+def views(type, id):
+    """浏览量"""
+    view = View.query.filter_by(type=type, relationship_id=id).first()
+    if not view:
+        view = View(type=type, count=1, relationship_id=id)
+        db.session.add(view)
+        db.session.commit()
+        resp = jsonify(count=1)
+        resp.set_cookie('post_' + str(id), '1', max_age=1 * 24 * 60 * 60)
+        return resp
+
+    if type == 'post':
+        if not request.cookies.get('post_' + str(id)):
+            view.count += 1
+            db.session.add(view)
+            db.session.commit()
+            resp = jsonify(count=view.count)
+            resp.set_cookie('post_' + str(id), '1', max_age=1 * 24 * 60 * 60)
+            return resp
+        return jsonify(count=view.count)
+    elif type == 'column':
+        pass
 
 @main.route('/page/<page_url>/')
-#@cache.cached(timeout=60*60*24, key_prefix='page/%s', unless=None)
 def page(page_url):
     page = Page.query.filter_by(url_name=page_url).first()
     p = request.args.get('page', 1, type=int)
@@ -137,7 +185,6 @@ def page(page_url):
                            comments=comments, replys=replys, counts=len(comments)+len(replys))
 
 @main.route('/tag/<tag_name>/')
-#@cache.cached(timeout=60*60*24*30, key_prefix='tag/%s', unless=None)
 def tag(tag_name):
     tag = tag_name
     all_posts = Post.query.order_by(Post.timestamp.desc()).all()
@@ -146,7 +193,6 @@ def tag(tag_name):
     return render_template('main/tag.html', tag=tag, posts=posts)
 
 @main.route('/category/<category_name>/')
-#@cache.cached(timeout=60*60*24*30, key_prefix='category/%s', unless=None)
 def category(category_name):
     category = Category.query.filter_by(category=category_name).first()
 
@@ -157,7 +203,6 @@ def category(category_name):
                            title='分类：' + category.category)
 
 @main.route('/archives/')
-#@cache.cached(timeout=60*60*24*30, key_prefix=cache_key)
 def archives():
     count = Post.query.count()
     page = request.args.get('page', 1, type=int)
@@ -231,7 +276,6 @@ def save_comment(post, form):
     # smtp_server = current_app.config['MAIL_SERVER']
     # mail_port = current_app.config['MAIL_PORT']
 
-
     nickname = form['nickname']
     email = form['email']
     website = form['website'] or None
@@ -280,7 +324,6 @@ def comment(url):
                        website=data['website'], body=data['comment'], post=post.title)
 
 @main.route('/shuoshuo')
-#@cache.cached(timeout=60*60*24*30, key_prefix='shuoshuo', unless=None)
 def shuoshuo():
     shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
     years = list(set([y.year for y in shuos]))[::-1]
@@ -296,7 +339,6 @@ def shuoshuo():
 
 # friend link page
 @main.route('/friends')
-#@cache.cached(timeout=60*60*24*30, key_prefix='friends', unless=None)
 def friends():
     friends = SiteLink.query.filter_by(isFriendLink=True).order_by(SiteLink.id.desc()).all()
     great_links = [link for link in friends if link.isGreatLink is True]
@@ -304,5 +346,7 @@ def friends():
 
     return render_template('main/friends.html', title="朋友",
                            great_links=great_links, bad_links=bad_links)
+
+
 
 
