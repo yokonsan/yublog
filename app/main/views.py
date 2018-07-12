@@ -270,11 +270,13 @@ def love_me():
 # 保存评论的函数
 def save_comment(post, form):
     # 邮件配置
-    # from_addr = current_app.config['MAIL_USERNAME']
-    # password = current_app.config['MAIL_PASSWORD']
-    # to_addr = current_app.config['ADMIN_MAIL']
-    # smtp_server = current_app.config['MAIL_SERVER']
-    # mail_port = current_app.config['MAIL_PORT']
+    from_addr = current_app.config['MAIL_USERNAME']
+    password = current_app.config['MAIL_PASSWORD']
+    to_addr = current_app.config['ADMIN_MAIL']
+    smtp_server = current_app.config['MAIL_SERVER']
+    mail_port = current_app.config['MAIL_PORT']
+    # 站点链接
+    base_url = current_app.config['WEB_URL']
 
     nickname = form['nickname']
     email = form['email']
@@ -286,25 +288,29 @@ def save_comment(post, form):
         comment = Comment(comment=com, author=nickname,
                           email=email, website=website,
                           isReply=True, replyTo=replyTo)
-
-        # msg = nickname + '在文章：' + post.title + '\n' + '中发布一条评论：' + com + '\n' + '请前往查看。'
-        # asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg)
         data = {'nickname': nickname, 'email': email, 'website': website,
                 'comment': com, 'isReply': True, 'replyTo': replyTo}
     except:
         comment = Comment(comment=com, author=nickname,
                           email=email, website=website)
-
-        # msg = nickname + '在文章：' + post.title + '\n' + '中发布一条评论：' + com + '\n' + '请前往查看。'
-        # asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg)
         data = {'nickname': nickname, 'email': email, 'website': website, 'comment': com}
     finally:
+        post_url = ''
         if isinstance(post, Post):
+            post_url = 'http://' + '/'.join(map(str, [base_url, post.year, post.month, post.url_name]))
             comment.post = post
         elif isinstance(post, Page):
+            post_url = 'http://' + base_url + '/page/' + post.url_name
             comment.page = post
         elif isinstance(post, Article):
+            post_url = 'http://' + base_url + '/column/' + post.column.url_name + '/' + str(post.id)
             comment.article = post
+        # 发送邮件
+        if email != to_addr:
+            msg = render_template('admin_mail.html', nickname=nickname,
+                                  title=post.title, comment=com,
+                                  email=email, website=website, url=post_url)
+            asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg)
         db.session.add(comment)
         db.session.commit()
     return data

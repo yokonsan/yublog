@@ -8,7 +8,7 @@ from .. import cache, qn
 from ..models import *
 from . import admin
 from .forms import *
-from ..utils import get_sitemap, save_file, get_rss_xml
+from ..utils import get_sitemap, save_file, get_rss_xml, asyncio_send
 
 
 def clean_cache(key):
@@ -421,6 +421,38 @@ def allow_comment(id):
     db.session.add(comment)
     db.session.commit()
     flash('允许通过')
+
+    # 发送邮件
+    admin_mail = current_app.config['ADMIN_MAIL']
+
+    if comment.isReply:
+        reply_to_comment = Comment.query.get_or_404(comment.replyTo)
+        reply_email = reply_to_comment.email
+        if reply_email != admin_mail:
+            # 邮件配置
+            from_addr = current_app.config['MAIL_USERNAME']
+            password = current_app.config['MAIL_PASSWORD']
+            to_addr = reply_email
+            smtp_server = current_app.config['MAIL_SERVER']
+            mail_port = current_app.config['MAIL_PORT']
+            # 站点链接
+            base_url = current_app.config['WEB_URL']
+            # 收件人就是被回复的人
+            nickname = reply_to_comment.author
+            com = comment.comment
+
+            post_url = ''
+            if comment.post:
+                post_url = 'http://' + '/'.join(map(str, [base_url,
+                                        comment.post.year, comment.post.month, comment.post.url_name]))
+            elif comment.page:
+                post_url = 'http://' + base_url + '/page/' + comment.page.url_name
+            elif comment.article:
+                post_url = 'http://' + base_url + '/column/' + comment.article.column.url_name \
+                                        + '/' + str(comment.article.id)
+            # 发送邮件
+            msg = render_template('user_mail.html', nickname=nickname,comment=com, url=post_url)
+            asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg)
 
     page = comment.page
     if page and page.url_name == 'guestbook':

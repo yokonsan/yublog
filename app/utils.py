@@ -4,6 +4,10 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from threading import Thread
+from email import encoders
+from email.header import Header
+from email.mime.text import MIMEText
+from email.utils import parseaddr, formataddr
 
 from markdown import Markdown
 
@@ -42,8 +46,14 @@ def save_file(sitemap, file):
             f.write(sitemap)
 
 # 发送邮件
+def _format_addr(s):
+    name, addr = parseaddr(s)
+    return formataddr((Header(name, 'utf-8').encode(), addr))
+
 def send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg):
-    content = MIMEText(msg, 'plain', 'utf-8')
+
+    content = MIMEText(msg, 'html', 'utf-8')
+    content['Subject'] = Header('博客评论……', 'utf-8').encode()
     server = smtplib.SMTP_SSL(smtp_server, mail_port)
     server.login(from_addr, password)
     server.sendmail(from_addr, [to_addr], content.as_string())
@@ -52,7 +62,7 @@ def send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg):
 def asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg):
     t = Thread(target=send_mail, args=(from_addr, password, to_addr, smtp_server, mail_port, msg))
     t.start()
-    t.join()
+    return t
 
 # 生成 rss xml
 def get_rss_xml(name, protocol, url, title, subtitle, time, update_time, posts):
