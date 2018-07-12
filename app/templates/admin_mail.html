@@ -1,0 +1,31 @@
+<table border = "1" cellpadding = "0" cellspacing = "0" width = "600" align = "center" style = "border-collapse: collapse; border-style: solid; border-width: 1;border-color:#ddd;" >
+    <tbody>
+        <tr>
+            <td>
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="600" height="48" >
+                    <tbody><tr>
+                        <td width="100" align="center" style="border-right:1px solid #ddd;">
+                            消息
+                        </td>
+                        <td width="300" style="padding-left:20px;">你的文章《<a href="{{ url }}" target="_blank">{{ title }}</a> 》有新留言:</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:15px;">
+                <p>昵称: {{ nickname }}</p>
+                <p>网站: <a href="{{ website }}" target="_blank">{{ website }}</a></p>
+                <p>邮箱: <a href="mailto:{{ email }}" target="_blank">{{ email }}</a></p>
+                <p style="border-left: 3px solid #ddd;color: #999;background-color: #f5f5f5;padding: 10px 15px;">
+                   {{ comment }}
+                </p>
+                <center><a href="{{ url }}" target="_blank" style="background-color:#6ec3c8; border-radius:10px; display:inline-block; color:#fff; padding:15px 20px 15px 20px; text-decoration:none;margin-top:20px; margin-bottom:20px;">点击查看完整内容</a></center>
+            </td>
+        </tr>
+        <tr>
+            <td align="center" valign="center" height="38" style="font-size:0.8rem; color:#999;">Copyright © YuBlog</td>
+        </tr>
+    </tbody>
+</table >
