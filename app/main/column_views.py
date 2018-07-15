@@ -1,5 +1,3 @@
-import hashlib
-
 from flask import render_template, request, jsonify, \
     current_app, redirect, url_for, make_response
 
@@ -50,17 +48,14 @@ def _column(id):
 
 @column.route('/<url>/<int:id>')
 def article(url, id):
-    md5 = hashlib.md5()
-    md5.update(current_app.config['ARTICLE_PASSWORD'].encode('utf-8'))
-    user_hash_password = md5.hexdigest()
     column = Column.query.filter_by(url_name=url).first()
 
     articles = Article.query.filter_by(column=column).order_by(Article.timestamp.asc()).all()
     article = Article.query.get_or_404(id)
-
-    secrecy = request.cookies.get('secrecy')
-    if article.secrecy and not secrecy and secrecy != user_hash_password:
-        return redirect(url_for('column.enter_password', url=url, id=id))
+    if article.secrecy:
+        secrecy = request.cookies.get('secrecy')
+        if not secrecy or secrecy != column.password_hash:
+            return redirect(url_for('column.enter_password', url=url, id=id))
 
     if not request.cookies.get('article_' + str(id)):
         article.view_num += 1
@@ -99,14 +94,11 @@ def article(url, id):
 def enter_password(url, id):
     form = ArticlePasswordForm()
     if form.validate_on_submit():
+        column = Column.query.filter_by(url_name=url).first()
         password = form.password.data
-        if password == current_app.config['ARTICLE_PASSWORD']:
+        if column.verify_password(password):
             resp = make_response(redirect(url_for('column.article', url=url, id=id)))
-            # 加密
-            md5 = hashlib.md5()
-            md5.update(password.encode('utf-8'))
-            hash_password = md5.hexdigest()
-            resp.set_cookie('secrecy', hash_password, max_age=7*24*60*60)
+            resp.set_cookie('secrecy', column.password_hash, max_age=7*24*60*60)
             return resp
         return redirect(url_for('column.enter_password', url=url, id=id))
     return render_template('column/enter_password.html', form=form,

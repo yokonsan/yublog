@@ -208,10 +208,8 @@ def archives():
     page = request.args.get('page', 1, type=int)
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['ACHIVES_POSTS_PER_PAGE'],
-        error_out=False
-    )
+        error_out=False)
     posts = [post for post in pagination.items if post.draft is False]
-    # times = [post.timestamp for post in posts ]
     year = list(set([i.year for i in posts]))[::-1]
     data = {}
     year_post = []
@@ -282,37 +280,35 @@ def save_comment(post, form):
     email = form['email']
     website = form['website'] or None
     com = form['comment']
-    comment = ''
-    try:
-        replyTo = form['replyTo']
-        comment = Comment(comment=com, author=nickname,
-                          email=email, website=website,
-                          isReply=True, replyTo=replyTo)
+
+    replyTo = form.get('replyTo', '')
+    if replyTo:
+        comment = Comment(comment=com, author=nickname,email=email,
+                          website=website, isReply=True, replyTo=replyTo)
         data = {'nickname': nickname, 'email': email, 'website': website,
                 'comment': com, 'isReply': True, 'replyTo': replyTo}
-    except:
-        comment = Comment(comment=com, author=nickname,
-                          email=email, website=website)
+    else:
+        comment = Comment(comment=com, author=nickname, email=email, website=website)
         data = {'nickname': nickname, 'email': email, 'website': website, 'comment': com}
-    finally:
-        post_url = ''
-        if isinstance(post, Post):
-            post_url = 'http://' + '/'.join(map(str, [base_url, post.year, post.month, post.url_name]))
-            comment.post = post
-        elif isinstance(post, Page):
-            post_url = 'http://' + base_url + '/page/' + post.url_name
-            comment.page = post
-        elif isinstance(post, Article):
-            post_url = 'http://' + base_url + '/column/' + post.column.url_name + '/' + str(post.id)
-            comment.article = post
-        # 发送邮件
-        if email != to_addr:
-            msg = render_template('admin_mail.html', nickname=nickname,
-                                  title=post.title, comment=com,
-                                  email=email, website=website, url=post_url)
-            asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg)
-        db.session.add(comment)
-        db.session.commit()
+
+    post_url = ''
+    if isinstance(post, Post):
+        post_url = 'http://' + '/'.join(map(str, [base_url, post.year, post.month, post.url_name]))
+        comment.post = post
+    elif isinstance(post, Page):
+        post_url = 'http://' + base_url + '/page/' + post.url_name
+        comment.page = post
+    elif isinstance(post, Article):
+        post_url = 'http://' + base_url + '/column/' + post.column.url_name + '/' + str(post.id)
+        comment.article = post
+    # 发送邮件
+    if email != to_addr:
+        msg = render_template('admin_mail.html', nickname=nickname,
+                              title=post.title, comment=com,
+                              email=email, website=website, url=post_url)
+        asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg)
+    db.session.add(comment)
+    db.session.commit()
     return data
 
 @main.route('/<url>/comment', methods=['POST'])
@@ -323,11 +319,8 @@ def comment(url):
     form = request.get_json()
     data = save_comment(post, form)
     if data.get('replyTo'):
-        return jsonify(nickname=data['nickname'], email=data['email'],
-                       website=data['website'], body=data['comment'],
-                       isReply=data['isReply'], replyTo=data['replyTo'], post=post.title)
-    return jsonify(nickname=data['nickname'], email=data['email'],
-                       website=data['website'], body=data['comment'], post=post.title)
+        return jsonify(data, post=post.title)
+    return jsonify(data, post=post.title)
 
 @main.route('/shuoshuo')
 def shuoshuo():

@@ -170,9 +170,6 @@ class View(db.Model):
 
     relationship_id = db.Column(db.Integer)
 
-    def __repr__(self):
-        return '<View %r %r>' %(self.post_id, self.count)
-
 class Comment(db.Model):
     """
     缓存设计尝试：
@@ -324,6 +321,7 @@ class Column(db.Model):
     view_num = db.Column(db.Integer, default=0)
     love_num = db.Column(db.Integer, default=0)
     timestamp = db.Column(db.String(64))
+    password_hash = db.Column(db.String(500))
 
     articles = db.relationship('Article', backref='column', lazy='dynamic')
 
@@ -331,6 +329,18 @@ class Column(db.Model):
     def body_to_html(self):
         html = markdown_to_html(self.body)
         return html
+
+    # 对密码进行加密保存
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password) if password else None
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
         return '<Column %r>' % (self.column)

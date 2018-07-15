@@ -24,9 +24,9 @@ def global_datas():
     }
     """
     global_data = {}
-    admin = Admin.query.all()
+    admin = Admin.query.first()
     if admin:
-        global_data['admin'] = admin[0]
+        global_data['admin'] = admin
 
     all_links = SiteLink.query.order_by(SiteLink.id.desc()).all()
     if all_links:
@@ -37,26 +37,22 @@ def global_datas():
 
     all_tags = Tag.query.all()
     if all_tags:
-        # tags = [tag for tag in all_tags]
         global_data['tags'] = all_tags
 
     all_categories = Category.query.all()
     if all_categories:
-        #categories = [category for category in all_categories]
         global_data['categories'] = all_categories
 
     all_pages = Page.query.filter_by(isNav=True).all()
     if all_pages:
-        #pages = (page for page in all_pages if page.isNav==True)
         global_data['pages'] = all_pages
 
-    love_me_counts = LoveMe.query.all()[0]
+    love_me_counts = LoveMe.query.first()
     if love_me_counts:
         global_data['loves'] = love_me_counts.loveMe
 
     posts = Post.query.filter_by(draft=False).count()
     if posts:
-        #post_counts = len([post for post in posts if post.draft==False])
         global_data['postCounts'] = posts
 
     shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
