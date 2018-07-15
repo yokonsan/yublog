@@ -1,19 +1,17 @@
 {% extends "admin.html" %}
-
+{% block tab %}添加页面{% endblock %}
 {% block content %}
 <div class="admin-write">
-    <div class="admin-title site-box">{{title}}<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
-
     <form action="{%if title=='添加页面'%}{{url_for('admin.add_page')}}{%else%}{{url_for('admin.edit_page',name=page.url_name)}}{%endif%}" method="post">
         {{form.hidden_tag()}}
-        <div class="aticle-data site-box">
+        <div class="aticle-data">
             <div class="data-ipt">
                 <p>允许评论：{{form.can_comment()}}</p>
                 <p>导航显示：{{form.is_nav()}}</p>
                 <p>链接：{{form.url_name(placeholder="url")}}</p>
             </div>
         </div>
-        <div class="aticle-body site-box">
+        <div class="aticle-body">
             <div class="write-body">
                 <p>{{form.title(class="aticle-title",placeholder="标题")}}</p>
                 <div>
@@ -22,6 +20,7 @@
                 <p>{{ form.submit(class="write-btn",value="发布") }}</p>
             </div>
         </div>
+        <div class="clear"></div>
     </form>
 
 </div>

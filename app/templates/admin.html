@@ -9,28 +9,108 @@
     {% endblock %}
 </head>
 <body>
+    {% if current_user.is_authenticated %}
     <div class="container">
-        <div class="site-wrap">
-            {% with messages = get_flashed_messages() %}
-            {% if messages %}
-            {% for message in messages %}
-                <div class="flash-msg">
-                    {{ message }}
-                    <span class="flash-x" onclick="flashEvent()">x</span>
+        <div class="admin-menu">
+            <div class="admin-logo"><a href="#">意外</a></div>
+            <div class="menu-scroll">
+                <ul class="menu-list">
+                    <li class="menu-item">
+                        <a href="javascript:void(0);" onclick="showChild(this)">文章</a>
+                        <dl class="menu-child" style="display: none;">
+                            <dd class="child-item"><a href="{{ url_for('admin.write') }}">发布文章</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.admin_posts') }}">管理文章</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.admin_drafts') }}">管理草稿</a></dd>
+                        </dl>
+                    </li>
+                    <li class="menu-item">
+                        <a href="javascript:void(0);" onclick="showChild(this)">页面</a>
+                        <dl class="menu-child" style="display: none;">
+                            <dd class="child-item"><a href="{{ url_for('admin.add_page') }}">添加页面</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.admin_pages') }}">管理页面</a></dd>
+                        </dl>
+                    </li>
+                    <li class="menu-item">
+                        <a href="javascript:void(0);" onclick="showChild(this)">专题</a>
+                        <dl class="menu-child" style="display: none;">
+                            <dd class="child-item"><a href="{{ url_for('admin.write_column') }}">添加专题</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.admin_columns') }}">管理专题</a></dd>
+                        </dl>
+                    </li>
+                    <li class="menu-item">
+                        <a href="javascript:void(0);" onclick="showChild(this)">站点</a>
+                        <dl class="menu-child" style="display: none;">
+                            <dd class="child-item"><a href="{{ url_for('admin.set_site') }}">编辑站点</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.change_password') }}">更改密码</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.add_link') }}">添加链接</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.admin_links') }}">管理链接</a></dd>
+                        </dl>
+                    </li>
+                    <li class="menu-item">
+                        <a href="javascript:void(0);" onclick="showChild(this)">其他</a>
+                        <dl class="menu-child" style="display: none;">
+                            <dd class="child-item"><a href="{{ url_for('admin.admin_comments') }}">管理评论</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.upload_file') }}">上传文件</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.write_shuoshuo') }}">添加说说</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.admin_shuos') }}">管理说说</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.add_side_box') }}">添加插件</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.admin_side_box') }}">管理插件</a></dd>
+                        </dl>
+                    </li>
+                    <li class="menu-item">
+                        <a href="javascript:void(0);" onclick="showChild(this)">功能</a>
+                        <dl class="menu-child" style="display: none;">
+                            <dd class="child-item"><a href="{{ url_for('admin.qinit_setting') }}">七牛设置</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('admin.qiniu_picbed') }}">七牛图床</a></dd>
+                        </dl>
+                    </li>
+                    <li class="menu-item"><a href="{{url_for('admin.logout')}}">登出</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="admin-main">
+            <div class="body-tabs">
+                <a href="{{ url_for('admin.index') }}">主页</a> / <span>{% block tab %}{% endblock %}</span>
+            </div>
+            <div class="admin-body">
+                <div class="site-wrap">
+                    {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    {% for message in messages %}
+                        <div class="flash-msg">
+                            {{ message }}
+                            <span class="flash-x" onclick="flashEvent()">x</span>
+                        </div>
+                    {% endfor %}
+                    {% endif %}
+                    {% endwith %}
                 </div>
-            {% endfor %}
-            {% endif %}
-            {% endwith %}
-
-            {% block content %}
-            {% endblock %}
+                {% block content %}
+                {% endblock %}
+            </div>
         </div>
     </div>
     {% block script %}
     <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
     <script>
-
+        function showChild(ele) {
+            var childNav = ele.parentNode.getElementsByClassName('menu-child')[0];
+            console.log(childNav)
+            if (childNav.style.display === 'none') {
+                childNav.style.display = 'block';
+            } else {
+                childNav.style.display ='none'
+            }
+        }
     </script>
     {% endblock %}
+{% else %}
+<div class="admin-menu">
+    <p>
+        <a href="{{url_for('admin.login')}}"><button>请先登录</button></a>
+    </p>
+
+</div>
+{% endif %}
 </body>
 </html>

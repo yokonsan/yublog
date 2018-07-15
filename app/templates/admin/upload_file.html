@@ -1,16 +1,11 @@
 {% extends "admin.html" %}
+{% block tab %}上传文件{% endblock %}
 {% block content %}
-{% if current_user.is_authenticated %}
-
-<div class="admin-title site-box">上传文件<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
-
-<div class="upload-file site-box">
+<div class="upload-file">
     <p>上传的文件访问路径：/xxxx.jpg</p>
     <form id="upload_form" action="{{ url_for('admin.upload_file') }}" method="post" enctype="multipart/form-data">
         <p><input id="md-file" type="file" name="file"></p>
         <input id="submit" type="submit" value="上传" class="submit-btn">
     </form>
 </div>
-
-{% endif %}
 {% endblock %}

@@ -1,13 +1,12 @@
 {% extends "admin.html" %}
 
+{% block tab %}编辑文章{% endblock %}
 {% block content %}
-
 <div class="admin-write">
-    <div class="admin-title site-box">{{ title }}<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
 
     <form action="{%if title== '写文章'%}{{url_for('admin.write')}}{%else%}{{url_for('admin.admin_edit',time=post.timestampInt,name=post.url_name)}}{%endif%}" method="post">
         {{form.hidden_tag()}}
-        <div class="aticle-data site-box">
+        <div class="aticle-data">
             <div class="data-ipt">
                 <p>分类：{{form.category(placeholder="只能写一个")}}</p>
                 <p>标签：{{form.tags(placeholder="用英文逗号隔开")}}</p>
@@ -15,7 +14,7 @@
                 <p>日期：{{form.time(placeholder="使用-连接年月日")}}</p>
             </div>
         </div>
-        <div class="aticle-body site-box">
+        <div class="aticle-body">
             <div class="write-body">
                 <p>{{form.title(class="aticle-title",placeholder="标题")}}</p>
                 <div>
@@ -30,6 +29,7 @@
                 {% endif %}
             </div>
         </div>
+        <div class="clear"></div>
     </form>
 
 </div>

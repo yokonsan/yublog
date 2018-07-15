@@ -1,11 +1,8 @@
 {% extends "admin.html" %}
 {% import "_pagination.html" as page %}
+{% block tab %}管理文章{% endblock %}
 {% block content %}
-{% if current_user.is_authenticated %}
-
-<div class="admin-title site-box">管理文章<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
-
-<div class="admin-post site-box">
+<div class="admin-post">
     <ul>
         {% for post in posts %}
         <li>
@@ -25,7 +22,6 @@
         {% endfor %}
     </ul>
 </div>
-{% endif %}
 
 <div class="post-page site-box">
     <ul class="pages">

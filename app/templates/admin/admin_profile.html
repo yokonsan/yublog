@@ -1,4 +1,5 @@
 {% extends "admin.html" %}
+{% block tab %}编辑信息{% endblock %}
 {% block content %}
 <div class="admin-profile">
     <h2>管理员信息设置</h2>
@@ -12,8 +13,6 @@
             <p>备案信息：{{form.record_info(placeholder="选填")}}</p>
             <p><input class="but" type="submit" value="确定"></p>
         </form>
-
     </div>
-
 </div>
 {% endblock %}

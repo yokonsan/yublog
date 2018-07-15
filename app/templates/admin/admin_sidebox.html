@@ -1,14 +1,7 @@
 {% extends "admin.html" %}
+{% block tab %}管理插件{% endblock %}
 {% block content %}
-
-<div class="admin-title site-box">管理插件<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
-
-<div class="admin-post site-box">
-    <p>
-        <a href="{{ url_for('admin.add_side_box') }}">
-            <button>添加插件</button>
-        </a>
-    </p>
+<div class="admin-post">
     <ul>
         {% for box in boxes %}
         <li>
@@ -30,5 +23,4 @@
         {% endfor %}
     </ul>
 </div>
-
 {% endblock %}

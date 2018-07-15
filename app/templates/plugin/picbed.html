@@ -1,10 +1,7 @@
 {% extends "admin.html" %}
+{% block tab %}七牛图床{% endblock %}
 {% block content %}
-{% if current_user.is_authenticated %}
-
-<div class="admin-title site-box">七牛图床<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
-
-<div class="pic-bed site-box">
+<div class="pic-bed">
     <div class="upload-img">
         共 {{ counts }} 张图片
         <button onclick="showIpt(this)">上传</button>
@@ -41,7 +38,6 @@
     </div>
     <div class="clear"></div>
 </div>
-{% endif %}
 {% endblock %}
 
 {% block script %}

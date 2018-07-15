@@ -1,9 +1,8 @@
 {% extends "admin.html" %}
+{% block tab %}管理草稿{% endblock %}
 {% block content %}
-{% if current_user.is_authenticated %}
-
-<div class="admin-title site-box">管理草稿<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
-<div class="admin-post site-box">
+<div class="admin-post">
+    {% if drafts %}
     <ul>
         {% for draft in drafts %}
         <li>
@@ -22,6 +21,8 @@
         </li>
         {% endfor %}
     </ul>
+    {% else %}
+    你还没有草稿需要管理哦，你个瓜皮
+    {% endif %}
 </div>
-{% endif %}
 {% endblock %}

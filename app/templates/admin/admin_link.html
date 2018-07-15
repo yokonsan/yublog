@@ -1,10 +1,7 @@
 {% extends "admin.html" %}
+{% block tab %}管理链接{% endblock %}
 {% block content %}
-{% if current_user.is_authenticated %}
-
-<div class="admin-title site-box">管理链接<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
-
-<div class="admin-post site-box">
+<div class="admin-post">
     <h2>社交链接</h2>
     <ul>
         {% for link in social_links %}
@@ -39,6 +36,4 @@
         {% endfor %}
     </ul>
 </div>
-{% endif %}
-
 {% endblock %}

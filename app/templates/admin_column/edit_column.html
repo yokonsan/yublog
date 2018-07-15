@@ -1,20 +1,17 @@
 {% extends "admin.html" %}
-
+{% block tab %}编辑专栏{% endblock %}
 {% block content %}
-
 <div class="admin-write">
-    <div class="admin-title site-box">{{ title }}<span><a href="{{url_for('admin.index')}}">返回，注意保存</a></span></div>
-
     <form action="{%if title== '编辑专题'%}{{url_for('admin.write_column')}}{%else%}{{url_for('admin.edit_column',id=column.id)}}{%endif%}" method="post">
         {{form.hidden_tag()}}
-        <div class="aticle-data site-box">
+        <div class="aticle-data">
             <div class="data-ipt">
                 <p>链接：{{form.url_name(placeholder="url专题名")}}</p>
                 <p>日期：{{form.date(placeholder="使用-连接年月日")}}</p>
                 <p>密码：{{form.password(placeholder="保密文章的密码")}}</p>
             </div>
         </div>
-        <div class="aticle-body site-box">
+        <div class="aticle-body">
             <div class="write-body">
                 <p>{{form.column(class="aticle-title",placeholder="专题名")}}</p>
                 <div>
@@ -27,6 +24,7 @@
                 {% endif %}
             </div>
         </div>
+        <div class="clear"></div>
     </form>
 
 </div>

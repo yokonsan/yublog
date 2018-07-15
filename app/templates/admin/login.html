@@ -1,15 +1,40 @@
-{% extends "admin.html" %}
-{% block content %}
-<div class="admin-login">
-    <h2>你好，管理员</h2>
-    <div class="login-input">
-        <form action="{{ url_for('admin.login') }}" method="post">
-            {{form.hidden_tag()}}
-            <p>用户：{{form.username(class="login")}}</p>
-            <p>密码：{{form.password(class="login")}}</p>
-            <p>记住：{{form.remember_me}}</p>
-            <p><input class="but" type="submit" value="登录"></p>
-        </form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% if title %}{{title}}{%else%}Admin{%endif%} | Admin</title>
+    {% block styles %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/blog.css') }}">
+    <link  type="text/css" href="{{ url_for('static', filename='css/admin.css') }}" rel="stylesheet">
+    {% endblock %}
+</head>
+<body>
+    <div class="container">
+        <div class="site-wrap">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            {% for message in messages %}
+                <div class="flash-msg">
+                    {{ message }}
+                    <span class="flash-x" onclick="flashEvent()">x</span>
+                </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="admin-login">
+            <h2>你好，管理员</h2>
+            <div class="login-input">
+                <form action="{{ url_for('admin.login') }}" method="post">
+                {{form.hidden_tag()}}
+                <p>用户：{{form.username(class="login")}}</p>
+                <p>密码：{{form.password(class="login")}}</p>
+                <p>记住：{{form.remember_me}}</p>
+                <p><input class="but" type="submit" value="登录"></p>
+                </form>
+            </div>
+        </div>
     </div>
-</div>
-{% endblock %}
+</body>
+</html>

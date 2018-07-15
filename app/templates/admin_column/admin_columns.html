@@ -1,10 +1,7 @@
 {% extends "admin.html" %}
+{% block tab %}专栏文章{% endblock %}
 {% block content %}
-{% if current_user.is_authenticated %}
-
-<div class="admin-title site-box">管理专题<span><a href="{{url_for('admin.index')}}">返回</a></span></div>
-
-<div class="admin-post site-box">
+<div class="admin-post">
     <ul>
         {% for column in columns %}
         <li>
@@ -22,6 +19,4 @@
         {% endfor %}
     </ul>
 </div>
-{% endif %}
-
 {% endblock %}

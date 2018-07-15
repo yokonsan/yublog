@@ -1,7 +1,6 @@
 {% extends "admin.html" %}
+{% block tab %}添加链接{% endblock %}
 {% block content %}
-{% if current_user.is_authenticated %}
-
     <div class="admin-links">
         <div class="change-nav">
             <span class="current">社交链接</span>
@@ -27,7 +26,6 @@
         </div>
 
     </div>
-{% endif %}
 {% endblock %}
 {% block script %}
 {{ super() }}
