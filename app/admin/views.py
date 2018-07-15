@@ -2,7 +2,7 @@ import os
 import re
 
 from flask import render_template, redirect, request, flash, current_app, url_for
-from flask_login import login_required, login_user, logout_user
+from flask_login import login_required, login_user, logout_user, current_user
 
 from .. import cache, qn
 from ..models import *
@@ -78,6 +78,23 @@ def set_site():
                            title='设置网站信息',
                            form=form)
 
+@admin.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if current_user.verify_password(form.old_password.data):
+            if form.password.data == form.password2.data:
+                current_user.password = form.password.data
+                db.session.add(current_user)
+                flash('密码更改成功')
+                return redirect(url_for('admin.index'))
+            flash('请确认密码是否一致')
+            return redirect(url_for('admin.change_password'))
+        flash('请输入正确的密码')
+        return redirect(url_for('admin.change_password'))
+    return render_template('admin/change_password.html', form=form,
+                           title='更改密码')
 
 @admin.route('/links', methods=['GET', 'POST'])
 @login_required
@@ -517,7 +534,8 @@ def write_column():
     form = ColumnForm()
     if form.validate_on_submit():
         column = Column(column=form.column.data, timestamp=form.date.data,
-                        url_name=form.url_name.data, body=form.body.data)
+                        url_name=form.url_name.data, body=form.body.data,
+                        password=form.password.data)
         db.session.add(column)
         db.session.commit()
         flash('专题发布成功！')
@@ -535,6 +553,7 @@ def edit_column(id):
         column.timestamp = form.date.data
         column.url_name = form.url_name.data
         column.body = form.body.data
+        column.password = form.password.data
         db.session.add(column)
         db.session.commit()
         flash('专题更新成功！')
@@ -717,6 +736,14 @@ def delete_side_box(id):
 # 侧栏box---end
 
 # qiniu picture bed begin
+@admin.route('/qiniu/setting', methods=['GET', 'POST'])
+@login_required
+def qinit_setting():
+    form = QiniuForm()
+    if form.validate_on_submit() and form.is_need.data is True:
+        pass
+
+
 @admin.route('/qiniu/picbed', methods=['GET', 'POST'])
 @login_required
 def qiniu_picbed():
