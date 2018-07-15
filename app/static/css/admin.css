@@ -1,3 +1,113 @@
+/*all*/
+body {
+    margin: 0;
+    padding: 0;
+    background: #f5f7f9;
+    font-family: 'Lato', "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: #1a1a1a;
+    font-size: 14px;
+    width: 100%;
+    min-height: 100%;
+    position: absolute;
+    -webkit-tap-highlight-color: rgba(26,26,26,0);
+}
+
+.clear {
+    clear: both;
+}
+
+.admin-menu {
+    float: left;
+    background: #20222A;
+    color: rgba(255,255,255,.7);
+    padding: 20px;
+    width: 15%;
+    box-sizing: border-box;
+    min-height: 100%;
+    position: fixed;
+    overflow-x: hidden;
+    top: 0;
+    left: 0;
+    bottom: 0;
+}
+
+.admin-logo {
+    padding: 20px;
+    text-align: center;
+    color: rgba(223, 132, 108, 0.73);
+    font-size: 22px;
+    border-bottom: 1px solid #666;
+}
+
+.menu-scroll {
+    padding: 20px;
+}
+
+.admin-menu ul,.admin-menu dl {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-menu li {
+    border-bottom: 1px solid #666;
+    padding: 10px 0;
+}
+
+/*.admin-menu dl {
+    display: none;
+}*/
+
+.admin-menu dd {
+    margin: 5px 15px;
+}
+
+.admin-menu a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.admin-menu a:hover {
+    color: #fff;
+}
+
+.admin-logo a:hover,.admin-logo a.active {
+    color: #df846c;
+}
+
+.admin-main {
+    float: right;
+    width: 85%;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    min-height: 100%;
+}
+
+.body-tabs, .admin-body {
+    background: #fff;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+    margin-bottom: 10px;
+}
+
+.body-tabs {
+    padding: 5px 10px;
+    color: #999;
+}
+
+.body-tabs a {
+    text-decoration: none;
+    color: rgba(223, 132, 108, 0.73);
+}
+
+.body-tabs a:hover {
+    color: #df846c;
+}
+
+.admin-body {
+    padding: 20px;
+}
+
 /*admin login*/
 .admin-login {
     text-align: center;
@@ -39,27 +149,6 @@ input.but:hover,.admin-menu button:hover,.write-body .write-btn:hover {
     color: #fff;
 }
 
-/*admin menu*/
-.admin-menu {
-    text-align: center;
-    margin: 100px 0;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    padding: 20px 0;
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,.1);
-}
-
-.admin-menu button {
-    width: 200px;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    color: #333;
-    cursor: pointer;
-}
-
-
 /*admin write*/
 .admin-title {
     padding: 20px;
@@ -86,7 +175,7 @@ input.but:hover,.admin-menu button:hover,.write-body .write-btn:hover {
 
 .aticle-data {
     float: left;
-    width: 240px;
+    width: 25%;
     background: #fff;
     padding: 10px 0;
 }
@@ -106,7 +195,7 @@ input.but:hover,.admin-menu button:hover,.write-body .write-btn:hover {
 
 .aticle-body {
     float: right;
-    width: 700px;
+    width: 73%;
     background: #fff;
 }
 
@@ -115,7 +204,7 @@ input.but:hover,.admin-menu button:hover,.write-body .write-btn:hover {
 }
 
 .write-body input.aticle-title {
-    width: 650px;
+    width: 98%;
     height: 30px;
     border: none;
     border-bottom: 1px solid #999;
@@ -170,8 +259,8 @@ input.but:hover,.admin-menu button:hover,.write-body .write-btn:hover {
 
 .admin-profile,.admin-links {
     text-align: center;
-    margin: 100px 0;
-    border: 1px solid #ccc;
+    /*margin: 100px 0;*/
+    /*border: 1px solid #ccc;*/
     background: #fff;
     padding: 30px;
 }
