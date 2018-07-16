@@ -43,21 +43,21 @@
             <span class="post-comments-count">
                 <i class="demo-icon icon-comment-empty"></i> 评论： {{ counts }}
             </span>
-            <span class="post-view-count"><i class="demo-icon icon-eye"></i> 阅读：{{ article.view_num }}</span>
+            <span class="post-view-count" postid="{{ article.id }}"><i class="demo-icon icon-eye"></i> 阅读： </span>
         </div>
 
         <div class="article-body">
             <div class="article-desc">
-                {{ article.body_to_html | safe }}
+                {{ article.body | safe }}
             </div>
         </div>
 
         <div class="article-btn">
-            {% if prev_article %}
-            <a href="{{ url_for('column.article',url=column.url_name,id=prev_article.id) }}" class="prev-btn">上一章</a>
+            {% if article.prev_article %}
+            <a href="{{ url_for('column.article',url=column.url_name,id=article.prev_article.id) }}" class="prev-btn">上一章</a>
             {% endif %}
-            {% if next_article %}
-            <a href="{{ url_for('column.article',url=column.url_name,id=next_article.id) }}" class="next-btn">下一章</a>
+            {% if article.next_article %}
+            <a href="{{ url_for('column.article',url=column.url_name,id=article.next_article.id) }}" class="next-btn">下一章</a>
             {% endif %}
         <div class="clear"></div>
         </div>
@@ -84,5 +84,30 @@
             menuList.style.display = "block";
         }
     }
+
+    function getViewCount(id) {
+        var request;
+        if (window.XMLHttpRequest) {
+            request = new XMLHttpRequest();
+        } else {
+            request = new ActiveXObject('Microsoft.XMLHTTP');
+        }
+        request.onreadystatechange = function () { // 状态发生变化时，函数被回调
+            if (request.readyState === 4) {
+                if (request.status === 200) {
+                    respText = JSON.parse(request.responseText);
+                    viewSpans.innerHTML += respText.count;
+                } else {
+                    console.log('Ajax fail');
+                }
+            }
+        };
+        request.open('GET', '/api/view/column/'+id);
+        request.send();
+    }
+
+    var viewSpans = document.getElementsByClassName('post-view-count')[0];
+    var postId = viewSpans.attributes["postid"].value;
+    getViewCount(postId)
 </script>
 {% endblock %}

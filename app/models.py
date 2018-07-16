@@ -101,7 +101,6 @@ class Post(db.Model):
     tags = db.Column(db.String(64))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
-    # view_num = db.relationship('Comment', backref='post', lazy='dynamic')
 
     @property
     def timestampInt(self):
@@ -349,7 +348,7 @@ class Article(db.Model):
     __tablename__ = 'articles'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
-    view_num = db.Column(db.Integer, default=0)
+    # view_num = db.Column(db.Integer, default=0)
     body = db.Column(db.Text)
     secrecy = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.String(64))
@@ -361,6 +360,18 @@ class Article(db.Model):
     def body_to_html(self):
         html = markdown_to_html(self.body)
         return html
+
+    def to_dict(self):
+        article = {
+            'id': self.id,
+            'title': self.title,
+            'body': self.body_to_html,
+            'secrecy': self.secrecy,
+            'timestamp': self.timestamp,
+            'column': self.column.column,
+            'comment_count': self.comments.count()
+        }
+        return article
 
     def __repr__(self):
         return '<Article %r>' % (self.title)
