@@ -25,12 +25,11 @@ def clean_cache(key):
     else:
         pass
 
-
 @admin.route('/')
 @admin.route('/index')
 @login_required
 def index():
-    return render_template('admin/admin_menu.html')
+    return render_template('admin/admin_index.html')
 
 @admin.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -585,9 +584,14 @@ def admin_column(id):
 @login_required
 def delete_column(id):
     column = Column.query.get_or_404(id)
+    articles = column.articles.order_by(Article.timestamp.desc()).all()
     db.session.delete(column)
     db.session.commit()
     flash('删除专题')
+    # clean all of this column cache
+    clean_cache('column_' + column.url_name)
+    for i in articles:
+        clean_cache('_'.join(['article', column.url_name, str(i.id)]))
     return redirect(url_for('admin.admin_columns'))
 
 @admin.route('/<url>/write/article', methods=['GET','POST'])
@@ -601,6 +605,8 @@ def write_column_article(url):
         db.session.add(article)
         db.session.commit()
         flash('添加文章成功！')
+        # clean cache
+        clean_cache('column_' + url)
         return redirect(url_for('admin.admin_column', id=column.id))
     return render_template('admin_column/write_article.html', form=form,
                            title='编辑文章', column=column)
@@ -610,6 +616,7 @@ def write_column_article(url):
 def edit_column_article(url, id):
     column = Column.query.filter_by(url_name=url).first()
     article = Article.query.filter_by(id=id).first()
+    _title = article.title
 
     form = ColumnArticleForm()
     if form.validate_on_submit():
@@ -620,6 +627,11 @@ def edit_column_article(url, id):
         db.session.add(article)
         db.session.commit()
         flash('更新文章成功！')
+        # clear cache
+        clean_cache('_'.join(['article', url, str(id)]))
+        if article.title != _title:
+            # the title is change
+            clean_cache('column_' + url)
         return redirect(url_for('admin.admin_column', id=column.id))
 
     form.title.data = article.title
@@ -637,6 +649,9 @@ def delete_column_article(url, id):
     db.session.delete(article)
     db.session.commit()
     flash('删除文章成功！')
+    # 清除对于缓存
+    clean_cache('_'.join(['article', url, str(id)]))
+    clean_cache('column_' + url)
     return redirect(url_for('admin.admin_column', id=column.id))
 
 
@@ -736,14 +751,6 @@ def delete_side_box(id):
 # 侧栏box---end
 
 # qiniu picture bed begin
-@admin.route('/qiniu/setting', methods=['GET', 'POST'])
-@login_required
-def qinit_setting():
-    form = QiniuForm()
-    if form.validate_on_submit() and form.is_need.data is True:
-        pass
-
-
 @admin.route('/qiniu/picbed', methods=['GET', 'POST'])
 @login_required
 def qiniu_picbed():

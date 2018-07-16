@@ -80,11 +80,3 @@ class ChangePasswordForm(FlaskForm):
     old_password = PasswordField('Old password', validators=[DataRequired()])
     password = PasswordField('New password', validators=[ DataRequired()])
     password2 = PasswordField('Confirm new password', validators=[DataRequired()])
-
-# 七牛图床配置
-class QiniuForm(FlaskForm):
-    is_need = BooleanField('need', default=False)
-    access_key = StringField('access_key')
-    secret_key = StringField('secret_key')
-    pic_bucket = StringField('pic_bucket')
-    pic_domain = StringField('pic_domain')

@@ -2,7 +2,6 @@ from flask import jsonify, current_app, request, g
 from flask_login import login_required
 
 from . import api
-from app import db
 from ..models import *
 
 
@@ -175,3 +174,34 @@ def get_page_comments(id):
 
     return jsonify({'msg': '没有信息...'})
 
+# post views
+@api.route('/view/<type>/<int:id>', methods=['GET'])
+def views(type, id):
+    """浏览量"""
+    view = View.query.filter_by(type=type, relationship_id=id).first()
+    if not view:
+        view = View(type=type, count=1, relationship_id=id)
+        db.session.add(view)
+        db.session.commit()
+        resp = jsonify(count=1)
+        resp.set_cookie('post_' + str(id), '1', max_age=1 * 24 * 60 * 60)
+        return resp
+
+    if type == 'post':
+        if not request.cookies.get('post_' + str(id)):
+            view.count += 1
+            db.session.add(view)
+            db.session.commit()
+            resp = jsonify(count=view.count)
+            resp.set_cookie('post_' + str(id), '1', max_age=1 * 24 * 60 * 60)
+            return resp
+        return jsonify(count=view.count)
+    elif type == 'column':
+        if not request.cookies.get('article_' + str(id)):
+            view.count += 1
+            db.session.add(view)
+            db.session.commit()
+            resp = jsonify(count=view.count)
+            resp.set_cookie('article_' + str(id), '1', max_age=1 * 24 * 60 * 60)
+            return resp
+        return jsonify(count=view.count)

@@ -142,30 +142,6 @@ def post(year, month, article_name):
                    pagination=pagination, comments=comments, replys=replys,
                    counts=len(comments)+len(replys))
 
-@main.route('/view/<type>/<int:id>', methods=['GET'])
-def views(type, id):
-    """浏览量"""
-    view = View.query.filter_by(type=type, relationship_id=id).first()
-    if not view:
-        view = View(type=type, count=1, relationship_id=id)
-        db.session.add(view)
-        db.session.commit()
-        resp = jsonify(count=1)
-        resp.set_cookie('post_' + str(id), '1', max_age=1 * 24 * 60 * 60)
-        return resp
-
-    if type == 'post':
-        if not request.cookies.get('post_' + str(id)):
-            view.count += 1
-            db.session.add(view)
-            db.session.commit()
-            resp = jsonify(count=view.count)
-            resp.set_cookie('post_' + str(id), '1', max_age=1 * 24 * 60 * 60)
-            return resp
-        return jsonify(count=view.count)
-    elif type == 'column':
-        pass
-
 @main.route('/page/<page_url>/')
 def page(page_url):
     page = Page.query.filter_by(url_name=page_url).first()
@@ -252,8 +228,6 @@ def search_result():
 @main.route('/loveme', methods=['GET'])
 def love_me():
     """
-    由于请求一次就要更新一次页面，所以需要清除页面所有缓存，
-    这样做很蠢，有待改进
     :return: json
     """
     # 清除所有页面缓存
