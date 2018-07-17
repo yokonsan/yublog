@@ -293,8 +293,11 @@ def comment(url):
     form = request.get_json()
     data = save_comment(post, form)
     if data.get('replyTo'):
-        return jsonify(data, post=post.title)
-    return jsonify(data, post=post.title)
+        return jsonify(nickname=data['nickname'], email=data['email'],
+                       website=data['website'], body=data['comment'],
+                       isReply=data['isReply'], replyTo=data['replyTo'], post=post.title)
+    return jsonify(nickname=data['nickname'], email=data['email'],
+                   website=data['website'], body=data['comment'], post=post.title)
 
 @main.route('/shuoshuo')
 def shuoshuo():
