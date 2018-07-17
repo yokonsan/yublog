@@ -117,7 +117,7 @@ body {
 
 .login-input {
     padding: 10px;
-    border: 1px solid #ccc;
+    /*border: 1px solid #ccc;*/
     border-radius: 3px;
     margin: 20px auto;
     width: 300px;

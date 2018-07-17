@@ -141,7 +141,6 @@ def enter_password(url, id):
     form = ArticlePasswordForm()
     if form.validate_on_submit():
         column = Column.query.filter_by(url_name=url).first()
-        print(column)
         password = form.password.data
         if column.verify_password(password):
             resp = make_response(redirect(url_for('column.article', url=url, id=id)))
