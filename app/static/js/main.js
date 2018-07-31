@@ -132,8 +132,10 @@
             loveMeCount.innerText = counts.toString();
 
             // 发送请求:
-            request.open('GET', '/loveme');
-            request.send();
+            FormData = JSON.stringify({i_am_handsome: 'yes'});
+            request.open('POST', '/loveme');
+            request.setRequestHeader('Content-Type', 'application/json');
+            request.send(FormData);
         }
     };
 
