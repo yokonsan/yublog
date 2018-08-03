@@ -37,25 +37,25 @@
     }
 
     var commentChildren = document.getElementsByClassName('comment-children');
-    var childrenLi;
-    for (var c=0; c<commentChildren.length; c++) {
-        childrenLi = commentChildren[c].getElementsByTagName('li');
-        for (var l=0; l<childrenLi.length; l++) {
-
-            childrenLi[l].onmouseenter = function() {
-                var childrenName = this.getElementsByClassName('comment-name')[0];
-                var childrenReply = this.getElementsByClassName('reply-comment')[0];
-                childrenName.style.display = "block";
-                childrenReply.style.display = "block";
-            };
-            childrenLi[l].onmouseleave = function() {
-                var childrenName = this.getElementsByClassName('comment-name')[0];
-                var childrenReply = this.getElementsByClassName('reply-comment')[0];
-                childrenName.style.display = "none";
-                childrenReply.style.display = "none";
-            }
-        }
-    }
+    // var childrenLi;
+    // for (var c=0; c<commentChildren.length; c++) {
+    //     childrenLi = commentChildren[c].getElementsByTagName('li');
+    //     for (var l=0; l<childrenLi.length; l++) {
+    //
+    //         childrenLi[l].onmouseenter = function() {
+    //             var childrenName = this.getElementsByClassName('comment-name')[0];
+    //             var childrenReply = this.getElementsByClassName('reply-comment')[0];
+    //             childrenName.style.display = "block";
+    //             childrenReply.style.display = "block";
+    //         };
+    //         childrenLi[l].onmouseleave = function() {
+    //             var childrenName = this.getElementsByClassName('comment-name')[0];
+    //             var childrenReply = this.getElementsByClassName('reply-comment')[0];
+    //             childrenName.style.display = "none";
+    //             childrenReply.style.display = "none";
+    //         }
+    //     }
+    // }
 
 
     // 回复按钮
@@ -133,28 +133,32 @@
             request = new ActiveXObject('Microsoft.XMLHTTP');
         }
 
-        request.onreadystatechange = function () { // 状态发生变化时，函数被回调
-            if (request.readyState === 4) { // 成功完成
-                // 判断响应结果:
+        request.onreadystatechange = function () {
+            if (request.readyState === 4) {
                 if (request.status === 200) {
-                    // 成功，通过responseText拿到响应的文本:
                     return success();
                 } else {
-                    // 失败，根据响应码判断失败原因:
                     return fail();
                 }
             } else {
-                // HTTP请求还在继续...
+
             }
         };
         if (replyId) {
             request.open('POST', '/'+ url +'/comment');
             request.setRequestHeader('Content-Type', 'application/json');
+            nickname = userIpt.value;
+            website = websiteIpt.value;
+            if (website.length > 4) {
+                comment = '<p class="reply-header"><a class="comment-user" href="'+website+'" target="_blank">'+nickname+'</a>'+ '<span>回复</span> '+replyName+'：</p>'+textarea.value;
+            } else {
+                comment = '<p class="reply-header">' + nickname +  '<span>回复</span>' + ' ' + replyName + '：</p>' + textarea.value;
+            }
             FormData= JSON.stringify({
-                nickname: userIpt.value,
+                nickname: nickname,
                 email: emailIpt.value,
-                website: websiteIpt.value,
-                comment: '@' + ' ' + replyName + '：' + textarea.value,
+                website: website,
+                comment: comment,
                 isReply: true,
                 replyTo: replyId
             });

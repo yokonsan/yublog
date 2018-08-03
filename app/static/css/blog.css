@@ -967,6 +967,8 @@ ul.pages a:hover {
 /*comment css*/
 #comments {
     padding: 20px;
+    font-size: 13px;
+    line-height: 1.7;
 }
 
 #comments h1,#comments h2,#comments h3,
@@ -1064,7 +1066,7 @@ ul.pages a:hover {
     width: 100%;
     border-radius: 3px;
     overflow: hidden;
-    resize: none;
+    resize: vertical;
     outline: none;
     border: 1px dashed #df846c;
     padding: 10px;
@@ -1128,6 +1130,7 @@ ol.comment-list {
 
 .comment-list .comment-author {
     float: left;
+    margin-top: 5px;
 }
 
 .comment-list .comment-author img.avatar {
@@ -1141,6 +1144,7 @@ ol.comment-list {
     margin: 0 0 0 12px;
     float: right;
     color: rgba(0,0,0,0.4);
+    font-size: 13px;
 }
 
 .comment-content {
@@ -1154,14 +1158,15 @@ ol.comment-list {
     position: absolute;
     left: 0;
     top: 0;
+    font-size: 14px;
 }
 
-.comment-list .comment-name a {
+.comment-list .comment-name a,a.comment-user {
     color: #df846c;
     text-decoration: none;
 }
 
-.comment-list .comment-name a:hover {
+.comment-list .comment-name a:hover,a.comment-user:hover {
     color: #f06909;
 }
 
@@ -1170,6 +1175,7 @@ ol.comment-list {
     right: 0;
     top: 0;
     margin-right: 20px;
+    font-size: 13px;
 }
 
 .comment-list .reply-comment a {
@@ -1218,7 +1224,7 @@ ul.comment-children {
 .comment-children .comment-name,
 .comment-children .comment-time,
 .comment-children .reply-comment {
-    display: none;
+    /*display: none;*/
 }
 
 .comment-children .comment-name {
@@ -1232,8 +1238,8 @@ ul.comment-children {
 }
 
 .comment-children .comment-content {
-    margin-left: 46px;
-    margin-right: 46px;
+    margin-left: 40px;
+    margin-right: 52px;
     padding: 0;
 }
 
@@ -1241,6 +1247,18 @@ ul.comment-children {
     line-height: 1.5;
     border: 0;
     padding: 0;
+}
+
+.comment-children .comment-text p.reply-header {
+    padding: 0 5px 3px 0;
+    border-bottom: 1px dashed #eee;
+    margin-bottom: 2px;
+}
+
+.comment-children .comment-text p.reply-header span {
+    color: #999;
+    margin: 0 5px;
+    font-size: 12px;
 }
 
 .comment-children .comment-time {
@@ -1273,6 +1291,14 @@ ul.comment-children {
 .comments-navi a:hover {
     color: #df846c;
     border-bottom: 2px solid #df846c;
+}
+
+/*comment update*/
+.comment-content .children-reply {
+    margin-right: 28px;
+}
+ul.comment-children .comment-time {
+    margin-top: 4px;
 }
 
 

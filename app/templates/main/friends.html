@@ -11,7 +11,7 @@
         <ul>
             {% for link in great_links %}
             <li>
-                <a href="{{ link.link }}">{{ link.name }}</a>
+                <a href="{{ link.link }}" target="_blank">{{ link.name }}</a>
                 <span>{{ link.info }}</span>
             </li>
             {% endfor %}
@@ -26,7 +26,7 @@
         <ul>
             {% for link in bad_links %}
             <li>
-                <a href="{{ link.link }}">{{ link.name }}</a>
+                <a href="{{ link.link }}" target="_blank">{{ link.name }}</a>
                 <span>{{ link.info }}</span>
             </li>
             {% endfor %}

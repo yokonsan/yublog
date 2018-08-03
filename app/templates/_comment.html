@@ -40,10 +40,10 @@
                         <div class="comment-author">
                             <img alt="" src="{{reply.gravatar(size=26)}}" class="avatar">
                         </div>
-                        <span class="comment-time">{{ reply.timestamp }}</span>
+                        <span class="comment-time">{{ reply.strptime }}</span>
                         <div class="comment-content">
-                            <span class="comment-name">{{ reply.author }}</span>
-                            <div class="reply-comment">
+{#                            <span class="comment-name">{{ reply.author }}</span>#}
+                            <div class="reply-comment children-reply">
                                 <a class="comment-reply-link" curid="{{ reply.id }}" replyid="{{comment.id}}" replyto="{{reply.author}}">回复</a>
                             </div>
                             <div class="comment-text">
