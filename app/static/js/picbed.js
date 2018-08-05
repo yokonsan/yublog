@@ -2,8 +2,8 @@
  * Created by Administrator on 2018/5/15 0015.
  */
 function showIpt(btn) {
-    var btn = btn;
-    var uploadIpt = document.getElementsByClassName('upload-input')[0];
+    let btn = btn;
+    let uploadIpt = document.getElementsByClassName('upload-input')[0];
     if (btn.innerText === '上传') {
         btn.innerText = '取消';
         uploadIpt.style.display = 'block';
@@ -14,7 +14,7 @@ function showIpt(btn) {
 }
 
 function initAjax(method, url, data) {
-    var request;
+    let request;
     if (window.XMLHttpRequest) {
         request = new XMLHttpRequest();
     } else {
@@ -41,10 +41,10 @@ function initAjax(method, url, data) {
 }
 
 function renameImg(btn) {
-    var img = btn.parentNode.parentNode.getElementsByClassName('img-name')[0];
+    let img = btn.parentNode.parentNode.getElementsByClassName('img-name')[0];
     // console.log(img)
-    var imgKey = img.innerText;
-    var name=prompt("请输入新的图片名", imgKey);
+    let imgKey = img.innerText;
+    let name=prompt("请输入新的图片名", imgKey);
     if (name !== null && name !== "") {
         data = JSON.stringify({
             key: imgKey,
@@ -59,8 +59,8 @@ function renameImg(btn) {
 }
 
 function deleteImg(btn) {
-    var img = btn.parentNode.parentNode.getElementsByClassName('img-name')[0];
-    var imgKey = img.innerText;
+    let img = btn.parentNode.parentNode.getElementsByClassName('img-name')[0];
+    let imgKey = img.innerText;
 
     if (confirm("你确定删除吗？")) {
         data = JSON.stringify({

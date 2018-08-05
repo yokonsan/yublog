@@ -4,14 +4,14 @@
 
 function flashEvent() {
     // flash message div
-    var flashDiv = document.getElementsByClassName('flash-msg')[0];
-    var flashX = document.getElementsByClassName('flash-x')[0];
+    let flashDiv = document.getElementsByClassName('flash-msg')[0];
+    let flashX = document.getElementsByClassName('flash-x')[0];
 
     flashDiv.style.display = 'none';
 }
 
 function firm(url) {
-    var request;
+    let request;
     if (window.XMLHttpRequest) {
         request = new XMLHttpRequest();
     } else {
