@@ -104,7 +104,7 @@
                     </div>
                 </div>
                 <i class="logined">已登录，<a class="delete-user">注销</a></i>
-                <textarea cols="80" name="comment" rows="5" placeholder="评论支持 Markdown 语法。" class="ipt-txt"></textarea>
+                <textarea cols="80" name="comment" rows="6" placeholder="评论支持 Markdown 语法。" class="ipt-txt"></textarea>
                 <span class="cancel">取消</span>
                 <button type="submit" class="comment-submit"
                         posturl="{%if post%}{{post.url}}{%elif page%}{{page.url_name}}{%else%}column/{{article.id}}{%endif%}"

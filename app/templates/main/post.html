@@ -49,7 +49,7 @@
         </div>
     </div>
 
-    <div class="donate site-box">
+    <div class="donate inner-box">
         <p class="donate-title">可以请我喝杯咖啡吗QAQ~</p>
         <p><button class="donate-btn">赞赏</button></p>
         <div class="donate-img" style="display: none;">
@@ -70,7 +70,7 @@
         </div>
     </div>
 
-    <div class="post-copyright site-box">
+    <div class="post-copyright inner-box">
         <blockquote>
             <p><strong>本文作者：</strong>俞坤</p>
             <p><strong>本文链接：</strong><a href="{{url_for('main.post',year=post.year,month=post.month,article_name=post.url)}}">http://www.yukunweb.com/{{post.year}}/{{post.month}}/{{post.url}}</a></p>
@@ -78,7 +78,7 @@
         </blockquote>
     </div>
 
-    <div class="pre-next-post site-box">
+    <div class="pre-next-post inner-box">
         {% if post.prev_post %}
         <a class="pre-post" href="{{url_for('main.post',year=post.prev_post.year,month=post.prev_post.month,article_name=post.prev_post.url)}}">
              {{ post.prev_post.title }}

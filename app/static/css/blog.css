@@ -2,7 +2,7 @@
 body {
     margin: 0;
     padding: 0;
-    background: #f5f7f9;
+    background: #f6f6f6;
     font-family: 'Lato', "PingFang SC", "Microsoft YaHei", sans-serif;
     color: #1a1a1a;
     font-size: 14px;
@@ -105,7 +105,7 @@ h2:after {
     background: #fff;
     margin-bottom: 10px;
     border-radius: 3px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.1);
+    box-shadow: 0 1px 3px rgba(26,26,26,.1);
 }
 
 /*header*/
@@ -122,7 +122,7 @@ h2:after {
     height: 50px;
     background: #fff;
     color: #8590a6;
-    box-shadow: 0 1px 3px 0 rgba(0,34,77,.1);
+    box-shadow: 0 1px 3px 0 rgba(26,26,26,.1);
     z-index: 999;
 }
 
@@ -718,6 +718,7 @@ ul.pages a {
     padding: 5px 10px;
     border: 1px solid #ccc;
     border-radius: 3px;
+    color: #e1846c;
 }
 
 ul.pages a.active,ul.pages a.active:hover {
@@ -780,6 +781,13 @@ ul.pages a:hover {
     margin-right: 15px;
 }
 
+.inner-box {
+    background: #fff;
+    box-sizing: border-box;
+    margin-bottom: 5px;
+    border: 1px solid #eee;
+}
+
 .donate {
     padding: 10px 30px;
     text-align: center;
@@ -792,12 +800,12 @@ ul.pages a:hover {
 }
 
 .donate button {
-    border: 1px solid #ccc;
+    border: 1px solid #eee;
     padding: 5px 20px;
     font-size: 14px;
     font-weight: 600;
     color: #fff;
-    background: rgba(236, 63, 11, 0.88);
+    background: #e1846c;
     border-radius: 5px;
     cursor: pointer;
     outline: none;
@@ -805,7 +813,8 @@ ul.pages a:hover {
 
 .donate button:hover {
     background: #fff;
-    color: rgba(236, 63, 11, 0.88);
+    color: #e1846c;
+    border: 1px solid #ccc;
 }
 
 .donate-img {
@@ -824,14 +833,13 @@ ul.pages a:hover {
 }
 
 .post-copyright {
-    /*border-left: 4px solid #f06909;*/
     overflow: hidden;
     padding-bottom: 0;
 }
 
-/*.post-copyright blockquote {*/
-    /*border: none;*/
-/*}*/
+.post-copyright blockquote {
+    border-left: 3px solid #eaa184;
+}
 
 .post-copyright a {
     color: #666;
@@ -843,6 +851,7 @@ ul.pages a:hover {
 
 .pre-next-post {
     padding: 20px;
+    margin-bottom: 10px;
 }
 
 .pre-post,.next-post {
@@ -983,12 +992,12 @@ ul.pages a:hover {
 
 .comment-title {
     font-size: 16px;
-    padding: 10px;
+    padding: 4px;
     border-bottom: 1px solid #ddd;
 }
 
 .comment-title span {
-    padding: 8px;
+    padding: 5px;
     border-bottom: 2px solid #f06909;
 }
 
@@ -1138,6 +1147,7 @@ ol.comment-list {
     height: 38px;
     border-radius: 20px;
     border: 1px solid #ededed;
+    box-shadow: none;
 }
 
 .comment-list .comment-time {
@@ -1207,7 +1217,7 @@ ul.comment-children {
 
 .comment-children li {
     margin: 0;
-    padding-left: 20px;
+    padding-left: 15px;
     border-left: 1px solid #ededed;
 }
 

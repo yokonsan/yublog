@@ -23,7 +23,17 @@ def clean_cache(key):
     elif key != 'all' and cache.get(key):
         cache.delete(key)
     else:
-        pass
+        return False
+
+def update_first_cache():
+    """
+    update first post behind commit article
+    """
+    first_post = Post.query.order_by(Post.timestamp.desc())[1]
+    cache_key = '_'.join(map(str, ['post', first_post.year, first_post.month, first_post.url_name]))
+    print(cache_key)
+    clean_cache(cache_key)
+    return True
 
 @admin.route('/')
 @admin.route('/index')
@@ -244,6 +254,7 @@ def write():
             flash('发布成功！')
             # 清除缓存
             clean_cache('global')
+            update_first_cache()
         db.session.commit()
         return redirect(url_for('admin.write'))
     return render_template('admin/admin_write.html',
@@ -277,6 +288,7 @@ def admin_edit(time, name):
                 flash('发布成功')
                 # 清除缓存
                 clean_cache('global')
+                update_first_cache()
                 # 更新 xml
                 update_xml(post.timestamp)
             return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))

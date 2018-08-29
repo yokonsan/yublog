@@ -4,7 +4,13 @@
 {% block styles %}
 {{ super() }}
     <style>
-        .post-item h1.post-title {font-weight: 600;}
+        .post-item h1.post-title {
+            font-weight: 600;
+            font-size: 18px;
+        }
+        .post-item .post-meta {
+            margin: 5px 0 15px 0;
+        }
     </style>
 {% endblock %}
 
