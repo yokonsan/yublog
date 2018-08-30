@@ -256,11 +256,19 @@ def save_comment(post, form):
     nickname = form['nickname']
     email = form['email']
     website = form['website'] or None
-    com = form['comment']
-
+    com = form['comment'].replace('<', '&lt;').replace('>', '&gt;')\
+        .replace('"', '&quot;').replace('\'', '&apos;')
     replyTo = form.get('replyTo', '')
     if replyTo:
-        comment = Comment(comment=com, author=nickname,email=email,
+        replyName = Comment.query.get(replyTo).author
+        if len(website) > 4:
+            comment = '<p class="reply-header"><a class="comment-user" href="' + website +'" target="_blank">'\
+                      + nickname + '</a>'+ '<span>回复</span> ' + replyName + '：</p>\n\n' + com
+        else:
+            comment = '<p class="reply-header">' + nickname + '<span>回复</span> ' \
+                      + ' ' + replyName + '：</p>\n\n' + com
+
+        comment = Comment(comment=comment, author=nickname,email=email,
                           website=website, isReply=True, replyTo=replyTo)
         data = {'nickname': nickname, 'email': email, 'website': website,
                 'comment': com, 'isReply': True, 'replyTo': replyTo}

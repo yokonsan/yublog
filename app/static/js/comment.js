@@ -126,16 +126,17 @@
             request.setRequestHeader('Content-Type', 'application/json');
             nickname = userIpt.value;
             website = websiteIpt.value;
-            if (website.length > 4) {
-                comment = '<p class="reply-header"><a class="comment-user" href="'+website+'" target="_blank">'+nickname+'</a>'+ '<span>回复</span> '+replyName+'：</p>\n\n'+textarea.value;
-            } else {
-                comment = '<p class="reply-header">' + nickname +  '<span>回复</span>' + ' ' + replyName + '：</p>\n\n' + textarea.value;
-            }
+            textValue = textarea.value;
+            // if (website.length > 4) {
+            //     comment = '<p class="reply-header"><a class="comment-user" href="'+website+'" target="_blank">'+nickname+'</a>'+ '<span>回复</span> '+replyName+'：</p>\n\n'+textValue;
+            // } else {
+            //     comment = '<p class="reply-header">' + nickname +  '<span>回复</span> ' + ' ' + replyName + '：</p>\n\n' + textValue;
+            // }
             FormData= JSON.stringify({
                 nickname: nickname,
                 email: emailIpt.value,
                 website: website,
-                comment: comment,
+                comment: textValue,
                 isReply: true,
                 replyTo: replyId
             });
@@ -143,7 +144,6 @@
             saveUser('user', val1);
             request.send(FormData);
         } else {
-            console.log(url);
             request.open('POST', '/'+ url +'/comment');
             request.setRequestHeader('Content-Type', 'application/json');
             FormData= JSON.stringify({

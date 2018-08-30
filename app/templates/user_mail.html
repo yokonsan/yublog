@@ -21,7 +21,7 @@
                 <p>你在该 <a href="{{ url }}" target="_blank">文章</a> 下</p>
                 <p>有新的回复:</p>
                 <p style="border-left: 3px solid #ddd;color: #999;background-color: #f5f5f5;padding: 10px 15px;">
-                    {{ comment }}
+                    {{ comment | safe }}
                 </p>
                 <center><a href="{{ url }}" target="_blank" style="background-color:#6ec3c8; border-radius:10px; display:inline-block; color:#fff; padding:15px 20px 15px 20px; text-decoration:none;margin-top:20px; margin-bottom:20px;">点击查看完整内容</a></center>
             </td>
