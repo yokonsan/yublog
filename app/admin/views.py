@@ -25,6 +25,25 @@ def clean_cache(key):
     else:
         return False
 
+def update_global_cache(key, value, method=None):
+    """
+    update sidebar global cache
+    : param key: dict key
+    : param kwargs: key, value, method
+    """
+    global_cache = cache.get('global')
+    if method == '+':
+        value = value if isinstance(value, int) else 1
+        global_cache[key] += value
+    elif method == '-':
+        value = value if isinstance(value, int) else 1
+        global_cache[key] -= value
+    else:
+        global_cache[key] = value
+    cache.set('global', global_cache)
+
+    return True
+
 def update_first_cache():
     """
     update first post behind commit article
@@ -34,6 +53,67 @@ def update_first_cache():
     print(cache_key)
     clean_cache(cache_key)
     return True
+
+def save_tags(tags):
+    """
+    保存标签到模型
+    :param tags: 标签集合，创建时间，文章ID
+    """
+    for tag in tags:
+        exist_tag = Tag.query.filter_by(tag=tag).first()
+        if not exist_tag:
+            tag = Tag(tag=tag)
+            db.session.add(tag)
+    db.session.commit()
+
+def save_post(form, draft=False):
+    """
+    封装保存文章到数据库的重复操作
+    :param form: write or edit form
+    :param draft: article is or not draft
+    :return: post object
+    """
+    category = Category.query.filter_by(category=form.category.data).first()
+    if not category:
+        category = Category(category=form.category.data)
+        db.session.add(category)
+
+    tags = [tag for tag in form.tags.data.split(',')]
+    if draft is True:
+        post = Post(body=form.body.data, title=form.title.data,
+                    url_name=form.url_name.data, category=category,
+                    tags=form.tags.data, timestamp=form.time.data, draft=True)
+    else:
+        post = Post(body=form.body.data, title=form.title.data,
+                    url_name=form.url_name.data, category=category,
+                    tags=form.tags.data, timestamp=form.time.data, draft=False)
+        # 保存标签模型
+        save_tags(tags)
+        # 更新xml
+        update_xml(post.timestamp)
+
+    return post
+
+# 编辑文章后更新sitemap
+def update_xml(update_time):
+    # 获取配置信息
+    author_name = current_app.config['ADMIN_NAME']
+    title = current_app.config['SITE_NAME']
+    subtitle = current_app.config['SITE_TITLE']
+    protocol = current_app.config['WEB_PROTOCOL']
+    url = current_app.config['WEB_URL']
+    web_time = current_app.config['WEB_START_TIME']
+    count = current_app.config['RSS_COUNTS']
+
+    post_list = Post.query.order_by(Post.timestamp.desc()).all()
+    posts = [post for post in post_list if post.draft is False]
+    # sitemap
+    sitemap = get_sitemap(posts)
+    save_file(sitemap, 'sitemap.xml')
+    # rss
+    rss_posts = posts[:count]
+    rss = get_rss_xml(author_name, protocol, url, title, subtitle, web_time, update_time, rss_posts)
+    save_file(rss, 'atom.xml')
 
 @admin.route('/')
 @admin.route('/index')
@@ -117,12 +197,13 @@ def add_link():
             flash('链接已经存在哦...')
             return redirect(url_for('admin.add_link'))
         else:
-            link = SiteLink(link=form.link.data, name=form.name.data,
-                            isFriendLink=False)
+            url = form.link.data
+            name = form.name.data
+            link = SiteLink(link=url, name=name, isFriendLink=False)
             db.session.add(link)
             db.session.commit()
             flash('添加成功')
-            # 清除缓存
+            # update cache
             clean_cache('global')
             return redirect(url_for('admin.add_link'))
     # 友链
@@ -137,8 +218,8 @@ def add_link():
             db.session.add(link)
             db.session.commit()
             flash('添加成功')
-            # 清除缓存
-            clean_cache('global')
+            # update cache
+            update_global_cache('friendCounts', 1, '+')
             return redirect(url_for('admin.add_link'))
     return render_template('admin/admin_add_link.html', title="站点链接",
                            form=form, fr_form=fr_form)
@@ -158,8 +239,12 @@ def delete_link(id):
     link = SiteLink.query.get_or_404(id)
     db.session.delete(link)
     db.session.commit()
-    # 清除缓存
-    clean_cache('global')
+    # update cache
+    if link.isFriendLink is True:
+        update_global_cache('friendCounts', 1, '+')
+    else:
+        clean_cache('global')
+
     return redirect(url_for('admin.admin_links'))
 
 @admin.route('/great/link/<int:id>')
@@ -176,67 +261,6 @@ def great_link(id):
     clean_cache('global')
     return redirect(url_for('admin.admin_links'))
 
-def save_tags(tags):
-    """
-    保存标签到模型
-    :param tags: 标签集合，创建时间，文章ID
-    """
-    for tag in tags:
-        exist_tag = Tag.query.filter_by(tag=tag).first()
-        if not exist_tag:
-            tag = Tag(tag=tag)
-            db.session.add(tag)
-    db.session.commit()
-
-def save_post(form, draft=False):
-    """
-    封装保存文章到数据库的重复操作
-    :param form: write or edit form
-    :param draft: article is or not draft
-    :return: post object
-    """
-    category = Category.query.filter_by(category=form.category.data).first()
-    if not category:
-        category = Category(category=form.category.data)
-        db.session.add(category)
-
-    tags = [tag for tag in form.tags.data.split(',')]
-    if draft is True:
-        post = Post(body=form.body.data, title=form.title.data,
-                    url_name=form.url_name.data, category=category,
-                    tags=form.tags.data, timestamp=form.time.data, draft=True)
-    else:
-        post = Post(body=form.body.data, title=form.title.data,
-                    url_name=form.url_name.data, category=category,
-                    tags=form.tags.data, timestamp=form.time.data, draft=False)
-        # 保存标签模型
-        save_tags(tags)
-        # 更新xml
-        update_xml(post.timestamp)
-
-    return post
-
-# 编辑文章后更新sitemap
-def update_xml(update_time):
-    # 获取配置信息
-    author_name = current_app.config['ADMIN_NAME']
-    title = current_app.config['SITE_NAME']
-    subtitle = current_app.config['SITE_TITLE']
-    protocol = current_app.config['WEB_PROTOCOL']
-    url = current_app.config['WEB_URL']
-    web_time = current_app.config['WEB_START_TIME']
-    count = current_app.config['RSS_COUNTS']
-
-    post_list = Post.query.order_by(Post.timestamp.desc()).all()
-    posts = [post for post in post_list if post.draft is False]
-    # sitemap
-    sitemap = get_sitemap(posts)
-    save_file(sitemap, 'sitemap.xml')
-    # rss
-    rss_posts = posts[:count]
-    rss = get_rss_xml(author_name, protocol, url, title, subtitle, web_time, update_time, rss_posts)
-    save_file(rss, 'atom.xml')
-
 @admin.route('/write', methods=['GET', 'POST'])
 @login_required
 def write():
@@ -252,7 +276,7 @@ def write():
             post = save_post(form)
             db.session.add(post)
             flash('发布成功！')
-            # 清除缓存
+            # updata cache
             clean_cache('global')
             update_first_cache()
         db.session.commit()
@@ -405,14 +429,14 @@ def admin_posts():
 
 @admin.route('/delete/<int:time>/<name>')
 @login_required
-def delete(time, name):
+def delete_post(time, name):
     timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
     post = Post.query.filter_by(timestamp=timestamp, url_name=name).first()
     db.session.delete(post)
     db.session.commit()
     flash('删除成功')
-    # 清除缓存
-    clean_cache('global')
+    # update cache
+    update_global_cache('postCounts', 1, '-')
     return redirect(url_for('admin.admin_posts'))
 
 @admin.route('/comments')
@@ -432,13 +456,21 @@ def admin_comments():
 def delete_comment(id):
     comment = Comment.query.get_or_404(id)
     page = comment.page
+    post = comment.post
     db.session.delete(comment)
     db.session.commit()
     flash('删除成功')
 
-    if page and page.url_name == 'guestbook':
-        # 清除缓存
-        clean_cache('global')
+    if comment.disabled is True:
+        if page and page.url_name == 'guestbook':
+            # 清除缓存
+            update_global_cache('guestbookCounts', 1, '-')
+        elif post and isinstance(post, Post):
+            # 删除文章缓存
+            cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
+            post_cache = cache.get(cache_key)
+            post_cache['comment_count'] -= 1
+            cache.set(cache_key, post_cache)
     return redirect(url_for('admin.admin_comments'))
 
 @admin.route('/allow/comment/<int:id>')
@@ -483,9 +515,16 @@ def allow_comment(id):
             asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg)
 
     page = comment.page
+    post = comment.post
     if page and page.url_name == 'guestbook':
         # 清除缓存
-        clean_cache('global')
+        update_global_cache('guestbookCounts', 1, '+')
+    elif post and isinstance(post, Post):
+        # 更新文章缓存
+        cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
+        post_cache = cache.get(cache_key)
+        post_cache['comment_count'] += 1
+        cache.set(cache_key, post_cache)
     return redirect(url_for('admin.admin_comments'))
 
 @admin.route('/unable/comment/<int:id>')
@@ -498,9 +537,16 @@ def unable_comment(id):
     flash('隐藏成功')
 
     page = comment.page
+    post = comment.post
     if page and page.url_name == 'guestbook':
         # 清除缓存
-        clean_cache('global')
+        update_global_cache('guestbookCounts', 1, '-')
+    elif post and isinstance(post, Post):
+        # 更新文章缓存
+        cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
+        post_cache = cache.get(cache_key)
+        post_cache['comment_count'] -= 1
+        cache.set(cache_key, post_cache)
     return redirect(url_for('admin.admin_comments'))
 
 @admin.route('/write/shuoshuo', methods=['GET','POST'])
@@ -513,7 +559,7 @@ def write_shuoshuo():
         db.session.commit()
         flash('发布成功')
         # 清除缓存
-        clean_cache('global')
+        update_global_cache('newShuo', shuo.body_to_html)
         return redirect(url_for('admin.write_shuoshuo'))
     return render_template('admin/admin_write_shuoshuo.html',
                            title='写说说', form=form)
@@ -533,8 +579,11 @@ def delete_shuo(id):
     db.session.delete(shuo)
     db.session.commit()
     flash('删除成功')
-    # 清除缓存
-    clean_cache('global')
+
+    # update cache
+    new_shuo = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).first()
+    value = new_shuo.body_to_html if new_shuo else '这家伙啥都不想说...'
+    update_global_cache('newShuo', value)
     return redirect(url_for('admin.admin_shuos'))
 
 
@@ -674,11 +723,6 @@ def upload_file():
     source_folder = current_app.config['UPLOAD_PATH']
     if request.method == 'POST':
         file = request.files['file']
-        # print(file)
-        # print(dir(file))
-        # print(file.mimetype)
-        # print(file.content_length)
-        # print(file.stream.read())
         filename = file.filename
         path = os.path.join(source_folder, filename)
         file.save(path)
@@ -693,12 +737,13 @@ def upload_file():
 def add_side_box():
     form = SideBoxForm()
     if form.validate_on_submit():
+        is_advertising = form.is_advertising.data
         box = SideBox(title=form.title.data, body=form.body.data,
-                      is_advertising=form.is_advertising.data)
+                      is_advertising=is_advertising)
         db.session.add(box)
         db.session.commit()
         flash('添加侧栏插件成功')
-        # 清除缓存
+        # update cache
         clean_cache('global')
         return redirect(url_for('admin.admin_side_box'))
     return render_template('admin/admin_edit_sidebox.html', form=form,
@@ -717,7 +762,7 @@ def edit_side_box(id):
         db.session.add(box)
         db.session.commit()
         flash('更新侧栏插件成功')
-        # 清除缓存
+        # update cache
         clean_cache('global')
         return redirect(url_for('admin.admin_side_box'))
 

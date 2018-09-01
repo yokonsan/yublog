@@ -55,9 +55,9 @@ def global_datas():
     if posts:
         global_data['postCounts'] = posts
 
-    shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
-    if shuos:
-        global_data['newShuo'] = shuos[0].body_to_html
+    shuo = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).first()
+    if shuo:
+        global_data['newShuo'] = shuo.body_to_html
 
     guestbook = Page.query.filter_by(url_name='guestbook').first()
     if guestbook:

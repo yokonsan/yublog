@@ -232,8 +232,10 @@ def love_me():
     """
     data = request.get_json()
     if data.get('i_am_handsome', '') == 'yes':
-        # 清除所有页面缓存
-        cache.delete('global')
+        # 更新缓存
+        global_cache = cache.get('global')
+        global_cache['loves'] += 1
+        cache.set('global', global_cache)
         love_me_counts = LoveMe.query.all()[0]
         love_me_counts.loveMe += 1
         db.session.add(love_me_counts)
