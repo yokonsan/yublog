@@ -138,9 +138,10 @@ def post(year, month, article_name):
     )
     comments = pagination.items
     replys = Comment.query.filter_by(post_id=post['id'], isReply=True, disabled=True).all()
+    meta_tags = ','.join(post['tags'])
     return render_template('main/post.html', post=post, title=post['title'],
                    pagination=pagination, comments=comments, replys=replys,
-                   counts=len(comments)+len(replys))
+                   counts=len(comments)+len(replys), meta_tags=meta_tags)
 
 @main.route('/page/<page_url>/')
 def page(page_url):

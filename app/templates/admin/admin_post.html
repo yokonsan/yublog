@@ -11,7 +11,7 @@
                 {{ post.title }}
             </a>
 
-            <button onclick="firm('{{url_for('admin.delete',time=post.timestampInt,name=post.url_name)}}')" class="delete-btn">
+            <button onclick="firm('{{url_for('admin.delete_post',time=post.timestampInt,name=post.url_name)}}')" class="delete-btn">
                 删除
             </button>
 

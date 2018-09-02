@@ -2,7 +2,7 @@
 {% block styles %}
     {{super()}}
     <link rel="stylesheet" href="{{ url_for('static',filename='lib/default.css') }}"/>
-    <meta name="keywords" content="{{ post.tags }}">
+    <meta name="keywords" content="{{ meta_tags }}">
     <meta name="description" content="{{ post.title }}">
 <style>
     .post-title {
