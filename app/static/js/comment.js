@@ -127,11 +127,6 @@
             nickname = userIpt.value;
             website = websiteIpt.value;
             textValue = textarea.value;
-            // if (website.length > 4) {
-            //     comment = '<p class="reply-header"><a class="comment-user" href="'+website+'" target="_blank">'+nickname+'</a>'+ '<span>回复</span> '+replyName+'：</p>\n\n'+textValue;
-            // } else {
-            //     comment = '<p class="reply-header">' + nickname +  '<span>回复</span> ' + ' ' + replyName + '：</p>\n\n' + textValue;
-            // }
             FormData= JSON.stringify({
                 nickname: nickname,
                 email: emailIpt.value,

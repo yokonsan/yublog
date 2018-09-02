@@ -613,7 +613,9 @@ def edit_column(id):
         column.timestamp = form.date.data
         column.url_name = form.url_name.data
         column.body = form.body.data
-        column.password = form.password.data
+        password = form.password.data
+        if password:
+            column.password = password
         db.session.add(column)
         db.session.commit()
         flash('专题更新成功！')

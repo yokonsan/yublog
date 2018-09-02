@@ -893,13 +893,13 @@ ul.pages a:hover {
 }
 
 .category-post ul li {
-    padding: 5px 0;
+    padding: 10px 5px;
 }
 .category-post a {
     text-decoration: none;
     color: #333;
     margin: 5px 20px;
-    display: inline-block;
+    /*display: inline-block;*/
     font-size: 15px;
 }
 
