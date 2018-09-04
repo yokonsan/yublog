@@ -113,12 +113,12 @@ class Post(db.Model):
         return int([i for i in self.timestamp.split('-')][1])
 
     def tag_in_post(self, tag):
-        try:
+        if self.tags.find(',') > -1:
             tags = [i for i in self.tags.split(',')]
             if tag in tags:
                 return True
             return False
-        except:
+        else:
             if tag == self.tags:
                 return True
             return False
@@ -153,7 +153,7 @@ class Post(db.Model):
             'datetime': self.timestamp,
             'category': self.category.category,
             'tag': self.tags,
-            'comment_count': self.comments.count()
+            'comment_count': self.comments.filter_by(disabled=True).count()
         }
         return post
 
@@ -222,10 +222,17 @@ class Comment(db.Model):
     def to_json(self):
         comment = {
             'id': self.id,
+            'isReply': self.isReply,
             'author': self.author,
+            'avatar': self.gravatar(38),
+            'mail': self.email,
+            'site': self.website,
             'datetime': self.strptime,
-            'comment': self.comment
+            'comment': self.body_to_html
         }
+        if self.isReply:
+            comment['avatar'] = self.gravatar(26)
+            comment['replyTo'] = self.replyTo
         return comment
 
     def __repr__(self):
@@ -234,7 +241,7 @@ class Comment(db.Model):
 class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
-    tag = db.Column(db.String(16), index=True)
+    tag = db.Column(db.String(25), index=True)
 
     def to_json(self):
         tag = {

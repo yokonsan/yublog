@@ -181,7 +181,7 @@ def category(category_name):
 
 @main.route('/archives/')
 def archives():
-    count = Post.query.count()
+    count = Post.query.filter_by(draft=False).count()
     page = request.args.get('page', 1, type=int)
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['ACHIVES_POSTS_PER_PAGE'],

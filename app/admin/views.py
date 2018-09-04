@@ -32,6 +32,8 @@ def update_global_cache(key, value, method=None):
     : param kwargs: key, value, method
     """
     global_cache = cache.get('global')
+    if global_cache is None:
+        return False
     if method == '+':
         value = value if isinstance(value, int) else 1
         global_cache[key] += value
@@ -50,7 +52,6 @@ def update_first_cache():
     """
     first_post = Post.query.order_by(Post.timestamp.desc())[1]
     cache_key = '_'.join(map(str, ['post', first_post.year, first_post.month, first_post.url_name]))
-    print(cache_key)
     clean_cache(cache_key)
     return True
 
@@ -436,7 +437,8 @@ def delete_post(time, name):
     db.session.commit()
     flash('删除成功')
     # update cache
-    update_global_cache('postCounts', 1, '-')
+    if post.draft is False:
+        update_global_cache('postCounts', 1, '-')
     return redirect(url_for('admin.admin_posts'))
 
 @admin.route('/comments')
@@ -523,8 +525,9 @@ def allow_comment(id):
         # 更新文章缓存
         cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
         post_cache = cache.get(cache_key)
-        post_cache['comment_count'] += 1
-        cache.set(cache_key, post_cache)
+        if post_cache:
+            post_cache['comment_count'] += 1
+            cache.set(cache_key, post_cache)
     return redirect(url_for('admin.admin_comments'))
 
 @admin.route('/unable/comment/<int:id>')
@@ -545,8 +548,9 @@ def unable_comment(id):
         # 更新文章缓存
         cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
         post_cache = cache.get(cache_key)
-        post_cache['comment_count'] -= 1
-        cache.set(cache_key, post_cache)
+        if post_cache:
+            post_cache['comment_count'] -= 1
+            cache.set(cache_key, post_cache)
     return redirect(url_for('admin.admin_comments'))
 
 @admin.route('/write/shuoshuo', methods=['GET','POST'])
@@ -861,3 +865,10 @@ def rename_img():
     return redirect(url_for('admin.qiniu_picbed'))
 
 # qiniu picture bed end
+
+@admin.route('/clean/cache/all')
+@login_required
+def clean_all_cache():
+    clean_cache('all')
+    flash('clean all cache success!')
+    return redirect(url_for('admin.index'))
