@@ -50,9 +50,11 @@ def update_first_cache():
     """
     update first post behind commit article
     """
-    first_post = Post.query.order_by(Post.timestamp.desc())[1]
-    cache_key = '_'.join(map(str, ['post', first_post.year, first_post.month, first_post.url_name]))
-    clean_cache(cache_key)
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    if len(posts) > 1:
+        first_post = posts[1]
+        cache_key = '_'.join(map(str, ['post', first_post.year, first_post.month, first_post.url_name]))
+        clean_cache(cache_key)
     return True
 
 def save_tags(tags):

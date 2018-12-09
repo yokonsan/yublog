@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_whooshee import Whooshee
-from flask_cache import Cache
+from flask_caching import Cache
 
 from config import config
 from .qiniu_picbed import QiniuUpload
