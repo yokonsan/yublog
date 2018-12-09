@@ -11,13 +11,17 @@
 
 部署方案查看：[Ubuntu+uwsgi+Nginx部署Flask应用](http://www.yukunweb.com/2017/12/ubuntu-nginx-uwsgi-flask-app/)
 
-Docker-Compose 部署：`docker-compose up -d`
+推荐Docker-Compose 部署： 
+1. 配置`config.py`文件应用信息，在`docker-compose.yml`中配置环境变量，
+2. 启动`docker-compose up -d`
+3. 停止`docker-compose down`
 
 ## 本地使用
 
 默认不使用七牛图床功能，如想使用，需要在`config.py`配置对应信息，并将`NEED_PIC_BED`改为`True`。
 
-1. 下载此项目程序，配置`mysql`和`redis`数据库；
+0. 下载此项目程序，配置`mysql`和`redis`数据库；
+1. 进入应用文件夹：`cd source`
 2. 安装项目依赖：`pip install -r requirements.txt`；
 3. 打开`config.py`配置文件，配置站点信息，设置需要的环境变量；
 4. 创建迁移仓库：`python manage.py db init`；
@@ -53,6 +57,7 @@ Docker-Compose 部署：`docker-compose up -d`
 4. 添加侧栏插件功能，可添加广告插件和普通插件，需要自己编写前端样式。
 5. 使用轻量[simplemde-markdown-editor](https://github.com/sparksuite/simplemde-markdown-editor)编辑器，在线编辑文章更加优雅。
 6. 集成七牛官方sdk，编辑简洁美观的七牛图床，上传以及操作图片更加方便。
+7. 添加`Docker`一键部署
 
 
 ## Enjoy it.
