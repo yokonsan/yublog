@@ -6,6 +6,8 @@ if [ ! -d "migrations/" ];then
   python manage.py db init
 fi
 
+python manage.py clear_alembic
+
 echo "db migrate"
 
 python manage.py db migrate -m "v1.0"
