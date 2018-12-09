@@ -11,6 +11,7 @@
 
 部署方案查看：[Ubuntu+uwsgi+Nginx部署Flask应用](http://www.yukunweb.com/2017/12/ubuntu-nginx-uwsgi-flask-app/)
 
+Docker-Compose 部署：`docker-compose up -d`
 
 ## 本地使用
 
@@ -22,7 +23,7 @@
 4. 创建迁移仓库：`python manage.py db init`；
 5. 创建迁移脚本：`python manage.py db migrate -m "v1.0"`；
 6. 更新仓库：`python manage.py db upgrade`；
-7. 创建管理员信息：`python manage.py addAdmin`；
+7. 创建管理员信息：`python manage.py add_admin`；
 8. 运行程序：`python manage.py runserver --host 0.0.0.0`；
 9. 管理后台：`/admin`
 
