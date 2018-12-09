@@ -84,7 +84,6 @@ class TestingConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@localhost:3306/testdb'
     TESTING = True
 
-
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@localhost:3306/mydb'
     DEBUG = False
@@ -111,22 +110,16 @@ class ProductionConfig(Config):
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
 
-class UnixConfig(ProductionConfig):
-
-    @classmethod
-    def init_app(cls, app):
-        ProductionConfig.init_app(app)
-
-        import logging
-        from logging.handlers import SysLogHandler
-        syslog_handler = SysLogHandler()
-        syslog_handler.setLevel(logging.INFO)
-        app.logger.addHandler(syslog_handler)
+class DockerConfig(ProductionConfig):
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@db:3306/mydb'
+    DEBUG = False
+    CACHE_REDIS_HOST = 'cache'
 
 
 config = {
     'development': DevelopmentConfig,
     'testing': TestingConfig,
     'production': ProductionConfig,
+    'docker': DockerConfig,
     'default': DevelopmentConfig
 }

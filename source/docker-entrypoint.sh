@@ -2,9 +2,7 @@
 
 echo "db init"
 
-if [ ! -d "/migrations/" ];then
-  echo "migrations already exists"
-else
+if [ ! -d "migrations/" ];then
   python manage.py db init
 fi
 
@@ -22,4 +20,4 @@ python manage.py add_admin
 
 echo "uwsgi start"
 
-nohup uwsgi config.ini > app.log 2>&1 &
+uwsgi config.ini
