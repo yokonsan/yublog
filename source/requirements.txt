@@ -3,7 +3,7 @@ flask-whooshee==0.4.1
 gunicorn==19.7.1
 qiniu==7.2.0
 redis==2.10.6
-Flask==0.11.1
+Flask==1.0.2
 Flask-Caching
 Flask-Login==0.4.0
 Flask-Migrate==2.0.3
