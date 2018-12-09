@@ -5,7 +5,7 @@ from flask import url_for
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app import db, lm, whooshee
+from . import db, lm, whooshee
 from .utils import markdown_to_html
 
 
