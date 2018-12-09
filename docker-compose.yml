@@ -15,8 +15,6 @@ services:
       - MAIL_USERNAME=example@email.com
       - MAIL_PASSWORD=password
       - ADMIN_MAIL=example@email.com
-      - CACHE_REDIS_DB=''
-      - CHCHE_REDIS_PASSWORD=''
       - QN_ACCESS_KEY=''
       - QN_SECRET_KEY=''
     ports:
