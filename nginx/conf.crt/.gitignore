@@ -1,0 +1,8 @@
+# Python:
+.idea
+.qiniu_pythonsdk_hostscache.json
+dist
+build
+__pycache__
+whooshee
+migrations
