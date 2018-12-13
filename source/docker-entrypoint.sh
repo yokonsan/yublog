@@ -7,19 +7,14 @@ if [ ! -d "migrations/" ];then
 fi
 
 python manage.py clear_alembic
-
 echo "db migrate"
-
 python manage.py db migrate -m "v1.0"
 
 echo "db upgrade"
-
 python manage.py db upgrade
 
-echo "db add admin"
-
+echo "add admin"
 python manage.py add_admin
 
 echo "uwsgi start"
-
 uwsgi config.ini
