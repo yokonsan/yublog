@@ -11,21 +11,23 @@ services:
       - ./source:/myapp
     environment:
       # set environment(config.py)
-      - ADMIN_PASSWORD=password
-      - MAIL_USERNAME=example@email.com
-      - MAIL_PASSWORD=password
-      - ADMIN_MAIL=example@email.com
-      - QN_ACCESS_KEY=''
-      - QN_SECRET_KEY=''
+      - CONFIG=docker
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - ADMIN_MAIL=${ADMIN_MAIL}
+      - QN_ACCESS_KEY=${QN_ACCESS_KEY}
+      - QN_SECRET_KEY=${QN_SECRET_KEY}
     ports:
       - "9001:9001"
     depends_on:
       - db
       - cache
-    command: bash -c "./wait_for_it.sh db:3306 -- docker-entrypoint.sh"
 
   db:
-    image: mysql:5.7
+    build: ./mysql
     networks:
       - backend
     restart: always
@@ -33,8 +35,10 @@ services:
       - ./mysql/my.cnf:/etc/mysql/my.cnf:ro
       - ./mysql/data:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_DATABASE=mydb
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     ports:
       - "3306:3306"
 
