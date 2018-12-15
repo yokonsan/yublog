@@ -84,7 +84,7 @@ def index():
     per_page = current_app.config['POSTS_PER_PAGE']
 
     counts = Post.query.filter_by(draft=False).count()
-    max_page = counts // per_page + 1 if counts%per_page!=0 else counts // per_page
+    max_page = counts // per_page + 1 if counts % per_page != 0 else counts // per_page
     post_list = Post.query.order_by(Post.timestamp.desc()).limit(per_page).offset((page-1)*per_page).all()
     all = (post for post in post_list if post.draft is False)
     posts = []
@@ -264,7 +264,7 @@ def save_comment(post, form):
     replyTo = form.get('replyTo', '')
     if replyTo:
         replyName = Comment.query.get(replyTo).author
-        if len(website) > 4:
+        if website and len(website) > 4:
             comment = '<p class="reply-header"><a class="comment-user" href="' + website +'" target="_blank">'\
                       + nickname + '</a>'+ '<span>回复</span> ' + replyName + '：</p>\n\n' + com
         else:

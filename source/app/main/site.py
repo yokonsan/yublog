@@ -17,4 +17,10 @@ def rss():
 
 @main.route('/<filename>/')
 def get_file(filename):
+    print(filename)
     return send_from_directory('static', 'upload/{0}'.format(filename))
+
+@main.route('/<path>/<filename>/')
+def get_dir_file(path, filename):
+    print('{path}/{filename}'.format(path=path, filename=filename))
+    return send_from_directory('static', 'upload/{path}/{filename}'.format(path=path, filename=filename))
