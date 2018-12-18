@@ -1,6 +1,5 @@
 import os
 
-basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
     CSRF_ENABLED = True
@@ -16,6 +15,9 @@ class Config(object):
     ADMIN_COMMENTS_PER_PAGE = 50
 
     UPLOAD_PATH = './app/static/upload/'
+
+    # 数据库配置
+    MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD') or 'password'
 
     # 博客信息
     # 管理员姓名
@@ -77,15 +79,20 @@ class Config(object):
 
 
 class DevelopmentConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@localhost:3306/mydb'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/mydb'.format(
+        password=Config.MYSQL_PASSWORD)
     DEBUG = True
 
+
 class TestingConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@localhost:3306/testdb'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/mydb'.format(
+        password=Config.MYSQL_PASSWORD)
     TESTING = True
 
+
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@localhost:3306/mydb'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/mydb'.format(
+        password=Config.MYSQL_PASSWORD)
     DEBUG = False
 
     @classmethod
@@ -110,9 +117,8 @@ class ProductionConfig(Config):
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
 
+
 class DockerConfig(ProductionConfig):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@db:3306/mydb'
-    DEBUG = False
     CACHE_REDIS_HOST = 'cache'
 
 

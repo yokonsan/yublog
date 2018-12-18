@@ -1,5 +1,14 @@
 #!/usr/bin/env python
 import os
+
+# if os.path.exists('../.env'):
+#     for line in open('../.env', encoding='utf-8'):
+#         if line .find('#') > -1:
+#             line = line.split('#')[0]
+#         var = line.strip().split('=')
+#         if len(var) == 2:
+#             os.environ[var[0]] = var[1]
+
 from app import create_app, db
 from app.models import Admin, Post, Tag, Category, SiteLink, \
     Page, LoveMe, Comment, Shuoshuo, SideBox
@@ -9,12 +18,6 @@ from flask_migrate import Migrate, MigrateCommand
 app = create_app(os.getenv('CONFIG') or 'default')
 manager = Manager(app)
 migrate = Migrate(app, db)
-
-if os.path.exists('.env'):
-    for line in open('.env'):
-        var = line.strip().split('=')
-        if len(var) == 2:
-            os.environ[var[0]] = var[1]
 
 
 def make_shell_context():
