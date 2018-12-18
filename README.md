@@ -13,6 +13,7 @@
 
 推荐Docker-Compose 部署： 
 0. 推荐站点配置`https`证书，不然`Chrome`会将站点标记为不安全，不配置证书则需要将[default.conf](nginx/conf.d/default.conf)配置改为：
+
     ```yaml
     server {
         listen      80;
@@ -31,6 +32,7 @@
 
     }
     ```
+    
 1. 配置`config.py`文件应用信息，敏感信息建议在`.env`文件中配置，
 2. 启动`docker-compose up -d`
 3. 停止`docker-compose down`
