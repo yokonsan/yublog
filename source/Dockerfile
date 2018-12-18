@@ -14,4 +14,4 @@ RUN pip install --upgrade pip \
 
 EXPOSE 9001
 
-# ENTRYPOINT ["bash", "docker-entrypoint.sh"]
+ENTRYPOINT ["bash", "docker-entrypoint.sh"]

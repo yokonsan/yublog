@@ -12,7 +12,26 @@
 部署方案查看：[Ubuntu+uwsgi+Nginx部署Flask应用](http://www.yukunweb.com/2017/12/ubuntu-nginx-uwsgi-flask-app/)
 
 推荐Docker-Compose 部署： 
-1. 配置`config.py`文件应用信息，在`docker-compose.yml`中配置环境变量，
+0. 推荐站点配置`https`证书，不然`Chrome`会将站点标记为不安全，不配置证书则需要将[default.conf](nginx/conf.d/default.conf)配置改为：
+    ```yaml
+    server {
+        listen      80;
+        # set your domain or ip address
+        server_name example.com;
+        charset     utf-8;
+        client_max_body_size 75M;
+
+        location / {
+            uwsgi_pass web:9001;
+            uwsgi_read_timeout 600;
+            uwsgi_connect_timeout 600;
+            uwsgi_send_timeout 600;
+            include uwsgi_params; # the uwsgi_params file you installed
+        }
+
+    }
+    ```
+1. 配置`config.py`文件应用信息，敏感信息建议在`.env`文件中配置，
 2. 启动`docker-compose up -d`
 3. 停止`docker-compose down`
 
@@ -57,7 +76,8 @@
 4. 添加侧栏插件功能，可添加广告插件和普通插件，需要自己编写前端样式。
 5. 使用轻量[simplemde-markdown-editor](https://github.com/sparksuite/simplemde-markdown-editor)编辑器，在线编辑文章更加优雅。
 6. 集成七牛官方sdk，编辑简洁美观的七牛图床，上传以及操作图片更加方便。
-7. 添加`Docker`一键部署
+7. 添加`Docker`一键部署.。
+8. 添加获取`letsencrypt`提供免费`http`证书的脚本。
 
 
 ## Enjoy it.

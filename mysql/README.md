@@ -1,25 +1,23 @@
 ## Mysql Dockerfile
 
-如果有需要导入mysql容器的sql，则使用该Dockerfile制作MySQL容器
+为了能更方便控制mysql容器启动时创建web应用需要的数据库，则使用该Dockerfile制作MySQL容器
 
 ### 导入sql
 
-将sql文件放入该目录，在将docker-compose.yml文件，db容器配置改为：
-
-```yaml
-db:
-    build: ./mysql
-    restart: always
-    volumes:
-      - ./mysql/my.cnf:/etc/mysql/my.cnf:ro
-      - ./mysql/data:/var/lib/mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=password
-      # - MYSQL_DATABASE=mydb
-    ports:
-      - "3306:3306"
-```
+将导出的sql文件内容赋值在`init_database.sql`文件内，第一次启动没有sql数据，不用管。
 
 ### 导出sql
+
+导出主机上的数据：
+
+```
+$ mysqldump -uroot -p mydb > mydb.sql
+```
+
+导出容器里的数据：
+
+```bash
+$ docker exec yublog_db_1 sh -c 'exec mysqldump --all-databases -uroot -p"$MYSQL_ROOT_PASSWORD"' > /var/lib/mysql/all-databases.sql
+```
 
 
