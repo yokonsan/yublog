@@ -25,6 +25,7 @@ services:
     depends_on:
       - db
       - cache
+    command: bash -c "./docker-entrypoint.sh db 3306 root ${MYSQL_PASSWORD} mydb"
 
   db:
     build: ./mysql
@@ -36,9 +37,7 @@ services:
       - ./mysql/data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=mydb
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+#      - MYSQL_DATABASE=mydb
     ports:
       - "3306:3306"
 
@@ -64,6 +63,7 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./source/app/static:/usr/share/nginx/html
       - ./nginx/data:/usr/share/nginx
+      - ./nginx/log:/var/log/nginx
       - ./nginx/conf.crt:/etc/letsencrypt
     depends_on:
       - web
