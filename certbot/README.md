@@ -17,9 +17,9 @@ Let's Encrypt 证书的有效时间时三个月，我们需要配置定时任务
 
 ```bash
 /usr/sbin/service crond start  # 启动服务 
-/usr /sbin/service crond stop  # 关闭服务 
+/usr/sbin/service crond stop  # 关闭服务 
 /usr/sbin/service crond restart  # 重启服务 
-/usr /sbin/service crond reload  # 重新载入配置
+/usr/sbin/service crond reload  # 重新载入配置
 ```
 
 配置任务`crontab -e`：
