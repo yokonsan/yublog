@@ -2,6 +2,7 @@
 WEBDIR="$1"
 DOMAIN=example.com
 DOMAIN2=www.example.com
+EMAIL=example@email.com
 LED_LIST=()
 WWW_ROOT=/usr/share/nginx/html
 docker run --rm \
@@ -11,7 +12,7 @@ docker run --rm \
     certbot \
     certbot certonly --verbose --noninteractive --quiet --agree-tos \
     --webroot -w ${WWW_ROOT} \
-    --email="example@email.com" \
+    --email=${EMAIL} \
     -d ${DOMAIN} -d ${DOMAIN2}
 CODE=$?
 if [ $CODE -ne 0 ]; then

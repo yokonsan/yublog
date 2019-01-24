@@ -12,6 +12,7 @@
 部署方案查看：[Ubuntu+uwsgi+Nginx部署Flask应用](http://www.yukunweb.com/2017/12/ubuntu-nginx-uwsgi-flask-app/)
 
 推荐Docker-Compose 部署： 
+
 0. 推荐站点配置`https`证书（[配置方法](certbot)），不然`Chrome`会将站点标记为不安全，不配置证书则需要将[default.conf](nginx/conf.d/default.conf)配置改为：
 
     ```

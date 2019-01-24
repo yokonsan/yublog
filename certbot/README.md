@@ -1,6 +1,12 @@
 ## Let's Encrypt配置https
 
-推荐站点配置`https`证书，不然`Chrome`会将站点标记为不安全
+推荐站点配置`https`证书，不然`Chrome`会将站点标记为不安全。开始前先在[get_cert.sh](get_cert.sh)和[renew_cert.sh](renew_cert.sh)文件中配置邮箱和域名：
+
+```
+DOMAIN=example.com
+DOMAIN2=www.example.com
+EMAIL=example@email.com
+```
 
 ### 启动容器前第一次获取证书
 
