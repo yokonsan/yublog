@@ -19,7 +19,7 @@
 </div>
 <div class="post-page site-box">
     <ul class="pages">
-        {{ page.pages(pagination, 'main.search_result') }}
+        {{ page.pages(pagination, 'main.search_result', keywords=query) }}
     </ul>
 </div>
 {% else %}
