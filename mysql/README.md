@@ -17,7 +17,7 @@ $ mysqldump -uroot -p mydb > mydb.sql
 导出容器里的数据：
 
 ```bash
-$ docker exec yublog_db_1 sh -c 'exec mysqldump --all-databases -uroot -p"$MYSQL_ROOT_PASSWORD"' > /var/lib/mysql/all-databases.sql
+$ docker exec yublog_db_1 sh -c 'exec mysqldump --all-databases -uroot -p"$MYSQL_ROOT_PASSWORD" > /var/lib/mysql/all-databases.sql'
 ```
 
 

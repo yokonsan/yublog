@@ -42,7 +42,7 @@
 
 默认不使用七牛图床功能，如想使用，需要在`config.py`配置对应信息，并将`NEED_PIC_BED`改为`True`。
 
-0. 下载此项目程序，配置`mysql`和`redis`数据库；
+0. 下载此项目程序，配置`mysql`，创建数据库mydb(数据库名在config.py自由定义)；安装`redis`数据库；
 1. 进入应用文件夹：`cd source`
 2. 安装项目依赖：`pip install -r requirements.txt`；
 3. 打开`config.py`配置文件，配置站点信息，设置需要的环境变量；
