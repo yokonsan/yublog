@@ -21,15 +21,15 @@ class Config(object):
 
     # 博客信息
     # 管理员姓名
-    ADMIN_NAME = '俞坤'
+    ADMIN_NAME = '银时'
     # 管理员登录信息
-    ADMIN_LOGIN_NAME = 'yukun'
+    ADMIN_LOGIN_NAME = 'yinshi'
     # 登录密码
     ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD') or 'password'
     # 博客名
     SITE_NAME = '意外'
     # 博客标题
-    SITE_TITLE = '俞坤的博客'
+    SITE_TITLE = '银时的博客'
     # 管理员简介
     ADMIN_PROFILE = '克制力，执行力'
 
@@ -119,6 +119,8 @@ class ProductionConfig(Config):
 
 
 class DockerConfig(ProductionConfig):
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@db:3306/mydb'
+    DEBUG = False
     CACHE_REDIS_HOST = 'cache'
 
 
