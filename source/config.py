@@ -119,7 +119,7 @@ class ProductionConfig(Config):
 
 
 class DockerConfig(ProductionConfig):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:password@db:3306/mydb'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@db:3306/mydb'
     DEBUG = False
     CACHE_REDIS_HOST = 'cache'
 
