@@ -10,7 +10,7 @@ docker run --rm \
     -v ${WEBDIR}/certbot/log:/var/log/letsencrypt \
     -v ${WEBDIR}/source/app/static/upload:${WWW_ROOT} \
     certbot \
-    certbot certonly --verbose --noninteractive --quiet --agree-tos \
+    certonly --verbose --noninteractive --quiet --agree-tos \
     --webroot -w ${WWW_ROOT} \
     --email=${EMAIL} \
     -d ${DOMAIN} -d ${DOMAIN2}
