@@ -7,7 +7,7 @@ WORKDIR /myapp
 
 COPY ./requirements.txt /myapp
 RUN pip install --upgrade pip \
-    && pip install -r requirements.txt \
+    && pip install -i https://pypi.douban.com/simple/ -r requirements.txt \
     && pip install uwsgi
 
 EXPOSE 9001
