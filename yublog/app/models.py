@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import datetime
 from hashlib import md5
 
@@ -6,11 +8,12 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from . import db, lm, whooshee
-from .utils import markdown_to_html
+from .utils import markdown_to_html, parser
 
 
 class Admin(UserMixin, db.Model):
-    __tablename__ = 'admin'
+    """管理员数据模型"""
+    __tablename__ = 'Admin'
     id = db.Column(db.Integer, primary_key=True)
     site_name = db.Column(db.String(4))
     site_title = db.Column(db.String(255))
@@ -37,28 +40,33 @@ class Admin(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return '<Admin %r>' % (self.name)
+        return '<Admin name: {}>'.format(self.name)
+
 
 @lm.user_loader
 def load_user(user_id):
     return Admin.query.get(int(user_id))
 
+
 class LoveMe(db.Model):
-    __tablename__ = 'loveme'
+    """站点喜欢按钮次数数据模型"""
+    __tablename__ = 'LoveMe'
     id = db.Column(db.Integer, primary_key=True)
     loveMe = db.Column(db.Integer, default=666)
 
-    def __init__(self, loveMe):
-        self.loveMe = loveMe
+    def __init__(self, love_me_count):
+        self.loveMe = love_me_count
 
     def __repr__(self):
-        return '<LoveMe %r>' % (self.loveMe)
+        return '<Love me count: {}>'.format(self.loveMe)
+
 
 class Page(db.Model):
-    __tablename__ = 'pages'
+    """站点页面数据模型"""
+    __tablename__ = 'Page'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(6))
-    url_name = db.Column(db.String(25))
+    url_name = db.Column(db.String(25), unique=True)
     canComment = db.Column(db.Boolean, default=False)
     isNav = db.Column(db.Boolean, default=False)
     body = db.Column(db.Text)
@@ -83,19 +91,19 @@ class Page(db.Model):
         return page
 
     def __repr__(self):
-        return '<Page %r>' % (self.title)
+        return '<Page name: {}>'.format(self.title)
+
 
 @whooshee.register_model('title', 'body')
 class Post(db.Model):
     """为了把文章缓存时间久一些，把文章浏览量模型分离"""
-    __tablename__ = 'posts'
+    __tablename__ = 'Post'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
-    url_name = db.Column(db.String(64))
+    url_name = db.Column(db.String(64), unique=True)
     timestamp = db.Column(db.String(64))
-    # view_num = db.Column(db.Integer, default=0)
     body = db.Column(db.Text)
-    draft = db.Column(db.Boolean, default=False)
+    draft = db.Column(db.Boolean, default=False, index=True)
     disable = db.Column(db.Boolean, default=False)
 
     tags = db.Column(db.String(64))
@@ -105,9 +113,11 @@ class Post(db.Model):
     @property
     def timestampInt(self):
         return int(''.join([i for i in self.timestamp.split('-')]))
+
     @property
     def year(self):
         return int([i for i in self.timestamp.split('-')][0])
+
     @property
     def month(self):
         return int([i for i in self.timestamp.split('-')][1])
@@ -118,10 +128,10 @@ class Post(db.Model):
             if tag in tags:
                 return True
             return False
-        else:
-            if tag == self.tags:
-                return True
-            return False
+
+        if tag == self.tags:
+            return True
+        return False
 
     @property
     def body_to_html(self):
@@ -158,27 +168,31 @@ class Post(db.Model):
         return post
 
     def __repr__(self):
-        return '<Post %r>' % (self.title)
+        return '<Post title: {}>'.format(self.title)
+
 
 class View(db.Model):
-    """文章浏览量"""
-    __tablename__ = 'views'
+    """文章浏览量数据模型"""
+    __tablename__ = 'View'
     id = db.Column(db.Integer, primary_key=True)
     count = db.Column(db.Integer, default=0)
     type = db.Column(db.String(25), default='post')
 
     relationship_id = db.Column(db.Integer)
 
+    def __repr__(self):
+        return '<View count: {}>'.format(self.count)
+
+
 class Comment(db.Model):
     """
-    缓存设计尝试：
-        取消原先的模型关联，
-        增加type键｛
-            'post': 博客文章评论
-            'page': 博客页面评论
-            'article': 专栏文章评论
-        ｝
-        以type和id来获取对于评论
+    评论数据模型
+    增加 type 键｛
+        'post': 博客文章评论
+        'page': 博客页面评论
+        'article': 专栏文章评论
+    ｝
+    以type和id来获取对于评论
     """
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
@@ -191,8 +205,6 @@ class Comment(db.Model):
     disabled = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
 
-    # type = db.Column(db.String(25), default='post')
-    # relationship_id = db.Column(db.Integer)
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
     page_id = db.Column(db.Integer, db.ForeignKey('pages.id'))
     article_id = db.Column(db.Integer, db.ForeignKey('articles.id'))
@@ -212,12 +224,16 @@ class Comment(db.Model):
 
     @property
     def body_to_html(self):
+        # xss过滤
         html = markdown_to_html(self.comment)
-        return html
+        parser.feed(html)
+        parser.close()
+        return parser.get_html()
 
-    # 获取Gravatar头像
+    # 获取 Gravatar 头像
     def gravatar(self, size):
-        return 'http://www.gravatar.com/avatar/' + md5(self.email.encode('utf-8')).hexdigest() + '?d=mm&s=' + str(size)
+        return 'http://www.gravatar.com/avatar/{0}?d=mm&s={1}'.format(
+            md5(self.email.encode('utf-8')).hexdigest(), str(size))
 
     def to_json(self):
         comment = {
@@ -236,12 +252,14 @@ class Comment(db.Model):
         return comment
 
     def __repr__(self):
-        return '<Comment %r>' %(self.comment)
+        return '<Comment body: {}>'.format(self.comment)
+
 
 class Tag(db.Model):
-    __tablename__ = 'tags'
+    """标签数据模型"""
+    __tablename__ = 'Tag'
     id = db.Column(db.Integer, primary_key=True)
-    tag = db.Column(db.String(25), index=True)
+    tag = db.Column(db.String(25), index=True, unique=True)
 
     def to_json(self):
         tag = {
@@ -251,12 +269,14 @@ class Tag(db.Model):
         return tag
 
     def __repr__(self):
-        return '<Tag %r>' % (self.tag)
+        return '<Tag name: {}>'.format(self.tag)
+
 
 class Category(db.Model):
-    __tablename__ = 'category'
+    """分类数据模型"""
+    __tablename__ = 'Category'
     id = db.Column(db.Integer, primary_key=True)
-    category = db.Column(db.String(6), index=True)
+    category = db.Column(db.String(6), index=True, unique=True)
 
     posts = db.relationship('Post', backref='category', lazy='dynamic')
 
@@ -269,22 +289,26 @@ class Category(db.Model):
         return category
 
     def __repr__(self):
-        return '<Category %r>' % (self.category)
+        return '<Category name: {}>'.format(self.category)
+
 
 class SiteLink(db.Model):
-    __tablename__ = 'sitelinks'
+    """站点链接数据模型"""
+    __tablename__ = 'SiteLink'
     id = db.Column(db.Integer, primary_key=True)
-    link = db.Column(db.String(125))
+    link = db.Column(db.String(125), unique=True)
     name = db.Column(db.String(25))
     isFriendLink = db.Column(db.Boolean)
     isGreatLink = db.Column(db.Boolean, default=True)
     info = db.Column(db.String(125), nullable=True)
 
     def __repr__(self):
-        return '<SiteLink %r>' % (self.link)
+        return '<Site link: {}>'.format(self.link)
+
 
 class Shuoshuo(db.Model):
-    __tablename__ = 'shuos'
+    """说说数据模型"""
+    __tablename__ = 'Shuo'
     id = db.Column(db.Integer, primary_key=True)
     shuo = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
@@ -295,12 +319,14 @@ class Shuoshuo(db.Model):
     @property
     def strptime(self):
         return datetime.datetime.strftime(self.timestamp, '%Y-%m-%d')
+
     @property
     def year(self):
-        return int([i for i in self.strptime.split('-')][0])
+        return int(self.strptime.split('-')[0])
+
     @property
     def month_and_day(self):
-        return [i for i in self.strptime.split('-')][1] + '/' + [i for i in self.strptime.split('-')][2]
+        return '/'.join(self.strptime.split('-')[1:])
 
     @property
     def body_to_html(self):
@@ -315,14 +341,15 @@ class Shuoshuo(db.Model):
         return shuo
 
     def __repr__(self):
-        return '<Shuoshuo %r>' % (self.shuo)
+        return '<Shuoshuo body: {}>'.format(self.shuo)
 
 
 class Column(db.Model):
-    __tablename__ = 'columns'
+    """专栏数据模型"""
+    __tablename__ = 'Column'
     id = db.Column(db.Integer, primary_key=True)
     column = db.Column(db.String(64))
-    url_name = db.Column(db.String(64))
+    url_name = db.Column(db.String(64), unique=True)
     body = db.Column(db.Text)
     view_num = db.Column(db.Integer, default=0)
     love_num = db.Column(db.Integer, default=0)
@@ -349,13 +376,14 @@ class Column(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return '<Column %r>' % (self.column)
+        return '<Column name: {}>'.format(self.column)
+
 
 class Article(db.Model):
-    __tablename__ = 'articles'
+    """专栏文章数据模型"""
+    __tablename__ = 'Article'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
-    # view_num = db.Column(db.Integer, default=0)
     body = db.Column(db.Text)
     secrecy = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.String(64))
@@ -381,27 +409,28 @@ class Article(db.Model):
         return article
 
     def __repr__(self):
-        return '<Article %r>' % (self.title)
+        return '<Article title: {}>'.format(self.title)
 
 
 class SideBox(db.Model):
+    """站点侧栏数据模型"""
     __tablename__ = 'side_boxes'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(64), nullable=True)
+    title = db.Column(db.String(64), nullable=True, unique=True)
     body = db.Column(db.Text)
     unable = db.Column(db.Boolean, default=False)
     is_advertising = db.Column(db.Boolean)
 
     def __repr__(self):
-        return '<SideBox %r>' % (self.body)
+        return '<Side box title: {}>'.format(self.title)
 
 
 class Alembic(db.Model):
-    __tablename__ = 'alembic_version'
+    __tablename__ = 'AlembicVersion'
     version_num = db.Column(db.String(32), primary_key=True, nullable=False)
 
     @staticmethod
-    def clear_A():
+    def clear():
         for a in Alembic.query.all():
             db.session.delete(a)
         db.session.commit()

@@ -220,6 +220,10 @@ def search_result():
         page, per_page=current_app.config['SEARCH_POSTS_PER_PAGE'],
         error_out=False
     )
+    # pagination2 = Article.query.whooshee_search(query).order_by(Post.id.desc()).paginate(
+    #     page, per_page=current_app.config['SEARCH_POSTS_PER_PAGE'],
+    #     error_out=False
+    # )
     results = (post for post in pagination.items if post.draft is False)
     return render_template('main/results.html', results=results,
                            query=query, pagination=pagination,
@@ -259,22 +263,24 @@ def save_comment(post, form):
     nickname = form['nickname']
     email = form['email']
     website = form['website'] or None
+    # com = form['comment']
     com = form['comment'].replace('<', '&lt;').replace('>', '&gt;')\
         .replace('"', '&quot;').replace('\'', '&apos;')
-    replyTo = form.get('replyTo', '')
-    if replyTo:
-        replyName = Comment.query.get(replyTo).author
+    reply_to = form.get('replyTo', '')
+    if reply_to:
+        replyName = Comment.query.get(reply_to).author
         if website and len(website) > 4:
-            comment = '<p class="reply-header"><a class="comment-user" href="' + website +'" target="_blank">'\
-                      + nickname + '</a>'+ '<span>回复</span> ' + replyName + '：</p>\n\n' + com
+            comment = '<p class="reply-header"><a class="comment-user" href="{website}" ' \
+                      'target="_blank">{nickname}</a><span>回复</span> {replyName}：</p>\n\n' \
+                      '{com}'.format(website=website, nickname=nickname, replyName=replyName, com=com)
         else:
-            comment = '<p class="reply-header">' + nickname + '<span>回复</span> ' \
-                      + ' ' + replyName + '：</p>\n\n' + com
+            comment = '<p class="reply-header">{nickname}<span>回复</span>  {replyName}：' \
+                      '</p>\n\n{com}'.format(nickname=nickname, replyName=replyName, com=com)
 
-        comment = Comment(comment=comment, author=nickname,email=email,
-                          website=website, isReply=True, replyTo=replyTo)
+        comment = Comment(comment=comment, author=nickname, email=email,
+                          website=website, isReply=True, replyTo=reply_to)
         data = {'nickname': nickname, 'email': email, 'website': website,
-                'comment': com, 'isReply': True, 'replyTo': replyTo}
+                'comment': com, 'isReply': True, 'replyTo': reply_to}
     else:
         comment = Comment(comment=com, author=nickname, email=email, website=website)
         data = {'nickname': nickname, 'email': email, 'website': website, 'comment': com}

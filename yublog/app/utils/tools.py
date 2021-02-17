@@ -3,16 +3,16 @@
 import os
 import smtplib
 from threading import Thread
-from email import encoders
 from email.header import Header
 from email.mime.text import MIMEText
-from email.utils import parseaddr, formataddr
 
 from markdown import Markdown
 
+from .settings import tools_settings
 
-# 拼接站点地图
+
 def get_sitemap(posts):
+    """拼接站点地图"""
     if not posts:
         return None
 
@@ -34,8 +34,8 @@ def get_sitemap(posts):
     return sitemap
 
 
-# 保存xml文件到静态文件目录
 def save_file(sitemap, file):
+    """保存xml文件到静态文件目录"""
     path = os.getcwd().replace('\\', '/')
     filename = path + '/app/static/' + file
     is_exists = os.path.exists(filename)
@@ -49,33 +49,34 @@ def save_file(sitemap, file):
         return True
 
 
-# 发送邮件
-def _format_addr(s):
-    name, addr = parseaddr(s)
-    return formataddr((Header(name, 'utf-8').encode(), addr))
-
-
-def send_mail(from_addr, password, to_addr, smtp_server, mail_port, msg):
+def send_mail(to_addr, msg):
     content = MIMEText(msg, 'html', 'utf-8')
     content['Subject'] = Header('博客评论……', 'utf-8').encode()
-    server = smtplib.SMTP_SSL(smtp_server, mail_port)
-    server.login(from_addr, password)
-    server.sendmail(from_addr, [to_addr], content.as_string())
+    server = smtplib.SMTP_SSL(tools_settings.MAIL_SERVER, tools_settings.MAIL_PORT)
+    server.login(tools_settings.MAIL_USERNAME, tools_settings.MAIL_PASSWORD)
+    server.sendmail(tools_settings.MAIL_USERNAME, [to_addr], content.as_string())
     server.quit()
 
 
-def asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg):
-    t = Thread(target=send_mail,
-               args=(from_addr, password, to_addr, smtp_server, mail_port, msg))
+def asyncio_send(to_addr, msg):
+    """异步发送邮件"""
+    t = Thread(target=send_mail, args=(to_addr, msg))
     t.start()
     return t
 
 
-# 生成 rss xml
-def get_rss_xml(name, protocol, url, title, subtitle, _time, update_time, posts):
+def gen_rss_xml(update_time, posts):
+    """生成 rss xml"""
     if not posts:
         return None
 
+    # 配置参数
+    name = tools_settings.ADMIN_NAME
+    protocol = tools_settings.WEB_PROTOCOL
+    url = tools_settings.WEB_URL
+    title = tools_settings.SITE_NAME
+    subtitle = tools_settings.SITE_TITLE
+    web_time = tools_settings.WEB_START_TIME
     header = """
     <?xml version="1.0" encoding="UTF-8"?>
         <feed xmlns="http://www.w3.org/2005/Atom">
@@ -87,7 +88,7 @@ def get_rss_xml(name, protocol, url, title, subtitle, _time, update_time, posts)
             <updated>{update_time}T00:00:00Z</updated>
             <generator uri="https://github.com/Blackyukun/YuBlog">YuBlog</generator>
     """.format(title=title, subtitle=subtitle,
-               protocol=protocol, url=url, time=_time, update_time=update_time)
+               protocol=protocol, url=url, time=web_time, update_time=update_time)
     body, footer = '', '</feed>'
 
     for p in posts:
@@ -112,12 +113,13 @@ def get_rss_xml(name, protocol, url, title, subtitle, _time, update_time, posts)
     return rss_xml
 
 
-# 解析markdown
 def markdown_to_html(body):
+    """解析markdown"""
     md = Markdown(extensions=[
         'fenced_code',
         'codehilite(css_class=highlight,linenums=None)',
         'admonition', 'tables', 'extra'])
     content = md.convert(body)
+
     return content
 

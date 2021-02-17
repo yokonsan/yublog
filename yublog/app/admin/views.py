@@ -4,11 +4,11 @@ import re
 from flask import render_template, redirect, request, flash, current_app, url_for
 from flask_login import login_required, login_user, logout_user, current_user
 
-from .. import cache, qn
+from .. import cache, qn, whooshee
 from ..models import *
 from . import admin
 from .forms import *
-from ..utils import get_sitemap, save_file, get_rss_xml, asyncio_send
+from ..utils import get_sitemap, save_file, gen_rss_xml, asyncio_send
 
 
 def clean_cache(key):
@@ -24,6 +24,7 @@ def clean_cache(key):
         cache.delete(key)
     else:
         return False
+
 
 def update_global_cache(key, value, method=None):
     """
@@ -46,6 +47,7 @@ def update_global_cache(key, value, method=None):
 
     return True
 
+
 def update_first_cache():
     """
     update first post behind commit article
@@ -56,6 +58,7 @@ def update_first_cache():
         cache_key = '_'.join(map(str, ['post', first_post.year, first_post.month, first_post.url_name]))
         clean_cache(cache_key)
     return True
+
 
 def save_tags(tags):
     """
@@ -68,6 +71,7 @@ def save_tags(tags):
             tag = Tag(tag=tag)
             db.session.add(tag)
     db.session.commit()
+
 
 def save_post(form, draft=False):
     """
@@ -97,15 +101,10 @@ def save_post(form, draft=False):
 
     return post
 
+
 # 编辑文章后更新sitemap
 def update_xml(update_time):
     # 获取配置信息
-    author_name = current_app.config['ADMIN_NAME']
-    title = current_app.config['SITE_NAME']
-    subtitle = current_app.config['SITE_TITLE']
-    protocol = current_app.config['WEB_PROTOCOL']
-    url = current_app.config['WEB_URL']
-    web_time = current_app.config['WEB_START_TIME']
     count = current_app.config['RSS_COUNTS']
 
     post_list = Post.query.order_by(Post.timestamp.desc()).all()
@@ -115,14 +114,16 @@ def update_xml(update_time):
     save_file(sitemap, 'sitemap.xml')
     # rss
     rss_posts = posts[:count]
-    rss = get_rss_xml(author_name, protocol, url, title, subtitle, web_time, update_time, rss_posts)
+    rss = gen_rss_xml(update_time, rss_posts)
     save_file(rss, 'atom.xml')
+
 
 @admin.route('/')
 @admin.route('/index')
 @login_required
 def index():
     return render_template('admin/admin_index.html')
+
 
 @admin.route('/login/', methods=['GET', 'POST'])
 def login():
@@ -137,12 +138,14 @@ def login():
                            title='登录',
                            form=form)
 
+
 @admin.route('/logout')
 @login_required
 def logout():
     logout_user()
     flash('你已经登出账号。')
     return redirect(url_for('admin.index'))
+
 
 @admin.route('/setting', methods=['GET', 'POST'])
 @login_required
@@ -170,6 +173,7 @@ def set_site():
                            title='设置网站信息',
                            form=form)
 
+
 @admin.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
@@ -187,6 +191,7 @@ def change_password():
         return redirect(url_for('admin.change_password'))
     return render_template('admin/change_password.html', form=form,
                            title='更改密码')
+
 
 @admin.route('/links', methods=['GET', 'POST'])
 @login_required
@@ -227,6 +232,7 @@ def add_link():
     return render_template('admin/admin_add_link.html', title="站点链接",
                            form=form, fr_form=fr_form)
 
+
 @admin.route('/admin-links')
 @login_required
 def admin_links():
@@ -235,6 +241,7 @@ def admin_links():
     friend_links = [link for link in links if link.isFriendLink is True]
     return render_template('admin/admin_link.html', title="管理链接",
                            social_links=social_links, friend_links=friend_links)
+
 
 @admin.route('/delete/link/<int:id>')
 @login_required
@@ -250,6 +257,7 @@ def delete_link(id):
 
     return redirect(url_for('admin.admin_links'))
 
+
 @admin.route('/great/link/<int:id>')
 @login_required
 def great_link(id):
@@ -263,6 +271,7 @@ def great_link(id):
     # 清除缓存
     clean_cache('global')
     return redirect(url_for('admin.admin_links'))
+
 
 @admin.route('/write', methods=['GET', 'POST'])
 @login_required
@@ -286,6 +295,7 @@ def write():
         return redirect(url_for('admin.write'))
     return render_template('admin/admin_write.html',
                            form=form, title='写文章')
+
 
 # 编辑文章或草稿
 @admin.route('/edit/<int:time>/<name>', methods=['GET', 'POST'])
@@ -338,6 +348,7 @@ def admin_edit(time, name):
     return render_template('admin/admin_write.html',
                            form=form, post=post, title='编辑文章')
 
+
 @admin.route('/add-page', methods=['GET', 'POST'])
 @login_required
 def add_page():
@@ -358,6 +369,7 @@ def add_page():
     return render_template('admin/admin_add_page.html',
                            form=form,
                            title='添加页面')
+
 
 @admin.route('/edit-page/<name>', methods=['GET', 'POST'])
 @login_required
@@ -387,6 +399,7 @@ def edit_page(name):
                            form=form,
                            page=page)
 
+
 @admin.route('/page/delete/<name>')
 @login_required
 def delete_page(name):
@@ -399,6 +412,7 @@ def delete_page(name):
         clean_cache('global')
     return redirect(url_for('admin.admin_pages'))
 
+
 @admin.route('/draft')
 @login_required
 def admin_drafts():
@@ -408,6 +422,7 @@ def admin_drafts():
                            drafts=drafts,
                            title='管理草稿')
 
+
 @admin.route('/pages')
 @login_required
 def admin_pages():
@@ -415,6 +430,7 @@ def admin_pages():
     return render_template('admin/admin_page.html',
                            pages=pages,
                            title='管理页面')
+
 
 @admin.route('/posts')
 @login_required
@@ -430,6 +446,7 @@ def admin_posts():
                            posts=posts,
                            pagination=pagination)
 
+
 @admin.route('/delete/<int:time>/<name>')
 @login_required
 def delete_post(time, name):
@@ -443,6 +460,7 @@ def delete_post(time, name):
         update_global_cache('postCounts', 1, '-')
     return redirect(url_for('admin.admin_posts'))
 
+
 @admin.route('/comments')
 @login_required
 def admin_comments():
@@ -453,7 +471,8 @@ def admin_comments():
     )
     comments = pagination.items
     return render_template('admin/admin_comment.html', title='管理评论',
-                        comments=comments, pagination=pagination)
+                           comments=comments, pagination=pagination)
+
 
 @admin.route('/delete/comment/<int:id>')
 @login_required
@@ -477,6 +496,7 @@ def delete_comment(id):
             cache.set(cache_key, post_cache)
     return redirect(url_for('admin.admin_comments'))
 
+
 @admin.route('/allow/comment/<int:id>')
 @login_required
 def allow_comment(id):
@@ -494,11 +514,7 @@ def allow_comment(id):
         reply_email = reply_to_comment.email
         if reply_email != admin_mail:
             # 邮件配置
-            from_addr = current_app.config['MAIL_USERNAME']
-            password = current_app.config['MAIL_PASSWORD']
             to_addr = reply_email
-            smtp_server = current_app.config['MAIL_SERVER']
-            mail_port = current_app.config['MAIL_PORT']
             # 站点链接
             base_url = current_app.config['WEB_URL']
             # 收件人就是被回复的人
@@ -507,16 +523,16 @@ def allow_comment(id):
 
             post_url = ''
             if comment.post:
-                post_url = 'http://' + '/'.join(map(str, [base_url,
-                                        comment.post.year, comment.post.month, comment.post.url_name]))
+                post_url = 'http://{}'.format('/'.join(
+                    map(str, [base_url, comment.post.year, comment.post.month, comment.post.url_name])))
             elif comment.page:
-                post_url = 'http://' + base_url + '/page/' + comment.page.url_name
+                post_url = 'http://{0}/page/{1}'.format(base_url, comment.page.url_name)
             elif comment.article:
-                post_url = 'http://' + base_url + '/column/' + comment.article.column.url_name \
-                                        + '/' + str(comment.article.id)
+                post_url = 'http://{0}/column/{1}/{2}'.format(
+                    base_url, comment.article.column.url_name, str(comment.article.id))
             # 发送邮件
-            msg = render_template('user_mail.html', nickname=nickname,comment=com, url=post_url)
-            asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg)
+            msg = render_template('user_mail.html', nickname=nickname, comment=com, url=post_url)
+            asyncio_send(to_addr, msg)
 
     page = comment.page
     post = comment.post
@@ -531,6 +547,7 @@ def allow_comment(id):
             post_cache['comment_count'] += 1
             cache.set(cache_key, post_cache)
     return redirect(url_for('admin.admin_comments'))
+
 
 @admin.route('/unable/comment/<int:id>')
 @login_required
@@ -555,7 +572,8 @@ def unable_comment(id):
             cache.set(cache_key, post_cache)
     return redirect(url_for('admin.admin_comments'))
 
-@admin.route('/write/shuoshuo', methods=['GET','POST'])
+
+@admin.route('/write/shuoshuo', methods=['GET', 'POST'])
 @login_required
 def write_shuoshuo():
     form = ShuoForm()
@@ -570,6 +588,7 @@ def write_shuoshuo():
     return render_template('admin/admin_write_shuoshuo.html',
                            title='写说说', form=form)
 
+
 @admin.route('/shuos')
 @login_required
 def admin_shuos():
@@ -577,6 +596,7 @@ def admin_shuos():
     return render_template('admin/admin_shuoshuo.html',
                            title='管理说说',
                            shuos=shuos)
+
 
 @admin.route('/delete/shuoshuo/<int:id>')
 @login_required
@@ -594,7 +614,7 @@ def delete_shuo(id):
 
 
 # 管理主题
-@admin.route('/write/column', methods=['GET','POST'])
+@admin.route('/write/column', methods=['GET', 'POST'])
 @login_required
 def write_column():
     form = ColumnForm()
@@ -609,7 +629,8 @@ def write_column():
     return render_template('admin_column/edit_column.html',
                            form=form, title='编辑专题')
 
-@admin.route('/edit/column/<int:id>', methods=['GET','POST'])
+
+@admin.route('/edit/column/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_column(id):
     column = Column.query.get_or_404(id)
@@ -634,12 +655,14 @@ def edit_column(id):
     return render_template('admin_column/edit_column.html',
                            form=form, title='更新专题', column=column)
 
+
 @admin.route('/admin/columns')
 @login_required
 def admin_columns():
     columns = Column.query.all()
     return render_template('admin_column/admin_columns.html',
                            columns=columns, title='管理专题')
+
 
 @admin.route('/admin/column/<int:id>')
 @login_required
@@ -648,6 +671,7 @@ def admin_column(id):
     articles = column.articles.order_by(Article.timestamp.desc()).all()
     return render_template('admin_column/admin_column.html', column=column,
                            articles=articles, title=column.column)
+
 
 @admin.route('/delete/column/<int:id>')
 @login_required
@@ -663,7 +687,8 @@ def delete_column(id):
         clean_cache('_'.join(['article', column.url_name, str(i.id)]))
     return redirect(url_for('admin.admin_columns'))
 
-@admin.route('/<url>/write/article', methods=['GET','POST'])
+
+@admin.route('/<url>/write/article', methods=['GET', 'POST'])
 @login_required
 def write_column_article(url):
     column = Column.query.filter_by(url_name=url).first()
@@ -680,7 +705,8 @@ def write_column_article(url):
     return render_template('admin_column/write_article.html', form=form,
                            title='编辑文章', column=column)
 
-@admin.route('/<url>/edit/article/<int:id>', methods=['GET','POST'])
+
+@admin.route('/<url>/edit/article/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_column_article(url, id):
     column = Column.query.filter_by(url_name=url).first()
@@ -709,6 +735,7 @@ def edit_column_article(url, id):
     form.secrecy.data = article.secrecy
     return render_template('admin_column/write_article.html', form=form,
                            title='更新文章', column=column, article=article)
+
 
 @admin.route('/<url>/delete/article/<int:id>')
 @login_required
@@ -815,6 +842,7 @@ def delete_side_box(id):
     return redirect(url_for('admin.admin_side_box'))
 # 侧栏box---end
 
+
 # qiniu picture bed begin
 @admin.route('/qiniu/picbed', methods=['GET', 'POST'])
 @login_required
@@ -845,6 +873,7 @@ def qiniu_picbed():
     return render_template('plugin/picbed.html',
                            title="七牛图床", images=images, counts=counts)
 
+
 @admin.route('/qiniu/delete', methods=['GET', 'POST'])
 @login_required
 def delete_img():
@@ -854,6 +883,7 @@ def delete_img():
         return redirect(url_for('admin.qiniu_picbed'))
     flash('delete image fail')
     return redirect(url_for('admin.qiniu_picbed'))
+
 
 @admin.route('/qiniu/rename', methods=['GET', 'POST'])
 @login_required
@@ -866,11 +896,21 @@ def rename_img():
     flash('rename image fail')
     return redirect(url_for('admin.qiniu_picbed'))
 
+
 # qiniu picture bed end
+
 
 @admin.route('/clean/cache/all')
 @login_required
 def clean_all_cache():
     clean_cache('all')
     flash('clean all cache success!')
+    return redirect(url_for('admin.index'))
+
+
+@admin.route('/reindex')
+@login_required
+def whooshee_reindex():
+    whooshee.reindex()
+    flash('reindex whooshee success!')
     return redirect(url_for('admin.index'))

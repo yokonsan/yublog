@@ -5,7 +5,7 @@ column = Blueprint('column', __name__)
 
 from . import views, site, column_views
 from ..models import *
-from app import cache
+from .. import cache
 
 
 @main.app_context_processor

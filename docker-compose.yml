@@ -2,13 +2,13 @@ version: '3'
 
 services:
   web:
-    build: ./source
+    build: ./yublog
     networks:
       - frontend
       - backend
 #    tty: true
     volumes:
-      - ./source:/myapp
+      - ./yublog:/myapp
     environment:
       # set environment(config.py)
       - CONFIG=docker
@@ -61,7 +61,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./source/app/static:/usr/share/nginx/html
+      - ./yublog/app/static:/usr/share/nginx/html
       - ./nginx/data:/usr/share/nginx
       - ./nginx/log:/var/log/nginx
       - ./nginx/conf.crt:/etc/letsencrypt

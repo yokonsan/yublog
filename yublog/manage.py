@@ -9,8 +9,8 @@ import os
 #         if len(var) == 2:
 #             os.environ[var[0]] = var[1]
 
-from app import create_app, db
-from app.models import Admin, Post, Tag, Category, SiteLink, \
+from .app import create_app, db
+from .app.models import Admin, Post, Tag, Category, SiteLink, \
     Page, LoveMe, Comment, Shuoshuo, SideBox
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
@@ -32,14 +32,14 @@ manager.add_command('db', MigrateCommand)
 
 @manager.command
 def clear_alembic():
-    from app.models import Alembic
-    Alembic.clear_A()
+    from yublog.app.models import Alembic
+    Alembic.clear()
 
 
 @manager.command
 def add_admin():
-    from app.models import Admin, LoveMe
-    from config import Config
+    from yublog.app.models import Admin, LoveMe
+    from yublog.config import Config
     # 创建管理员
     admin = Admin(site_name=Config.SITE_NAME, site_title=Config.SITE_TITLE, name=Config.ADMIN_NAME,
                   profile=Config.ADMIN_PROFILE, login_name=Config.ADMIN_LOGIN_NAME,

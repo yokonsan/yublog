@@ -2,10 +2,10 @@ from flask import render_template, request, jsonify, \
     current_app, redirect, url_for, make_response
 
 from . import column
-from app import db, cache
+from .. import db, cache
 from ..models import Column, Article, Comment
 from .views import save_comment
-from  .forms import ArticlePasswordForm
+from .forms import ArticlePasswordForm
 
 
 def get_all_articles_cache(column_id, key):

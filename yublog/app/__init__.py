@@ -4,8 +4,8 @@ from flask_login import LoginManager
 from flask_whooshee import Whooshee
 from flask_caching import Cache
 
-from config import config
-from .qiniu_picbed import QiniuUpload
+from ..config import config
+from ..app.utils import QiniuUpload
 
 
 #                            _ooOoo_
@@ -38,6 +38,7 @@ whooshee = Whooshee()
 cache = Cache()
 
 qn = QiniuUpload()
+
 
 def create_app(config_name):
     app = Flask(__name__)

@@ -77,7 +77,7 @@
         let text = document.getElementsByClassName('comment-list')[0];
         let msg = '<li class="comment" style="color: #df846c;">评论将在通过后展示...</li>';
 
-        text.innerHTML+=msg;
+        text.innerHTML = msg + text.innerHTML;
     }
 
     function fail() {
@@ -93,7 +93,7 @@
         let replyTo = this.attributes["replyto"].value;
         let postUrl = this.attributes["posturl"].value;
         let emailRe = /^(\w)+(\.\w+)*@(\w)+((\.\w+)+)$/;
-        if (userIpt.value && emailIpt.value && textarea.value !== null && emailRe.test(emailIpt.value)) {
+        if (userIpt.value.trimEnd() !== '' && emailIpt.value.trimEnd() !== '' && textarea.value.trimEnd() !== '' && emailRe.test(emailIpt.value)) {
             resetForm(submitBtn);
             postClick(postUrl, replyId, replyTo);
         } else {
@@ -113,7 +113,7 @@
         request.onreadystatechange = function () {
             if (request.readyState === 4) {
                 if (request.status === 200) {
-                    return success();
+                    return success(replyId);
                 } else {
                     return fail();
                 }
@@ -152,6 +152,6 @@
             request.send(FormData);
         }
         textarea.value = "";
-    }
+    };
 })();
 
