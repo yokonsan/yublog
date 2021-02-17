@@ -300,7 +300,7 @@ def save_comment(post, form):
         msg = render_template('admin_mail.html', nickname=nickname,
                               title=post.title, comment=com,
                               email=email, website=website, url=post_url)
-        asyncio_send(from_addr, password, to_addr, smtp_server, mail_port, msg)
+        asyncio_send(to_addr, msg)
     db.session.add(comment)
     db.session.commit()
     return data

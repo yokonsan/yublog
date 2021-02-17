@@ -168,7 +168,7 @@ class XssHtml(HTMLParser, ABC):
             .replace("'", "&#039;")
 
 
-parser = XssHtml()
+# parser = XssHtml()
 
 if __name__ == '__main__':
     parser = XssHtml()

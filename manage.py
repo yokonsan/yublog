@@ -9,8 +9,8 @@ import os
 #         if len(var) == 2:
 #             os.environ[var[0]] = var[1]
 
-from .app import create_app, db
-from .app.models import Admin, Post, Tag, Category, SiteLink, \
+from yublog.app import create_app, db
+from yublog.app.models import Admin, Post, Tag, Category, SiteLink, \
     Page, LoveMe, Comment, Shuoshuo, SideBox
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
@@ -45,7 +45,7 @@ def add_admin():
                   profile=Config.ADMIN_PROFILE, login_name=Config.ADMIN_LOGIN_NAME,
                   password=Config.ADMIN_PASSWORD)
     # 创建love-me
-    love = LoveMe(loveMe=666)
+    love = LoveMe(666)
     # 创建留言板
     guest_book = Page(title='留言板', url_name='guest-book', canComment=True,
                       isNav=False, body='留言板')

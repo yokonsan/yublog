@@ -8,12 +8,12 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from . import db, lm, whooshee
-from .utils import markdown_to_html, parser
+from .utils import markdown_to_html, XssHtml
 
 
 class Admin(UserMixin, db.Model):
     """管理员数据模型"""
-    __tablename__ = 'Admin'
+    __tablename__ = 'admin'
     id = db.Column(db.Integer, primary_key=True)
     site_name = db.Column(db.String(4))
     site_title = db.Column(db.String(255))
@@ -50,7 +50,7 @@ def load_user(user_id):
 
 class LoveMe(db.Model):
     """站点喜欢按钮次数数据模型"""
-    __tablename__ = 'LoveMe'
+    __tablename__ = 'loveme'
     id = db.Column(db.Integer, primary_key=True)
     loveMe = db.Column(db.Integer, default=666)
 
@@ -63,7 +63,7 @@ class LoveMe(db.Model):
 
 class Page(db.Model):
     """站点页面数据模型"""
-    __tablename__ = 'Page'
+    __tablename__ = 'pages'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(6))
     url_name = db.Column(db.String(25), unique=True)
@@ -97,7 +97,7 @@ class Page(db.Model):
 @whooshee.register_model('title', 'body')
 class Post(db.Model):
     """为了把文章缓存时间久一些，把文章浏览量模型分离"""
-    __tablename__ = 'Post'
+    __tablename__ = 'posts'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
     url_name = db.Column(db.String(64), unique=True)
@@ -173,7 +173,7 @@ class Post(db.Model):
 
 class View(db.Model):
     """文章浏览量数据模型"""
-    __tablename__ = 'View'
+    __tablename__ = 'views'
     id = db.Column(db.Integer, primary_key=True)
     count = db.Column(db.Integer, default=0)
     type = db.Column(db.String(25), default='post')
@@ -226,6 +226,8 @@ class Comment(db.Model):
     def body_to_html(self):
         # xss过滤
         html = markdown_to_html(self.comment)
+
+        parser = XssHtml()
         parser.feed(html)
         parser.close()
         return parser.get_html()
@@ -257,7 +259,7 @@ class Comment(db.Model):
 
 class Tag(db.Model):
     """标签数据模型"""
-    __tablename__ = 'Tag'
+    __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String(25), index=True, unique=True)
 
@@ -274,7 +276,7 @@ class Tag(db.Model):
 
 class Category(db.Model):
     """分类数据模型"""
-    __tablename__ = 'Category'
+    __tablename__ = 'category'
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(6), index=True, unique=True)
 
@@ -294,7 +296,7 @@ class Category(db.Model):
 
 class SiteLink(db.Model):
     """站点链接数据模型"""
-    __tablename__ = 'SiteLink'
+    __tablename__ = 'sitelinks'
     id = db.Column(db.Integer, primary_key=True)
     link = db.Column(db.String(125), unique=True)
     name = db.Column(db.String(25))
@@ -308,7 +310,7 @@ class SiteLink(db.Model):
 
 class Shuoshuo(db.Model):
     """说说数据模型"""
-    __tablename__ = 'Shuo'
+    __tablename__ = 'shuos'
     id = db.Column(db.Integer, primary_key=True)
     shuo = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
@@ -346,7 +348,7 @@ class Shuoshuo(db.Model):
 
 class Column(db.Model):
     """专栏数据模型"""
-    __tablename__ = 'Column'
+    __tablename__ = 'columns'
     id = db.Column(db.Integer, primary_key=True)
     column = db.Column(db.String(64))
     url_name = db.Column(db.String(64), unique=True)
@@ -381,7 +383,7 @@ class Column(db.Model):
 
 class Article(db.Model):
     """专栏文章数据模型"""
-    __tablename__ = 'Article'
+    __tablename__ = 'articles'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
     body = db.Column(db.Text)
@@ -426,7 +428,7 @@ class SideBox(db.Model):
 
 
 class Alembic(db.Model):
-    __tablename__ = 'AlembicVersion'
+    __tablename__ = 'alembic_version'
     version_num = db.Column(db.String(32), primary_key=True, nullable=False)
 
     @staticmethod
