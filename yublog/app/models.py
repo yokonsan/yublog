@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import asyncio
 import datetime
 from hashlib import md5
 
@@ -75,7 +76,7 @@ class Page(db.Model):
 
     @property
     def body_to_html(self):
-        html = markdown_to_html(self.body)
+        html = asyncio.run(markdown_to_html(self.body))
         return html
 
     def to_json(self):
@@ -135,7 +136,7 @@ class Post(db.Model):
 
     @property
     def body_to_html(self):
-        html = markdown_to_html(self.body)
+        html = asyncio.run(markdown_to_html(self.body))
         return html
 
     def to_json(self):
@@ -225,7 +226,7 @@ class Comment(db.Model):
     @property
     def body_to_html(self):
         # xss过滤
-        html = markdown_to_html(self.comment)
+        html = asyncio.run(markdown_to_html(self.comment))
 
         parser = XssHtml()
         parser.feed(html)
@@ -332,7 +333,7 @@ class Shuoshuo(db.Model):
 
     @property
     def body_to_html(self):
-        html = markdown_to_html(self.shuo)
+        html = asyncio.run(markdown_to_html(self.shuo))
         return html
 
     def to_json(self):
@@ -362,7 +363,7 @@ class Column(db.Model):
 
     @property
     def body_to_html(self):
-        html = markdown_to_html(self.body)
+        html = asyncio.run(markdown_to_html(self.body))
         return html
 
     # 对密码进行加密保存
@@ -395,7 +396,7 @@ class Article(db.Model):
 
     @property
     def body_to_html(self):
-        html = markdown_to_html(self.body)
+        html = asyncio.run(markdown_to_html(self.body))
         return html
 
     def to_dict(self):

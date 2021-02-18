@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, request, \
-                g, current_app, abort, jsonify, make_response
+    g, current_app, abort, jsonify, make_response
 
 from . import main
 from .forms import SearchForm
@@ -17,6 +17,7 @@ def get_post_cache(key):
         items = key.split('_')
         return set_post_cache(items[1], items[2], items[3])
 
+
 def set_post_cache(year, month, url):
     """设置博客文章缓存"""
     time = str(year) + '-' + str(month)
@@ -29,8 +30,8 @@ def set_post_cache(year, month, url):
     elif len(posts) < 1:
         abort(404)
     tags = [tag for tag in post.tags.split(',')]
-    next_post = nextPost(post)
-    prev_post = prevPost(post)
+    next_post = _next_post(post)
+    prev_post = _prev_post(post)
     data = post.to_dict()
     data['tags'] = tags
     data['next_post'] = {
@@ -49,20 +50,24 @@ def set_post_cache(year, month, url):
     cache.set(cache_key, data, timeout=60 * 60 * 24 * 30)
     return data
 
+
 @main.before_request
 def before_request():
     g.search_form = SearchForm()
     g.search_form2 = SearchForm()
 
+
 @main.app_errorhandler(404)
 def page_not_found(e):
     return render_template('error/404.html', title='404'), 404
+
 
 @main.app_errorhandler(500)
 def internal_server_error(e):
     db.session.rollback()
     db.session.commit()
     return render_template('error/500.html', title='500'), 500
+
 
 # def cache_key(*args, **kwargs):
 #     """
@@ -85,7 +90,7 @@ def index():
 
     counts = Post.query.filter_by(draft=False).count()
     max_page = counts // per_page + 1 if counts % per_page != 0 else counts // per_page
-    post_list = Post.query.order_by(Post.timestamp.desc()).limit(per_page).offset((page-1)*per_page).all()
+    post_list = Post.query.order_by(Post.timestamp.desc()).limit(per_page).offset((page - 1) * per_page).all()
     all = (post for post in post_list if post.draft is False)
     posts = []
     for post in all:
@@ -94,9 +99,10 @@ def index():
         posts.append(post)
     return render_template('main/index.html', title='首页',
                            posts=posts, page=page, max_page=max_page,
-                           pagination=range(1, max_page+1))
+                           pagination=range(1, max_page + 1))
 
-def nextPost(post):
+
+def _next_post(post):
     """
     获取本篇文章的下一篇
     :param post: post
@@ -105,10 +111,12 @@ def nextPost(post):
     post_list = Post.query.order_by(Post.timestamp.desc()).all()
     posts = [post for post in post_list if post.draft is False]
     if posts[-1] != post:
-        next_post = posts[posts.index(post) + 1]
-        return next_post
+        _next = posts[posts.index(post) + 1]
+        return _next
     return None
-def prevPost(post):
+
+
+def _prev_post(post):
     """
     获取本篇文章的上一篇
     :param post: post
@@ -117,9 +125,10 @@ def prevPost(post):
     post_list = Post.query.order_by(Post.timestamp.desc()).all()
     posts = [post for post in post_list if post.draft is False]
     if posts[0] != post:
-        prev_post = posts[posts.index(post) - 1]
-        return prev_post
+        _prev = posts[posts.index(post) - 1]
+        return _prev
     return None
+
 
 @main.route('/<int:year>/<int:month>/<article_name>/')
 def post(year, month, article_name):
@@ -131,7 +140,7 @@ def post(year, month, article_name):
         counts = post.get('comment_count', 0)
         page = (counts - 1) / current_app.config['COMMENTS_PER_PAGE'] + 1
 
-    pagination = Comment.query.filter_by(post_id=post['id'],isReply=False,disabled=True).order_by(
+    pagination = Comment.query.filter_by(post_id=post['id'], isReply=False, disabled=True).order_by(
         Comment.timestamp.desc()).paginate(
         page, per_page=current_app.config['COMMENTS_PER_PAGE'],
         error_out=False
@@ -140,8 +149,9 @@ def post(year, month, article_name):
     replys = Comment.query.filter_by(post_id=post['id'], isReply=True, disabled=True).all()
     meta_tags = ','.join(post['tags'])
     return render_template('main/post.html', post=post, title=post['title'],
-                   pagination=pagination, comments=comments, replys=replys,
-                   counts=len(comments)+len(replys), meta_tags=meta_tags)
+                           pagination=pagination, comments=comments, replys=replys,
+                           counts=len(comments) + len(replys), meta_tags=meta_tags)
+
 
 @main.route('/page/<page_url>/')
 def page(page_url):
@@ -159,7 +169,8 @@ def page(page_url):
     replys = page.comments.filter_by(isReply=True, disabled=True).all()
 
     return render_template('main/page.html', page=page, title=page.title, pagination=pagination,
-                           comments=comments, replys=replys, counts=len(comments)+len(replys))
+                           comments=comments, replys=replys, counts=len(comments) + len(replys))
+
 
 @main.route('/tag/<tag_name>/')
 def tag(tag_name):
@@ -168,6 +179,7 @@ def tag(tag_name):
     posts = (post for post in all_posts if post.tag_in_post(tag) and post.draft is False)
 
     return render_template('main/tag.html', tag=tag, posts=posts)
+
 
 @main.route('/category/<category_name>/')
 def category(category_name):
@@ -178,6 +190,7 @@ def category(category_name):
                            category=category,
                            posts=posts,
                            title='分类：' + category.category)
+
 
 @main.route('/archives/')
 def archives():
@@ -201,6 +214,7 @@ def archives():
                            year=year, data=data, count=count,
                            pagination=pagination)
 
+
 @main.route('/search/', methods=['POST'])
 def search():
     if g.search_form.validate_on_submit():
@@ -210,6 +224,7 @@ def search():
     elif g.search_form2.validate_on_submit():
         query = g.search_form2.search.data
         return redirect(url_for('main.search_result', keywords=query))
+
 
 # /search-result?keywords=query
 @main.route('/search-result')
@@ -228,6 +243,7 @@ def search_result():
     return render_template('main/results.html', results=results,
                            query=query, pagination=pagination,
                            title=query + '的搜索结果')
+
 
 # 侧栏 love me 插件
 @main.route('/loveme', methods=['POST'])
@@ -264,7 +280,7 @@ def save_comment(post, form):
     email = form['email']
     website = form['website'] or None
     # com = form['comment']
-    com = form['comment'].replace('<', '&lt;').replace('>', '&gt;')\
+    com = form['comment'].replace('<', '&lt;').replace('>', '&gt;') \
         .replace('"', '&quot;').replace('\'', '&apos;')
     reply_to = form.get('replyTo', '')
     if reply_to:
@@ -305,6 +321,7 @@ def save_comment(post, form):
     db.session.commit()
     return data
 
+
 @main.route('/<url>/comment', methods=['POST'])
 def comment(url):
     post = Post.query.filter_by(url_name=url).first()
@@ -318,6 +335,7 @@ def comment(url):
                        isReply=data['isReply'], replyTo=data['replyTo'], post=post.title)
     return jsonify(nickname=data['nickname'], email=data['email'],
                    website=data['website'], body=data['comment'], post=post.title)
+
 
 @main.route('/shuoshuo')
 def shuoshuo():
@@ -333,6 +351,7 @@ def shuoshuo():
         year_shuo = []
     return render_template('main/shuoshuo.html', title='说说', years=years, data=data)
 
+
 # friend link page
 @main.route('/friends')
 def friends():
@@ -342,7 +361,3 @@ def friends():
 
     return render_template('main/friends.html', title="朋友",
                            great_links=great_links, bad_links=bad_links)
-
-
-
-
