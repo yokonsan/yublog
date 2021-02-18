@@ -90,9 +90,7 @@ def gen_rss_xml(update_time, posts):
     """.format(title=title, subtitle=subtitle,
                protocol=protocol, url=url, time=web_time, update_time=update_time)
     body, footer = '', '</feed>'
-
-    for p in posts:
-        item = """
+    item = """
             <entry>
                 <title>{p.title}</title>
                 <link rel="alternate" type="text/html" href="{protocol}://{url}/{p.year}/{p.month}/{p.url_name}"/>
@@ -107,8 +105,10 @@ def gen_rss_xml(update_time, posts):
                 <category term="{p.category.category}" scheme="{protocol}://{url}/category/{p.category.category}"/>
                 <content type="html"><![CDATA[{p.body_to_html}]]></content>
             </entry>
-        """.format(p=p, url=url, name=name, protocol=protocol, update_time=update_time)
-        body += '{0}\n'.format(item)
+    """
+
+    for p in posts:
+        body += '{0}\n'.format(item.format(p=p, url=url, name=name, protocol=protocol, update_time=update_time))
     rss_xml = '\n'.join([header, body, footer])
     return rss_xml
 

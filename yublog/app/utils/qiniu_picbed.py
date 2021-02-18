@@ -25,7 +25,7 @@ class QiniuUpload(object):
     def init_app(self, app):
         """
         从应用程序设置初始化设置。
-    ：param app：Flask app
+        ：param app：Flask app
         """
         self.app = app
         self.init_qiniu()
@@ -109,13 +109,13 @@ class QiniuUpload(object):
         # 标记
         marker = None
         ret, eof, info = self.bucket_manager.list(self.bucket, prefix, marker, limit, delimiter)
-        if ret.get('items', []):
-            for i in ret.get('items'):
-                if i.get('mimeType', '').startswith('image'):
-                    images.append({
-                        'name': i.get('key', ''),
-                        'url': self.domain + i.get('key', ''),
-                        'time': self._get_publish_time(i.get('putTime', '')),
-                        'size': self._get_file_size(i.get('fsize', 0))
-                    })
+
+        for i in ret.get('items', []):
+            if i.get('mimeType', '').startswith('image'):
+                images.append({
+                    'name': i.get('key', ''),
+                    'url': self.domain + i.get('key', ''),
+                    'time': self._get_publish_time(i.get('putTime', '')),
+                    'size': self._get_file_size(i.get('fsize', 0))
+                })
         return images
