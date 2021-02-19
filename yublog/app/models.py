@@ -102,10 +102,10 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
     url_name = db.Column(db.String(64), unique=True)
-    timestamp = db.Column(db.String(64))
+    timestamp = db.Column(db.String(64), index=True)
     body = db.Column(db.Text)
     draft = db.Column(db.Boolean, default=False, index=True)
-    disable = db.Column(db.Boolean, default=False)
+    disable = db.Column(db.Boolean, default=False, index=True)
 
     tags = db.Column(db.String(64))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'))

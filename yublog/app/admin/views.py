@@ -15,7 +15,7 @@ from ..utils import get_sitemap, save_file, gen_rss_xml, asyncio_send, cache_too
 
 def update_first_cache():
     """
-    update first post behind commit article
+    在新文章更新后，清掉最近一篇文章的缓存
     """
     posts = Post.query.order_by(Post.timestamp.desc()).all()
     if len(posts) > 1:
@@ -41,8 +41,8 @@ def save_tags(tags):
 def save_post(form, draft=False):
     """
     封装保存文章到数据库的重复操作
-    :param form: write or edit form
-    :param draft: article is or not draft
+    :param form: 表单类
+    :param draft: 是否保存草稿
     :return: post object
     """
     category = Category.query.filter_by(category=form.category.data).first()
@@ -51,14 +51,10 @@ def save_post(form, draft=False):
         db.session.add(category)
 
     tags = [tag for tag in form.tags.data.split(',')]
-    if draft is True:
-        post = Post(body=form.body.data, title=form.title.data,
-                    url_name=form.url_name.data, category=category,
-                    tags=form.tags.data, timestamp=form.time.data, draft=True)
-    else:
-        post = Post(body=form.body.data, title=form.title.data,
-                    url_name=form.url_name.data, category=category,
-                    tags=form.tags.data, timestamp=form.time.data, draft=False)
+    post = Post(body=form.body.data, title=form.title.data, 
+                url_name=form.url_name.data, category=category,
+                tags=form.tags.data, timestamp=form.time.data, draft=draft)
+    if not draft:
         # 保存标签模型
         save_tags(tags)
         # 更新xml
@@ -99,9 +95,7 @@ def login():
             login_user(user, form.remember_me.data)
             return redirect(url_for('admin.index'))
         flash('账号或密码无效。')
-    return render_template('admin/login.html',
-                           title='登录',
-                           form=form)
+    return render_template('admin/login.html', title='登录', form=form)
 
 
 @admin.route('/logout')
@@ -134,9 +128,7 @@ def set_site():
     form.site_name.data = user.site_name
     form.site_title.data = user.site_title
     form.record_info.data = user.record_info or None
-    return render_template('admin/admin_profile.html',
-                           title='设置网站信息',
-                           form=form)
+    return render_template('admin/admin_profile.html', title='设置网站信息', form=form)
 
 
 @admin.route('/change-password', methods=['GET', 'POST'])
@@ -154,8 +146,7 @@ def change_password():
             return redirect(url_for('admin.change_password'))
         flash('请输入正确的密码')
         return redirect(url_for('admin.change_password'))
-    return render_template('admin/change_password.html', form=form,
-                           title='更改密码')
+    return render_template('admin/change_password.html', form=form, title='更改密码')
 
 
 @admin.route('/links', methods=['GET', 'POST'])
