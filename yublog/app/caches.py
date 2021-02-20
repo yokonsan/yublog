@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from .. import cache
+from yublog.app import cache
 
 
 class CacheTools(object):
@@ -51,3 +51,6 @@ class CacheTools(object):
         cache.set(self.GLOBAL_KEY, global_cache)
 
         return True
+
+
+cache_tool = CacheTools()

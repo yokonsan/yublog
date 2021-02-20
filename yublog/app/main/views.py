@@ -1,25 +1,24 @@
-from flask import render_template, redirect, url_for, request, \
-    g, current_app, abort, jsonify, make_response
+from flask import render_template, redirect, request, \
+    g, current_app, abort, jsonify
 
 from . import main
-from .forms import SearchForm
+from .forms import SearchForm, MobileSearchForm
 from ..models import *
 from ..utils import asyncio_send
-from .. import cache
+from ..caches import cache_tool
 
 
 def get_post_cache(key):
     """获取博客文章缓存"""
-    data = cache.get(key)
+    data = cache_tool.get(key)
     if data:
         return data
-    else:
-        items = key.split('_')
-        return set_post_cache(items[1], items[2], items[3])
+    return set_post_cache(key)
 
 
-def set_post_cache(year, month, url):
+def set_post_cache(key):
     """设置博客文章缓存"""
+    year, month, url = key.split('_')
     time = str(year) + '-' + str(month)
     posts = Post.query.filter_by(url_name=url).all()
     post = ''
@@ -47,14 +46,14 @@ def set_post_cache(year, month, url):
         'title': prev_post.title
     } if prev_post else None
     cache_key = '_'.join(map(str, ['post', year, month, url]))
-    cache.set(cache_key, data, timeout=60 * 60 * 24 * 30)
+    cache_tool.set(cache_key, data, timeout=60 * 60 * 24 * 30)
     return data
 
 
 @main.before_request
 def before_request():
     g.search_form = SearchForm()
-    g.search_form2 = SearchForm()
+    g.search_form2 = MobileSearchForm()
 
 
 @main.app_errorhandler(404)
@@ -68,19 +67,6 @@ def internal_server_error(e):
     db.session.commit()
     return render_template('error/500.html', title='500'), 500
 
-
-# def cache_key(*args, **kwargs):
-#     """
-#     以
-#     自定义缓存键:
-#         首页和归档页路由 url 是带参数的分页页数组成：/index?page=2
-#         flask-cache 缓存的 key_prefix 默认值获取 path ：/index
-#         需要自定义不同页面的 cache_key : /index/page/2
-#     """
-#     path = request.path
-#     args = dict(request.args.items())
-#
-#     return (path + '/page/' + str(args['page'])) if args else path
 
 @main.route('/')
 @main.route('/index')
@@ -199,7 +185,7 @@ def archives():
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['ACHIVES_POSTS_PER_PAGE'],
         error_out=False)
-    posts = [post for post in pagination.items if post.draft is False]
+    posts = (post for post in pagination.items if post.draft is False)
     year = list(set([i.year for i in posts]))[::-1]
     data = {}
     year_post = []
@@ -254,9 +240,9 @@ def love_me():
     data = request.get_json()
     if data.get('i_am_handsome', '') == 'yes':
         # 更新缓存
-        global_cache = cache.get('global')
+        global_cache = cache_tool.get(cache_tool.GLOBAL_KEY)
         global_cache['loves'] += 1
-        cache.set('global', global_cache)
+        cache_tool.set(cache_tool.GLOBAL_KEY, global_cache)
         love_me_counts = LoveMe.query.all()[0]
         love_me_counts.loveMe += 1
         db.session.add(love_me_counts)
@@ -268,11 +254,7 @@ def love_me():
 # 保存评论的函数
 def save_comment(post, form):
     # 邮件配置
-    from_addr = current_app.config['MAIL_USERNAME']
-    password = current_app.config['MAIL_PASSWORD']
     to_addr = current_app.config['ADMIN_MAIL']
-    smtp_server = current_app.config['MAIL_SERVER']
-    mail_port = current_app.config['MAIL_PORT']
     # 站点链接
     base_url = current_app.config['WEB_URL']
 
@@ -356,8 +338,8 @@ def shuoshuo():
 @main.route('/friends')
 def friends():
     friends = SiteLink.query.filter_by(isFriendLink=True).order_by(SiteLink.id.desc()).all()
-    great_links = [link for link in friends if link.isGreatLink is True]
-    bad_links = [link for link in friends if link.isGreatLink is False]
+    great_links = (link for link in friends if link.isGreatLink is True)
+    bad_links = (link for link in friends if link.isGreatLink is False)
 
     return render_template('main/friends.html', title="朋友",
                            great_links=great_links, bad_links=bad_links)

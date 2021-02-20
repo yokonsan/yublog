@@ -10,7 +10,8 @@ from .. import qn
 from ..models import *
 from . import admin
 from .forms import *
-from ..utils import get_sitemap, save_file, gen_rss_xml, asyncio_send, cache_tool
+from ..utils import get_sitemap, save_file, gen_rss_xml, asyncio_send
+from ..caches import cache_tool
 
 
 def update_first_cache():
