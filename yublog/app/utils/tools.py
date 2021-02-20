@@ -21,7 +21,6 @@ def get_sitemap(posts):
         <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     """
     footer, body = '</urlset>', ''
-
     for post in posts:
         content = """
             <url>
@@ -34,18 +33,15 @@ def get_sitemap(posts):
     return sitemap
 
 
-def save_file(sitemap, file):
+async def save_file(sitemap, file):
     """保存xml文件到静态文件目录"""
     path = os.getcwd().replace('\\', '/')
     filename = path + '/app/static/' + file
     is_exists = os.path.exists(filename)
-    if not is_exists:
-        with open(filename, 'w', encoding='utf-8') as f:
-            f.write(sitemap)
-            return True
-    os.remove(filename)
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write(sitemap)
+    if is_exists: os.remove(filename)
+
+    async with open(filename, 'w', encoding='utf-8') as f:
+        await f.write(sitemap)
         return True
 
 
@@ -106,20 +102,18 @@ def gen_rss_xml(update_time, posts):
                 <content type="html"><![CDATA[{p.body_to_html}]]></content>
             </entry>
     """
-
     for p in posts:
         body += '{0}\n'.format(item.format(p=p, url=url, name=name, protocol=protocol, update_time=update_time))
     rss_xml = '\n'.join([header, body, footer])
     return rss_xml
 
 
-def markdown_to_html(body):
+async def markdown_to_html(body):
     """解析markdown"""
     md = Markdown(extensions=[
         'fenced_code',
         'codehilite(css_class=highlight,linenums=None)',
         'admonition', 'tables', 'extra'])
-    content = md.convert(body)
+    content = await md.convert(body)
 
     return content
-

@@ -1,24 +1,24 @@
-from flask import render_template, redirect, url_for, request, \
-                g, current_app, abort, jsonify, make_response
+from flask import render_template, redirect, request, \
+    g, current_app, abort, jsonify
 
 from . import main
-from .forms import SearchForm
+from .forms import SearchForm, MobileSearchForm
 from ..models import *
 from ..utils import asyncio_send
-from .. import cache
+from ..caches import cache_tool
 
 
 def get_post_cache(key):
     """获取博客文章缓存"""
-    data = cache.get(key)
+    data = cache_tool.get(key)
     if data:
         return data
-    else:
-        items = key.split('_')
-        return set_post_cache(items[1], items[2], items[3])
+    return set_post_cache(key)
 
-def set_post_cache(year, month, url):
+
+def set_post_cache(key):
     """设置博客文章缓存"""
+    year, month, url = key.split('_')
     time = str(year) + '-' + str(month)
     posts = Post.query.filter_by(url_name=url).all()
     post = ''
@@ -29,8 +29,8 @@ def set_post_cache(year, month, url):
     elif len(posts) < 1:
         abort(404)
     tags = [tag for tag in post.tags.split(',')]
-    next_post = nextPost(post)
-    prev_post = prevPost(post)
+    next_post = _next_post(post)
+    prev_post = _prev_post(post)
     data = post.to_dict()
     data['tags'] = tags
     data['next_post'] = {
@@ -46,17 +46,20 @@ def set_post_cache(year, month, url):
         'title': prev_post.title
     } if prev_post else None
     cache_key = '_'.join(map(str, ['post', year, month, url]))
-    cache.set(cache_key, data, timeout=60 * 60 * 24 * 30)
+    cache_tool.set(cache_key, data, timeout=60 * 60 * 24 * 30)
     return data
+
 
 @main.before_request
 def before_request():
     g.search_form = SearchForm()
-    g.search_form2 = SearchForm()
+    g.search_form2 = MobileSearchForm()
+
 
 @main.app_errorhandler(404)
 def page_not_found(e):
     return render_template('error/404.html', title='404'), 404
+
 
 @main.app_errorhandler(500)
 def internal_server_error(e):
@@ -64,18 +67,6 @@ def internal_server_error(e):
     db.session.commit()
     return render_template('error/500.html', title='500'), 500
 
-# def cache_key(*args, **kwargs):
-#     """
-#     以
-#     自定义缓存键:
-#         首页和归档页路由 url 是带参数的分页页数组成：/index?page=2
-#         flask-cache 缓存的 key_prefix 默认值获取 path ：/index
-#         需要自定义不同页面的 cache_key : /index/page/2
-#     """
-#     path = request.path
-#     args = dict(request.args.items())
-#
-#     return (path + '/page/' + str(args['page'])) if args else path
 
 @main.route('/')
 @main.route('/index')
@@ -85,7 +76,7 @@ def index():
 
     counts = Post.query.filter_by(draft=False).count()
     max_page = counts // per_page + 1 if counts % per_page != 0 else counts // per_page
-    post_list = Post.query.order_by(Post.timestamp.desc()).limit(per_page).offset((page-1)*per_page).all()
+    post_list = Post.query.order_by(Post.timestamp.desc()).limit(per_page).offset((page - 1) * per_page).all()
     all = (post for post in post_list if post.draft is False)
     posts = []
     for post in all:
@@ -94,9 +85,10 @@ def index():
         posts.append(post)
     return render_template('main/index.html', title='首页',
                            posts=posts, page=page, max_page=max_page,
-                           pagination=range(1, max_page+1))
+                           pagination=range(1, max_page + 1))
 
-def nextPost(post):
+
+def _next_post(post):
     """
     获取本篇文章的下一篇
     :param post: post
@@ -105,10 +97,12 @@ def nextPost(post):
     post_list = Post.query.order_by(Post.timestamp.desc()).all()
     posts = [post for post in post_list if post.draft is False]
     if posts[-1] != post:
-        next_post = posts[posts.index(post) + 1]
-        return next_post
+        _next = posts[posts.index(post) + 1]
+        return _next
     return None
-def prevPost(post):
+
+
+def _prev_post(post):
     """
     获取本篇文章的上一篇
     :param post: post
@@ -117,9 +111,10 @@ def prevPost(post):
     post_list = Post.query.order_by(Post.timestamp.desc()).all()
     posts = [post for post in post_list if post.draft is False]
     if posts[0] != post:
-        prev_post = posts[posts.index(post) - 1]
-        return prev_post
+        _prev = posts[posts.index(post) - 1]
+        return _prev
     return None
+
 
 @main.route('/<int:year>/<int:month>/<article_name>/')
 def post(year, month, article_name):
@@ -131,7 +126,7 @@ def post(year, month, article_name):
         counts = post.get('comment_count', 0)
         page = (counts - 1) / current_app.config['COMMENTS_PER_PAGE'] + 1
 
-    pagination = Comment.query.filter_by(post_id=post['id'],isReply=False,disabled=True).order_by(
+    pagination = Comment.query.filter_by(post_id=post['id'], isReply=False, disabled=True).order_by(
         Comment.timestamp.desc()).paginate(
         page, per_page=current_app.config['COMMENTS_PER_PAGE'],
         error_out=False
@@ -140,8 +135,9 @@ def post(year, month, article_name):
     replys = Comment.query.filter_by(post_id=post['id'], isReply=True, disabled=True).all()
     meta_tags = ','.join(post['tags'])
     return render_template('main/post.html', post=post, title=post['title'],
-                   pagination=pagination, comments=comments, replys=replys,
-                   counts=len(comments)+len(replys), meta_tags=meta_tags)
+                           pagination=pagination, comments=comments, replys=replys,
+                           counts=len(comments) + len(replys), meta_tags=meta_tags)
+
 
 @main.route('/page/<page_url>/')
 def page(page_url):
@@ -159,7 +155,8 @@ def page(page_url):
     replys = page.comments.filter_by(isReply=True, disabled=True).all()
 
     return render_template('main/page.html', page=page, title=page.title, pagination=pagination,
-                           comments=comments, replys=replys, counts=len(comments)+len(replys))
+                           comments=comments, replys=replys, counts=len(comments) + len(replys))
+
 
 @main.route('/tag/<tag_name>/')
 def tag(tag_name):
@@ -168,6 +165,7 @@ def tag(tag_name):
     posts = (post for post in all_posts if post.tag_in_post(tag) and post.draft is False)
 
     return render_template('main/tag.html', tag=tag, posts=posts)
+
 
 @main.route('/category/<category_name>/')
 def category(category_name):
@@ -179,6 +177,7 @@ def category(category_name):
                            posts=posts,
                            title='分类：' + category.category)
 
+
 @main.route('/archives/')
 def archives():
     count = Post.query.filter_by(draft=False).count()
@@ -186,7 +185,7 @@ def archives():
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['ACHIVES_POSTS_PER_PAGE'],
         error_out=False)
-    posts = [post for post in pagination.items if post.draft is False]
+    posts = (post for post in pagination.items if post.draft is False)
     year = list(set([i.year for i in posts]))[::-1]
     data = {}
     year_post = []
@@ -201,6 +200,7 @@ def archives():
                            year=year, data=data, count=count,
                            pagination=pagination)
 
+
 @main.route('/search/', methods=['POST'])
 def search():
     if g.search_form.validate_on_submit():
@@ -210,6 +210,7 @@ def search():
     elif g.search_form2.validate_on_submit():
         query = g.search_form2.search.data
         return redirect(url_for('main.search_result', keywords=query))
+
 
 # /search-result?keywords=query
 @main.route('/search-result')
@@ -229,6 +230,7 @@ def search_result():
                            query=query, pagination=pagination,
                            title=query + '的搜索结果')
 
+
 # 侧栏 love me 插件
 @main.route('/loveme', methods=['POST'])
 def love_me():
@@ -238,9 +240,9 @@ def love_me():
     data = request.get_json()
     if data.get('i_am_handsome', '') == 'yes':
         # 更新缓存
-        global_cache = cache.get('global')
+        global_cache = cache_tool.get(cache_tool.GLOBAL_KEY)
         global_cache['loves'] += 1
-        cache.set('global', global_cache)
+        cache_tool.set(cache_tool.GLOBAL_KEY, global_cache)
         love_me_counts = LoveMe.query.all()[0]
         love_me_counts.loveMe += 1
         db.session.add(love_me_counts)
@@ -252,11 +254,7 @@ def love_me():
 # 保存评论的函数
 def save_comment(post, form):
     # 邮件配置
-    from_addr = current_app.config['MAIL_USERNAME']
-    password = current_app.config['MAIL_PASSWORD']
     to_addr = current_app.config['ADMIN_MAIL']
-    smtp_server = current_app.config['MAIL_SERVER']
-    mail_port = current_app.config['MAIL_PORT']
     # 站点链接
     base_url = current_app.config['WEB_URL']
 
@@ -264,7 +262,7 @@ def save_comment(post, form):
     email = form['email']
     website = form['website'] or None
     # com = form['comment']
-    com = form['comment'].replace('<', '&lt;').replace('>', '&gt;')\
+    com = form['comment'].replace('<', '&lt;').replace('>', '&gt;') \
         .replace('"', '&quot;').replace('\'', '&apos;')
     reply_to = form.get('replyTo', '')
     if reply_to:
@@ -305,6 +303,7 @@ def save_comment(post, form):
     db.session.commit()
     return data
 
+
 @main.route('/<url>/comment', methods=['POST'])
 def comment(url):
     post = Post.query.filter_by(url_name=url).first()
@@ -318,6 +317,7 @@ def comment(url):
                        isReply=data['isReply'], replyTo=data['replyTo'], post=post.title)
     return jsonify(nickname=data['nickname'], email=data['email'],
                    website=data['website'], body=data['comment'], post=post.title)
+
 
 @main.route('/shuoshuo')
 def shuoshuo():
@@ -333,16 +333,13 @@ def shuoshuo():
         year_shuo = []
     return render_template('main/shuoshuo.html', title='说说', years=years, data=data)
 
+
 # friend link page
 @main.route('/friends')
 def friends():
     friends = SiteLink.query.filter_by(isFriendLink=True).order_by(SiteLink.id.desc()).all()
-    great_links = [link for link in friends if link.isGreatLink is True]
-    bad_links = [link for link in friends if link.isGreatLink is False]
+    great_links = (link for link in friends if link.isGreatLink is True)
+    bad_links = (link for link in friends if link.isGreatLink is False)
 
     return render_template('main/friends.html', title="朋友",
                            great_links=great_links, bad_links=bad_links)
-
-
-
-

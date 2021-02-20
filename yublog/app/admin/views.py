@@ -1,62 +1,28 @@
+# coding: utf-8
+
 import os
 import re
 
-from flask import render_template, redirect, request, flash, current_app, url_for
+from flask import render_template, redirect, request, flash, current_app
 from flask_login import login_required, login_user, logout_user, current_user
 
-from .. import cache, qn, whooshee
+from .. import qn
 from ..models import *
 from . import admin
 from .forms import *
 from ..utils import get_sitemap, save_file, gen_rss_xml, asyncio_send
-
-
-def clean_cache(key):
-    """
-    在发布文章后删除首页，归档，分类，标签缓存，
-    在更新文章后删除对应文章缓存
-    在添加说说，更改友链页后删除对应缓存
-    :param key: cache prefix
-    """
-    if key == 'all':
-        cache.clear()
-    elif key != 'all' and cache.get(key):
-        cache.delete(key)
-    else:
-        return False
-
-
-def update_global_cache(key, value, method=None):
-    """
-    update sidebar global cache
-    : param key: dict key
-    : param kwargs: key, value, method
-    """
-    global_cache = cache.get('global')
-    if global_cache is None:
-        return False
-    if method == '+':
-        value = value if isinstance(value, int) else 1
-        global_cache[key] += value
-    elif method == '-':
-        value = value if isinstance(value, int) else 1
-        global_cache[key] -= value
-    else:
-        global_cache[key] = value
-    cache.set('global', global_cache)
-
-    return True
+from ..caches import cache_tool
 
 
 def update_first_cache():
     """
-    update first post behind commit article
+    在新文章更新后，清掉最近一篇文章的缓存
     """
     posts = Post.query.order_by(Post.timestamp.desc()).all()
     if len(posts) > 1:
         first_post = posts[1]
         cache_key = '_'.join(map(str, ['post', first_post.year, first_post.month, first_post.url_name]))
-        clean_cache(cache_key)
+        cache_tool.clean(cache_key)
     return True
 
 
@@ -76,8 +42,8 @@ def save_tags(tags):
 def save_post(form, draft=False):
     """
     封装保存文章到数据库的重复操作
-    :param form: write or edit form
-    :param draft: article is or not draft
+    :param form: 表单类
+    :param draft: 是否保存草稿
     :return: post object
     """
     category = Category.query.filter_by(category=form.category.data).first()
@@ -86,14 +52,10 @@ def save_post(form, draft=False):
         db.session.add(category)
 
     tags = [tag for tag in form.tags.data.split(',')]
-    if draft is True:
-        post = Post(body=form.body.data, title=form.title.data,
-                    url_name=form.url_name.data, category=category,
-                    tags=form.tags.data, timestamp=form.time.data, draft=True)
-    else:
-        post = Post(body=form.body.data, title=form.title.data,
-                    url_name=form.url_name.data, category=category,
-                    tags=form.tags.data, timestamp=form.time.data, draft=False)
+    post = Post(body=form.body.data, title=form.title.data, 
+                url_name=form.url_name.data, category=category,
+                tags=form.tags.data, timestamp=form.time.data, draft=draft)
+    if not draft:
         # 保存标签模型
         save_tags(tags)
         # 更新xml
@@ -111,11 +73,11 @@ def update_xml(update_time):
     posts = [post for post in post_list if post.draft is False]
     # sitemap
     sitemap = get_sitemap(posts)
-    save_file(sitemap, 'sitemap.xml')
+    asyncio.run(save_file(sitemap, 'sitemap.xml'))
     # rss
     rss_posts = posts[:count]
     rss = gen_rss_xml(update_time, rss_posts)
-    save_file(rss, 'atom.xml')
+    asyncio.run(save_file(rss, 'atom.xml'))
 
 
 @admin.route('/')
@@ -134,9 +96,7 @@ def login():
             login_user(user, form.remember_me.data)
             return redirect(url_for('admin.index'))
         flash('账号或密码无效。')
-    return render_template('admin/login.html',
-                           title='登录',
-                           form=form)
+    return render_template('admin/login.html', title='登录', form=form)
 
 
 @admin.route('/logout')
@@ -162,16 +122,14 @@ def set_site():
         db.session.commit()
         flash('设置成功')
         # 清除所有缓存
-        clean_cache('global')
+        cache_tool.clean(cache_tool.GLOBAL_KEY)
         return redirect(url_for('admin.index'))
     form.username.data = user.name
     form.profile.data = user.profile
     form.site_name.data = user.site_name
     form.site_title.data = user.site_title
     form.record_info.data = user.record_info or None
-    return render_template('admin/admin_profile.html',
-                           title='设置网站信息',
-                           form=form)
+    return render_template('admin/admin_profile.html', title='设置网站信息', form=form)
 
 
 @admin.route('/change-password', methods=['GET', 'POST'])
@@ -189,8 +147,7 @@ def change_password():
             return redirect(url_for('admin.change_password'))
         flash('请输入正确的密码')
         return redirect(url_for('admin.change_password'))
-    return render_template('admin/change_password.html', form=form,
-                           title='更改密码')
+    return render_template('admin/change_password.html', form=form, title='更改密码')
 
 
 @admin.route('/links', methods=['GET', 'POST'])
@@ -212,7 +169,7 @@ def add_link():
             db.session.commit()
             flash('添加成功')
             # update cache
-            clean_cache('global')
+            cache_tool.clean(cache_tool.GLOBAL_KEY)
             return redirect(url_for('admin.add_link'))
     # 友链
     if fr_form.submit2.data and fr_form.validate_on_submit():
@@ -227,7 +184,7 @@ def add_link():
             db.session.commit()
             flash('添加成功')
             # update cache
-            update_global_cache('friendCounts', 1, '+')
+            cache_tool.update_global('friendCounts', 1, cache_tool.ADD)
             return redirect(url_for('admin.add_link'))
     return render_template('admin/admin_add_link.html', title="站点链接",
                            form=form, fr_form=fr_form)
@@ -251,9 +208,9 @@ def delete_link(id):
     db.session.commit()
     # update cache
     if link.isFriendLink is True:
-        update_global_cache('friendCounts', 1, '+')
+        cache_tool.update_global('friendCounts', 1, cache_tool.ADD)
     else:
-        clean_cache('global')
+        cache_tool.clean(cache_tool.GLOBAL_KEY)
 
     return redirect(url_for('admin.admin_links'))
 
@@ -269,7 +226,7 @@ def great_link(id):
     db.session.add(link)
     db.session.commit()
     # 清除缓存
-    clean_cache('global')
+    cache_tool.clean(cache_tool.GLOBAL_KEY)
     return redirect(url_for('admin.admin_links'))
 
 
@@ -289,7 +246,7 @@ def write():
             db.session.add(post)
             flash('发布成功！')
             # updata cache
-            clean_cache('global')
+            cache_tool.clean(cache_tool.GLOBAL_KEY)
             update_first_cache()
         db.session.commit()
         return redirect(url_for('admin.write'))
@@ -324,7 +281,7 @@ def admin_edit(time, name):
                 db.session.commit()
                 flash('发布成功')
                 # 清除缓存
-                clean_cache('global')
+                cache_tool.clean(cache_tool.GLOBAL_KEY)
                 update_first_cache()
                 # 更新 xml
                 update_xml(post.timestamp)
@@ -336,7 +293,7 @@ def admin_edit(time, name):
             flash('更新成功')
             # 清除对应文章缓存
             key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
-            clean_cache(key)
+            cache_tool.clean(key)
             update_xml(post.timestamp)
             return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))
     form.category.data = post.category.category
@@ -364,7 +321,7 @@ def add_page():
         flash('添加成功')
         if page.isNav is True:
             # 清除缓存
-            clean_cache('global')
+            cache_tool.clean(cache_tool.GLOBAL_KEY)
         return redirect(url_for('admin.add_page'))
     return render_template('admin/admin_add_page.html',
                            form=form,
@@ -387,7 +344,7 @@ def edit_page(name):
         db.session.commit()
         flash('更新成功')
         # 清除缓存
-        clean_cache('global')
+        cache_tool.clean(cache_tool.GLOBAL_KEY)
         return redirect(url_for('admin.edit_page', name=page.url_name))
     form.title.data = start_title
     form.body.data = page.body
@@ -409,7 +366,7 @@ def delete_page(name):
     flash('删除成功')
     if page.isNav is True:
         # 清除缓存
-        clean_cache('global')
+        cache_tool.clean(cache_tool.GLOBAL_KEY)
     return redirect(url_for('admin.admin_pages'))
 
 
@@ -457,7 +414,7 @@ def delete_post(time, name):
     flash('删除成功')
     # update cache
     if post.draft is False:
-        update_global_cache('postCounts', 1, '-')
+        cache_tool.update_global('postCounts', 1, cache_tool.REMOVE)
     return redirect(url_for('admin.admin_posts'))
 
 
@@ -487,13 +444,13 @@ def delete_comment(id):
     if comment.disabled is True:
         if page and page.url_name == 'guestbook':
             # 清除缓存
-            update_global_cache('guestbookCounts', 1, '-')
+            cache_tool.update_global('guestbookCounts', 1, cache_tool.REMOVE)
         elif post and isinstance(post, Post):
             # 删除文章缓存
             cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
-            post_cache = cache.get(cache_key)
+            post_cache = cache_tool.get(cache_key)
             post_cache['comment_count'] -= 1
-            cache.set(cache_key, post_cache)
+            cache_tool.set(cache_key, post_cache)
     return redirect(url_for('admin.admin_comments'))
 
 
@@ -538,14 +495,14 @@ def allow_comment(id):
     post = comment.post
     if page and page.url_name == 'guestbook':
         # 清除缓存
-        update_global_cache('guestbookCounts', 1, '+')
+        cache_tool.update_global('guestbookCounts', 1, cache_tool.ADD)
     elif post and isinstance(post, Post):
         # 更新文章缓存
         cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
-        post_cache = cache.get(cache_key)
+        post_cache = cache_tool.get(cache_key)
         if post_cache:
             post_cache['comment_count'] += 1
-            cache.set(cache_key, post_cache)
+            cache_tool.set(cache_key, post_cache)
     return redirect(url_for('admin.admin_comments'))
 
 
@@ -562,14 +519,14 @@ def unable_comment(id):
     post = comment.post
     if page and page.url_name == 'guestbook':
         # 清除缓存
-        update_global_cache('guestbookCounts', 1, '-')
+        cache_tool.update_global('guestbookCounts', 1, cache_tool.REMOVE)
     elif post and isinstance(post, Post):
         # 更新文章缓存
         cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
-        post_cache = cache.get(cache_key)
+        post_cache = cache_tool.get(cache_key)
         if post_cache:
             post_cache['comment_count'] -= 1
-            cache.set(cache_key, post_cache)
+            cache_tool.set(cache_key, post_cache)
     return redirect(url_for('admin.admin_comments'))
 
 
@@ -583,7 +540,7 @@ def write_shuoshuo():
         db.session.commit()
         flash('发布成功')
         # 清除缓存
-        update_global_cache('newShuo', shuo.body_to_html)
+        cache_tool.update_global('newShuo', shuo.body_to_html)
         return redirect(url_for('admin.write_shuoshuo'))
     return render_template('admin/admin_write_shuoshuo.html',
                            title='写说说', form=form)
@@ -609,7 +566,7 @@ def delete_shuo(id):
     # update cache
     new_shuo = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).first()
     value = new_shuo.body_to_html if new_shuo else '这家伙啥都不想说...'
-    update_global_cache('newShuo', value)
+    cache_tool.update_global('newShuo', value)
     return redirect(url_for('admin.admin_shuos'))
 
 
@@ -682,9 +639,9 @@ def delete_column(id):
     db.session.commit()
     flash('删除专题')
     # clean all of this column cache
-    clean_cache('column_' + column.url_name)
+    cache_tool.clean('column_' + column.url_name)
     for i in articles:
-        clean_cache('_'.join(['article', column.url_name, str(i.id)]))
+        cache_tool.clean('_'.join(['article', column.url_name, str(i.id)]))
     return redirect(url_for('admin.admin_columns'))
 
 
@@ -700,7 +657,7 @@ def write_column_article(url):
         db.session.commit()
         flash('添加文章成功！')
         # clean cache
-        clean_cache('column_' + url)
+        cache_tool.clean('column_' + url)
         return redirect(url_for('admin.admin_column', id=column.id))
     return render_template('admin_column/write_article.html', form=form,
                            title='编辑文章', column=column)
@@ -723,10 +680,10 @@ def edit_column_article(url, id):
         db.session.commit()
         flash('更新文章成功！')
         # clear cache
-        clean_cache('_'.join(['article', url, str(id)]))
+        cache_tool.clean('_'.join(['article', url, str(id)]))
         if article.title != _title:
             # the title is change
-            clean_cache('column_' + url)
+            cache_tool.clean('column_' + url)
         return redirect(url_for('admin.admin_column', id=column.id))
 
     form.title.data = article.title
@@ -746,8 +703,8 @@ def delete_column_article(url, id):
     db.session.commit()
     flash('删除文章成功！')
     # 清除对于缓存
-    clean_cache('_'.join(['article', url, str(id)]))
-    clean_cache('column_' + url)
+    cache_tool.clean('_'.join(['article', url, str(id)]))
+    cache_tool.clean('column_' + url)
     return redirect(url_for('admin.admin_column', id=column.id))
 
 
@@ -779,7 +736,7 @@ def add_side_box():
         db.session.commit()
         flash('添加侧栏插件成功')
         # update cache
-        clean_cache('global')
+        cache_tool.clean(cache_tool.GLOBAL_KEY)
         return redirect(url_for('admin.admin_side_box'))
     return render_template('admin/admin_edit_sidebox.html', form=form,
                            title='添加插件')
@@ -798,7 +755,7 @@ def edit_side_box(id):
         db.session.commit()
         flash('更新侧栏插件成功')
         # update cache
-        clean_cache('global')
+        cache_tool.clean(cache_tool.GLOBAL_KEY)
         return redirect(url_for('admin.admin_side_box'))
 
     form.title.data = box.title
@@ -826,7 +783,7 @@ def unable_side_box(id):
     db.session.add(box)
     db.session.commit()
     # 清除缓存
-    clean_cache('global')
+    cache_tool.clean(cache_tool.GLOBAL_KEY)
     return redirect(url_for('admin.admin_side_box'))
 
 
@@ -838,7 +795,7 @@ def delete_side_box(id):
     db.session.commit()
     flash('删除插件成功')
     # 清除缓存
-    clean_cache('global')
+    cache_tool.clean(cache_tool.GLOBAL_KEY)
     return redirect(url_for('admin.admin_side_box'))
 # 侧栏box---end
 
@@ -903,7 +860,7 @@ def rename_img():
 @admin.route('/clean/cache/all')
 @login_required
 def clean_all_cache():
-    clean_cache('all')
+    cache_tool.clean(cache_tool.ALL_KEY)
     flash('clean all cache success!')
     return redirect(url_for('admin.index'))
 
