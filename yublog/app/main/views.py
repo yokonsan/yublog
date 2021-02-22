@@ -1,19 +1,18 @@
 from flask import render_template, redirect, request, \
     g, current_app, abort, jsonify
 
-from . import main
-from .forms import SearchForm, MobileSearchForm
-from ..models import *
-from ..utils import asyncio_send
-from ..caches import cache_tool
+from yublog.app.main import main
+from yublog.app.main.forms import SearchForm, MobileSearchForm
+from yublog.app.models import *
+from yublog.app.utils import asyncio_send
+from yublog.app.caches import cache_tool
+from yublog.app.exceptions import NoPostException
 
 
 def get_post_cache(key):
     """获取博客文章缓存"""
     data = cache_tool.get(key)
-    if data:
-        return data
-    return set_post_cache(key)
+    return data if data else set_post_cache(key)
 
 
 def set_post_cache(key):
@@ -21,33 +20,61 @@ def set_post_cache(key):
     year, month, url = key.split('_')
     time = str(year) + '-' + str(month)
     posts = Post.query.filter_by(url_name=url).all()
-    post = ''
-    if len(posts) == 1:
-        post = posts[0]
-    elif len(posts) > 1:
-        post = [i for i in posts if time in i.timestamp][0]
-    elif len(posts) < 1:
+    if len(posts) > 1:
+        _post = [p for p in posts if time in p.timestamp][0]
+    elif len(posts) == 1:
+        _post = posts[0]
+    else:
         abort(404)
-    tags = [tag for tag in post.tags.split(',')]
-    next_post = _next_post(post)
-    prev_post = _prev_post(post)
-    data = post.to_dict()
+        raise NoPostException('Set the post cache exception.')
+
+    tags = _post.tags.split(',')
+    data = _post.to_dict()
     data['tags'] = tags
-    data['next_post'] = {
-        'year': next_post.year,
-        'month': next_post.month,
-        'url': next_post.url_name,
-        'title': next_post.title
-    } if next_post else None
-    data['prev_post'] = {
-        'year': prev_post.year,
-        'month': prev_post.month,
-        'url': prev_post.url_name,
-        'title': prev_post.title
-    } if prev_post else None
+    data['next_post'] = _next_post(_post)
+    data['prev_post'] = _prev_post(_post)
+
     cache_key = '_'.join(map(str, ['post', year, month, url]))
     cache_tool.set(cache_key, data, timeout=60 * 60 * 24 * 30)
     return data
+
+
+def _next_post(_post):
+    """
+    获取本篇文章的下一篇
+    :param _post: post
+    :return: next post
+    """
+    post_list = Post.query.order_by(Post.timestamp.desc()).all()
+    posts = [p for p in post_list if p.draft is False]
+    if posts[-1] != _post:
+        _next = posts[posts.index(_post) + 1]
+        return {
+            'year': _next.year,
+            'month': _next.month,
+            'url': _next.url_name,
+            'title': _next.title
+        }
+    return None
+
+
+def _prev_post(post):
+    """
+    获取本篇文章的上一篇
+    :param post: post
+    :return: prev post
+    """
+    post_list = Post.query.order_by(Post.timestamp.desc()).all()
+    posts = [post for post in post_list if post.draft is False]
+    if posts[0] != post:
+        _prev = posts[posts.index(post) - 1]
+        return {
+            'year': _prev.year,
+            'month': _prev.month,
+            'url': _prev.url_name,
+            'title': _prev.title
+        }
+    return None
 
 
 @main.before_request
@@ -71,7 +98,7 @@ def internal_server_error(e):
 @main.route('/')
 @main.route('/index')
 def index():
-    page = request.args.get('page', 1, type=int)
+    _page = request.args.get('page', 1, type=int)
     per_page = current_app.config['POSTS_PER_PAGE']
 
     counts = Post.query.filter_by(draft=False).count()
@@ -84,36 +111,8 @@ def index():
         post = get_post_cache(cache_key)
         posts.append(post)
     return render_template('main/index.html', title='首页',
-                           posts=posts, page=page, max_page=max_page,
+                           posts=posts, page=_page, max_page=max_page,
                            pagination=range(1, max_page + 1))
-
-
-def _next_post(post):
-    """
-    获取本篇文章的下一篇
-    :param post: post
-    :return: next post
-    """
-    post_list = Post.query.order_by(Post.timestamp.desc()).all()
-    posts = [post for post in post_list if post.draft is False]
-    if posts[-1] != post:
-        _next = posts[posts.index(post) + 1]
-        return _next
-    return None
-
-
-def _prev_post(post):
-    """
-    获取本篇文章的上一篇
-    :param post: post
-    :return: prev post
-    """
-    post_list = Post.query.order_by(Post.timestamp.desc()).all()
-    posts = [post for post in post_list if post.draft is False]
-    if posts[0] != post:
-        _prev = posts[posts.index(post) - 1]
-        return _prev
-    return None
 
 
 @main.route('/<int:year>/<int:month>/<article_name>/')
@@ -261,10 +260,10 @@ def save_comment(post, form):
     nickname = form['nickname']
     email = form['email']
     website = form['website'] or None
-    # com = form['comment']
-    com = form['comment'].replace('<', '&lt;').replace('>', '&gt;') \
-        .replace('"', '&quot;').replace('\'', '&apos;')
-    reply_to = form.get('replyTo', '')
+    com = form['comment']
+    # com = form['comment'].replace('<', '&lt;').replace('>', '&gt;') \
+    #     .replace('"', '&quot;').replace('\'', '&apos;')
+    reply_to = form.get('reply_to', '')
     if reply_to:
         replyName = Comment.query.get(reply_to).author
         if website and len(website) > 4:
@@ -278,7 +277,7 @@ def save_comment(post, form):
         comment = Comment(comment=comment, author=nickname, email=email,
                           website=website, isReply=True, replyTo=reply_to)
         data = {'nickname': nickname, 'email': email, 'website': website,
-                'comment': com, 'isReply': True, 'replyTo': reply_to}
+                'comment': com, 'is_reply': True, 'reply_to': reply_to}
     else:
         comment = Comment(comment=com, author=nickname, email=email, website=website)
         data = {'nickname': nickname, 'email': email, 'website': website, 'comment': com}
@@ -311,10 +310,10 @@ def comment(url):
         post = Page.query.filter_by(url_name=url).first()
     form = request.get_json()
     data = save_comment(post, form)
-    if data.get('replyTo'):
+    if data.get('reply_to'):
         return jsonify(nickname=data['nickname'], email=data['email'],
                        website=data['website'], body=data['comment'],
-                       isReply=data['isReply'], replyTo=data['replyTo'], post=post.title)
+                       isReply=data['is_reply'], replyTo=data['reply_to'], post=post.title)
     return jsonify(nickname=data['nickname'], email=data['email'],
                    website=data['website'], body=data['comment'], post=post.title)
 

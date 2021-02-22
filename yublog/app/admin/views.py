@@ -6,12 +6,12 @@ import re
 from flask import render_template, redirect, request, flash, current_app
 from flask_login import login_required, login_user, logout_user, current_user
 
-from .. import qn
-from ..models import *
-from . import admin
-from .forms import *
-from ..utils import get_sitemap, save_file, gen_rss_xml, asyncio_send
-from ..caches import cache_tool
+from yublog.app import qn
+from yublog.app.models import *
+from yublog.app import admin
+from yublog.app.admin.forms import *
+from yublog.app.utils import get_sitemap, save_file, gen_rss_xml, asyncio_send
+from yublog.app.caches import cache_tool
 
 
 def update_first_cache():
@@ -285,7 +285,7 @@ def admin_edit(time, name):
                 update_first_cache()
                 # 更新 xml
                 update_xml(post.timestamp)
-            return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))
+            return redirect(url_for('admin.admin_edit', time=post.timestamp_int, name=post.url_name))
         # 编辑文章
         else:
             db.session.add(post)
@@ -295,7 +295,7 @@ def admin_edit(time, name):
             key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
             cache_tool.clean(key)
             update_xml(post.timestamp)
-            return redirect(url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name))
+            return redirect(url_for('admin.admin_edit', time=post.timestamp_int, name=post.url_name))
     form.category.data = post.category.category
     form.tags.data = post.tags
     form.url_name.data = post.url_name

@@ -163,10 +163,10 @@ def comment(id):
     post = Article.query.filter_by(id=id).first()
     form = request.get_json()
     data = save_comment(post, form)
-    if data.get('replyTo'):
+    if data.get('reply_to'):
         return jsonify(nickname=data['nickname'], email=data['email'],
                        website=data['website'], body=data['comment'],
-                       isReply=data['isReply'], replyTo=data['replyTo'], post=post.title)
+                       isReply=data['is_reply'], replyTo=data['reply_to'], post=post.title)
     return jsonify(nickname=data['nickname'], email=data['email'],
                        website=data['website'], body=data['comment'], post=post.title)
 
