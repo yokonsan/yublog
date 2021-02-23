@@ -3,10 +3,10 @@ from flask import Blueprint
 main = Blueprint('main', __name__)
 column = Blueprint('column', __name__)
 
-from . import views, site, column_views
-from ..models import *
-from .. import cache
-from ..caches import cache_tool
+from yublog.app.main import views
+from yublog.app.models import *
+from yublog.app import cache
+from yublog.app.caches import cache_tool
 
 
 @main.app_context_processor

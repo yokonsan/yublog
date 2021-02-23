@@ -10,7 +10,7 @@ from yublog.app import qn
 from yublog.app.models import *
 from yublog.app import admin
 from yublog.app.admin.forms import *
-from yublog.app.utils import get_sitemap, save_file, gen_rss_xml, asyncio_send
+from yublog.app.utils.tools import get_sitemap, save_file, gen_rss_xml, asyncio_send
 from yublog.app.caches import cache_tool
 
 

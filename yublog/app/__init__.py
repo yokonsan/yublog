@@ -4,8 +4,8 @@ from flask_login import LoginManager
 from flask_whooshee import Whooshee
 from flask_caching import Cache
 
-from ..config import config
-from ..app.utils import QiniuUpload
+from yublog.config import config
+from yublog.app.utils.qiniu_picbed import QiniuUpload
 db = SQLAlchemy()
 lm = LoginManager()
 lm.login_view = 'admin.login'
@@ -26,10 +26,10 @@ def create_app(config_name):
     if app.config.get('NEED_PIC_BED', False):
         qn.init_app(app)
 
-    from .main import main as main_blueprint
-    from .admin import admin as admin_blueprint
-    from .api import api as api_blueprint
-    from .main import column as column_blueprint
+    from yublog.app.main import main as main_blueprint
+    from yublog.app.admin import admin as admin_blueprint
+    from yublog.app.api import api as api_blueprint
+    from yublog.app.main import column as column_blueprint
 
     app.register_blueprint(main_blueprint)
     app.register_blueprint(admin_blueprint, url_prefix='/admin')

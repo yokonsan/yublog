@@ -4,7 +4,7 @@ from flask import render_template, redirect, request, \
 from yublog.app.main import main
 from yublog.app.main.forms import SearchForm, MobileSearchForm
 from yublog.app.models import *
-from yublog.app.utils import asyncio_send
+from yublog.app.utils.tools import asyncio_send
 from yublog.app.caches import cache_tool
 from yublog.app.exceptions import NoPostException
 
