@@ -3,13 +3,14 @@ from flask import Blueprint
 main = Blueprint('main', __name__)
 column = Blueprint('column', __name__)
 
-from . import views, site, column_views
-from ..models import *
-from .. import cache
+from yublog.app.main import views
+from yublog.app.models import *
+from yublog.app import cache
+from yublog.app.caches import cache_tool
 
 
 @main.app_context_processor
-@cache.cached(timeout=60*60*24*30, key_prefix='global', unless=None)
+@cache.cached(timeout=60*60*24*30, key_prefix=cache_tool.GLOBAL_KEY, unless=None)
 def global_datas():
     """
     所有页面共有的，比如侧栏的标签集合，社交链接，博主信息，
@@ -30,10 +31,10 @@ def global_datas():
 
     all_links = SiteLink.query.order_by(SiteLink.id.desc()).all()
     if all_links:
-        social_links = [link for link in all_links if link.isFriendLink == False]
-        friend_links_counts = len([link for link in all_links if link.isFriendLink == True])
+        social_links = [link for link in all_links if link.is_friend is False]
+        friend_links_counts = len(all_links) - len(social_links)
         global_data['social_links'] = social_links
-        global_data['friendCounts'] = friend_links_counts
+        global_data['friend_counts'] = friend_links_counts
 
     all_tags = Tag.query.all()
     if all_tags:
@@ -43,7 +44,7 @@ def global_datas():
     if all_categories:
         global_data['categories'] = all_categories
 
-    all_pages = Page.query.filter_by(isNav=True).all()
+    all_pages = Page.query.filter_by(is_show=True).all()
     if all_pages:
         global_data['pages'] = all_pages
 

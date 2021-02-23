@@ -8,6 +8,7 @@ class AdminLogin(FlaskForm):
     password = PasswordField('password', validators=[DataRequired()])
     remember_me = BooleanField('remember', default=False)
 
+
 class AdminWrite(FlaskForm):
     title = StringField('title', validators=[DataRequired()])
     time = StringField('datetime', validators=[DataRequired()])
@@ -19,6 +20,7 @@ class AdminWrite(FlaskForm):
     save_draft = SubmitField('save')
     submit = SubmitField('submit')
 
+
 class AddPageForm(FlaskForm):
     title = StringField('title', validators=[DataRequired()])
     url_name = StringField('url_name', validators=[DataRequired()])
@@ -27,16 +29,19 @@ class AddPageForm(FlaskForm):
     is_nav = BooleanField('is_nav')
     submit = SubmitField('submit')
 
+
 class SocialLinkForm(FlaskForm):
     link = StringField('url', validators=[DataRequired()])
     name = StringField('name', validators=[DataRequired()])
     submit = SubmitField('submit')
+
 
 class FriendLinkForm(FlaskForm):
     link = StringField('url', validators=[DataRequired()])
     name = StringField('name', validators=[DataRequired()])
     info = StringField('info', validators=[DataRequired()])
     submit2 = SubmitField('submit2')
+
 
 class AdminSiteForm(FlaskForm):
     site_name = StringField('name', validators=[DataRequired()])
@@ -46,6 +51,7 @@ class AdminSiteForm(FlaskForm):
     profile = StringField('profile', validators=[DataRequired()])
 
     record_info = StringField('record info')
+
 
 class ShuoForm(FlaskForm):
     shuoshuo = TextAreaField('shuoshuo', validators=[DataRequired()])
@@ -60,12 +66,15 @@ class ColumnForm(FlaskForm):
     body = TextAreaField('body', validators=[DataRequired()])
     submit = SubmitField('submit')
 
+
 class ColumnArticleForm(FlaskForm):
     title = StringField('title', validators=[DataRequired()])
     date = StringField('datetime', validators=[DataRequired()])
     body = TextAreaField('body', validators=[DataRequired()])
     secrecy = BooleanField('secrecy')
     submit = SubmitField('submit')
+
+
 # end
 
 # 侧栏插件表单
@@ -75,8 +84,9 @@ class SideBoxForm(FlaskForm):
     is_advertising = BooleanField('is_advertising')
     submit = SubmitField('submit')
 
+
 # 更改密码
 class ChangePasswordForm(FlaskForm):
     old_password = PasswordField('Old password', validators=[DataRequired()])
-    password = PasswordField('New password', validators=[ DataRequired()])
+    password = PasswordField('New password', validators=[DataRequired()])
     password2 = PasswordField('Confirm new password', validators=[DataRequired()])

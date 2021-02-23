@@ -7,8 +7,7 @@ from email.header import Header
 from email.mime.text import MIMEText
 
 from markdown import Markdown
-
-from .settings import tools_settings
+from flask import current_app
 
 
 def get_sitemap(posts):
@@ -46,11 +45,16 @@ async def save_file(sitemap, file):
 
 
 def send_mail(to_addr, msg):
+    mail_username = current_app.config['MAIL_USERNAME']
+    mail_password = current_app.config['MAIL_PASSWORD']
+    mail_server = current_app.config['MAIL_SERVER']
+    mail_port = current_app.config['MAIL_PORT']
+    
     content = MIMEText(msg, 'html', 'utf-8')
     content['Subject'] = Header('博客评论……', 'utf-8').encode()
-    server = smtplib.SMTP_SSL(tools_settings.MAIL_SERVER, tools_settings.MAIL_PORT)
-    server.login(tools_settings.MAIL_USERNAME, tools_settings.MAIL_PASSWORD)
-    server.sendmail(tools_settings.MAIL_USERNAME, [to_addr], content.as_string())
+    server = smtplib.SMTP_SSL(mail_server, mail_port)
+    server.login(mail_username, mail_password)
+    server.sendmail(mail_username, [to_addr], content.as_string())
     server.quit()
 
 
@@ -67,12 +71,12 @@ def gen_rss_xml(update_time, posts):
         return None
 
     # 配置参数
-    name = tools_settings.ADMIN_NAME
-    protocol = tools_settings.WEB_PROTOCOL
-    url = tools_settings.WEB_URL
-    title = tools_settings.SITE_NAME
-    subtitle = tools_settings.SITE_TITLE
-    web_time = tools_settings.WEB_START_TIME
+    name = current_app.config['ADMIN_NAME']
+    title = current_app.config['SITE_NAME']
+    subtitle = current_app.config['SITE_TITLE']
+    protocol = current_app.config['WEB_PROTOCOL']
+    url = current_app.config['WEB_URL']
+    web_time = current_app.config['WEB_START_TIME']
     header = """
     <?xml version="1.0" encoding="UTF-8"?>
         <feed xmlns="http://www.w3.org/2005/Atom">

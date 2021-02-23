@@ -1,0 +1,2 @@
+class NoPostException(Exception):
+    pass

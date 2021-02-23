@@ -10,12 +10,14 @@ import os
 #             os.environ[var[0]] = var[1]
 
 from yublog.app import create_app, db
+app = create_app(os.getenv('CONFIG') or 'default')
+
 from yublog.app.models import Admin, Post, Tag, Category, SiteLink, \
     Page, LoveMe, Comment, Shuoshuo, SideBox
 from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 
-app = create_app(os.getenv('CONFIG') or 'default')
+
 manager = Manager(app)
 migrate = Migrate(app, db)
 

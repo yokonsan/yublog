@@ -8,8 +8,9 @@ from flask import url_for
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from . import db, lm, whooshee
-from .utils import markdown_to_html, XssHtml
+from yublog.app import db, lm, whooshee
+from yublog.app.utils.tools import markdown_to_html
+from yublog.app.utils.pxfilter import XssHtml
 
 
 class Admin(UserMixin, db.Model):
@@ -53,13 +54,13 @@ class LoveMe(db.Model):
     """站点喜欢按钮次数数据模型"""
     __tablename__ = 'loveme'
     id = db.Column(db.Integer, primary_key=True)
-    loveMe = db.Column(db.Integer, default=666)
+    love_count = db.Column(db.Integer, default=666)
 
     def __init__(self, love_me_count):
-        self.loveMe = love_me_count
+        self.love_count = love_me_count
 
     def __repr__(self):
-        return '<Love me count: {}>'.format(self.loveMe)
+        return '<Love me count: {}>'.format(self.love_count)
 
 
 class Page(db.Model):
@@ -68,8 +69,8 @@ class Page(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(6))
     url_name = db.Column(db.String(25), unique=True)
-    canComment = db.Column(db.Boolean, default=False)
-    isNav = db.Column(db.Boolean, default=False)
+    able_comment = db.Column(db.Boolean, default=False)
+    is_show = db.Column(db.Boolean, default=False, index=True)
     body = db.Column(db.Text)
 
     comments = db.relationship('Comment', backref='page', lazy='dynamic')
@@ -86,8 +87,8 @@ class Page(db.Model):
             'url': self.url_name,
             'api': url_for('api.get_page', id=self.id, _external=True),
             'isNav': self.isNav,
-            'comment_count': self.comments.count() if self.canComment else None,
-            'comments': url_for('api.get_page_comments', id=self.id, _external=True) if self.canComment else None
+            'comment_count': self.comments.count() if self.able_comment else None,
+            'comments': url_for('api.get_page_comments', id=self.id, _external=True) if self.able_comment else None
         }
         return page
 
@@ -112,27 +113,22 @@ class Post(db.Model):
     comments = db.relationship('Comment', backref='post', lazy='dynamic')
 
     @property
-    def timestampInt(self):
-        return int(''.join([i for i in self.timestamp.split('-')]))
+    def timestamp_int(self):
+        return int(self.timestamp.replace('-', ''))
 
     @property
     def year(self):
-        return int([i for i in self.timestamp.split('-')][0])
+        return int(self.timestamp.split('-')[0])
 
     @property
     def month(self):
-        return int([i for i in self.timestamp.split('-')][1])
+        return int(self.timestamp.split('-')[1])
 
     def tag_in_post(self, tag):
         if self.tags.find(',') > -1:
-            tags = [i for i in self.tags.split(',')]
-            if tag in tags:
-                return True
-            return False
+            return tag in self.tags.split(',')
 
-        if tag == self.tags:
-            return True
-        return False
+        return tag == self.tags
 
     @property
     def body_to_html(self):
@@ -201,8 +197,8 @@ class Comment(db.Model):
     author = db.Column(db.String(25))
     email = db.Column(db.String(255))
     website = db.Column(db.String(255), nullable=True)
-    isReply = db.Column(db.Boolean, default=False)
-    replyTo = db.Column(db.Integer, nullable=True)
+    is_reply = db.Column(db.Boolean, default=False)
+    reply_to = db.Column(db.Integer, nullable=True)
     disabled = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
 
@@ -212,12 +208,8 @@ class Comment(db.Model):
 
     def __init__(self, **kwargs):
         super(Comment, self).__init__(**kwargs)
-
-        if self.website:
-            if self.website.startswith('http://') or self.website.startswith('https://'):
-                self.website = self.website
-            else:
-                self.website = 'http://' + self.website
+        if self.website and not(self.website.startswith('http://') or self.website.startswith('https://')):
+            self.website = 'http://{}'.format(self.website)
 
     @property
     def strptime(self):
@@ -241,7 +233,7 @@ class Comment(db.Model):
     def to_json(self):
         comment = {
             'id': self.id,
-            'isReply': self.isReply,
+            'is_reply': self.is_reply,
             'author': self.author,
             'avatar': self.gravatar(38),
             'mail': self.email,
@@ -249,9 +241,9 @@ class Comment(db.Model):
             'datetime': self.strptime,
             'comment': self.body_to_html
         }
-        if self.isReply:
+        if self.is_reply:
             comment['avatar'] = self.gravatar(26)
-            comment['replyTo'] = self.replyTo
+            comment['reply_to'] = self.reply_to
         return comment
 
     def __repr__(self):
@@ -301,8 +293,8 @@ class SiteLink(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     link = db.Column(db.String(125), unique=True)
     name = db.Column(db.String(25))
-    isFriendLink = db.Column(db.Boolean)
-    isGreatLink = db.Column(db.Boolean, default=True)
+    is_friend = db.Column(db.Boolean, index=True)
+    is_great = db.Column(db.Boolean, default=True, index=True)
     info = db.Column(db.String(125), nullable=True)
 
     def __repr__(self):

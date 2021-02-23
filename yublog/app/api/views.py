@@ -1,8 +1,8 @@
 from flask import jsonify, current_app, request, g
 from flask_login import login_required
 
-from . import api
-from ..models import *
+from yublog.app.api import api
+from yublog.app.models import *
 
 
 """
