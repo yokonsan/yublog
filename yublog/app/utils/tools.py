@@ -118,6 +118,6 @@ async def markdown_to_html(body):
         'fenced_code',
         'codehilite(css_class=highlight,linenums=None)',
         'admonition', 'tables', 'extra'])
-    content = await md.convert(body)
+    content = md.convert(body)
 
     return content

@@ -17,7 +17,7 @@ def get_post_cache(key):
 
 def set_post_cache(key):
     """设置博客文章缓存"""
-    year, month, url = key.split('_')
+    _, year, month, url = key.split('_')
     time = str(year) + '-' + str(month)
     posts = Post.query.filter_by(url_name=url).all()
     if len(posts) > 1:
@@ -101,15 +101,16 @@ def index():
     _page = request.args.get('page', 1, type=int)
     per_page = current_app.config['POSTS_PER_PAGE']
 
-    counts = Post.query.filter_by(draft=False).count()
+    _posts = Post.query.filter_by(draft=False).order_by(Post.timestamp.desc())
+    counts = _posts.count()
     max_page = counts // per_page + 1 if counts % per_page != 0 else counts // per_page
-    post_list = Post.query.order_by(Post.timestamp.desc()).limit(per_page).offset((page - 1) * per_page).all()
-    all = (post for post in post_list if post.draft is False)
+    post_list = _posts.limit(per_page).offset((_page - 1) * per_page).all()
+    _all = (p for p in post_list if p.draft is False)
     posts = []
-    for post in all:
-        cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
-        post = get_post_cache(cache_key)
-        posts.append(post)
+    for p in _all:
+        cache_key = '_'.join(map(str, ['post', p.year, p.month, p.url_name]))
+        print(f'key: {cache_key}')
+        posts.append(get_post_cache(cache_key))
     return render_template('main/index.html', title='首页',
                            posts=posts, page=_page, max_page=max_page,
                            pagination=range(1, max_page + 1))
