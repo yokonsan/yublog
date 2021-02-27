@@ -112,7 +112,7 @@ def gen_rss_xml(update_time, posts):
     return rss_xml
 
 
-async def markdown_to_html(body):
+def markdown_to_html(body):
     """解析markdown"""
     md = Markdown(extensions=[
         'fenced_code',

@@ -1,6 +1,3 @@
-# coding: utf-8
-
-import asyncio
 import datetime
 from hashlib import md5
 
@@ -8,9 +5,9 @@ from flask import url_for
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from yublog.app import db, lm, whooshee
-from yublog.app.utils.tools import markdown_to_html
-from yublog.app.utils.pxfilter import XssHtml
+from yublog import db, whooshee
+from yublog.utils.tools import markdown_to_html
+from yublog.utils.pxfilter import XssHtml
 
 
 class Admin(UserMixin, db.Model):
@@ -45,16 +42,11 @@ class Admin(UserMixin, db.Model):
         return '<Admin name: {}>'.format(self.name)
 
 
-@lm.user_loader
-def load_user(user_id):
-    return Admin.query.get(int(user_id))
-
-
 class LoveMe(db.Model):
     """站点喜欢按钮次数数据模型"""
     __tablename__ = 'loveme'
     id = db.Column(db.Integer, primary_key=True)
-    love_count = db.Column(db.Integer, default=666)
+    love_count = db.Column(db.Integer, default=0)
 
     def __init__(self, love_me_count):
         self.love_count = love_me_count
@@ -70,14 +62,17 @@ class Page(db.Model):
     title = db.Column(db.String(6))
     url_name = db.Column(db.String(25), unique=True)
     able_comment = db.Column(db.Boolean, default=False)
-    is_show = db.Column(db.Boolean, default=False, index=True)
+    show_nav = db.Column(db.Boolean, default=False, index=True)
     body = db.Column(db.Text)
 
     comments = db.relationship('Comment', backref='page', lazy='dynamic')
 
+    def __init__(self, **kwargs):
+        super(Page, self).__init__(**kwargs)
+
     @property
     def body_to_html(self):
-        html = asyncio.run(markdown_to_html(self.body))
+        html = markdown_to_html(self.body)
         return html
 
     def to_json(self):
@@ -132,7 +127,7 @@ class Post(db.Model):
 
     @property
     def body_to_html(self):
-        html = asyncio.run(markdown_to_html(self.body))
+        html = markdown_to_html(self.body)
         return html
 
     def to_json(self):
@@ -218,7 +213,7 @@ class Comment(db.Model):
     @property
     def body_to_html(self):
         # xss过滤
-        html = asyncio.run(markdown_to_html(self.comment))
+        html = markdown_to_html(self.comment)
 
         parser = XssHtml()
         parser.feed(html)
@@ -301,15 +296,15 @@ class SiteLink(db.Model):
         return '<Site link: {}>'.format(self.link)
 
 
-class Shuoshuo(db.Model):
+class Talk(db.Model):
     """说说数据模型"""
-    __tablename__ = 'shuos'
+    __tablename__ = 'talk'
     id = db.Column(db.Integer, primary_key=True)
-    shuo = db.Column(db.Text)
+    talk = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
 
-    def __init__(self, shuo):
-        self.shuo = shuo
+    def __init__(self, talk):
+        self.talk = talk
 
     @property
     def strptime(self):
@@ -325,18 +320,18 @@ class Shuoshuo(db.Model):
 
     @property
     def body_to_html(self):
-        html = asyncio.run(markdown_to_html(self.shuo))
+        html = markdown_to_html(self.talk)
         return html
 
     def to_json(self):
         shuo = {
-            'shuo': self.shuo,
+            'shuo': self.talk,
             'datetime': self.strptime
         }
         return shuo
 
     def __repr__(self):
-        return '<Shuoshuo body: {}>'.format(self.shuo)
+        return '<Shuoshuo body: {}>'.format(self.talk)
 
 
 class Column(db.Model):
@@ -355,7 +350,7 @@ class Column(db.Model):
 
     @property
     def body_to_html(self):
-        html = asyncio.run(markdown_to_html(self.body))
+        html = markdown_to_html(self.body)
         return html
 
     # 对密码进行加密保存
@@ -388,7 +383,7 @@ class Article(db.Model):
 
     @property
     def body_to_html(self):
-        html = asyncio.run(markdown_to_html(self.body))
+        html = markdown_to_html(self.body)
         return html
 
     def to_dict(self):

@@ -1,12 +1,11 @@
 from flask import render_template, redirect, request, \
     g, current_app, abort, jsonify
 
-from yublog.app.main import main
-from yublog.app.main.forms import SearchForm, MobileSearchForm
-from yublog.app.models import *
-from yublog.app.utils.tools import asyncio_send
-from yublog.app.caches import cache_tool
-from yublog.app.exceptions import NoPostException
+from yublog.views import main_bp
+from yublog.models import *
+from yublog.utils.tools import asyncio_send
+from yublog.caches import cache_tool
+from yublog.exceptions import NoPostException
 
 
 def get_post_cache(key):
@@ -77,26 +76,8 @@ def _prev_post(post):
     return None
 
 
-@main.before_request
-def before_request():
-    g.search_form = SearchForm()
-    g.search_form2 = MobileSearchForm()
-
-
-@main.app_errorhandler(404)
-def page_not_found(e):
-    return render_template('error/404.html', title='404'), 404
-
-
-@main.app_errorhandler(500)
-def internal_server_error(e):
-    db.session.rollback()
-    db.session.commit()
-    return render_template('error/500.html', title='500'), 500
-
-
-@main.route('/')
-@main.route('/index')
+@main_bp.route('/')
+@main_bp.route('/index')
 def index():
     _page = request.args.get('page', 1, type=int)
     per_page = current_app.config['POSTS_PER_PAGE']
@@ -116,7 +97,7 @@ def index():
                            pagination=range(1, max_page + 1))
 
 
-@main.route('/<int:year>/<int:month>/<article_name>/')
+@main_bp.route('/<int:year>/<int:month>/<article_name>/')
 def post(year, month, article_name):
     cache_key = '_'.join(map(str, ['post', year, month, article_name]))
     post = get_post_cache(cache_key)
@@ -139,7 +120,7 @@ def post(year, month, article_name):
                            counts=len(comments) + len(replys), meta_tags=meta_tags)
 
 
-@main.route('/page/<page_url>/')
+@main_bp.route('/page/<page_url>/')
 def page(page_url):
     page = Page.query.filter_by(url_name=page_url).first()
     p = request.args.get('page', 1, type=int)
@@ -158,7 +139,7 @@ def page(page_url):
                            comments=comments, replys=replys, counts=len(comments) + len(replys))
 
 
-@main.route('/tag/<tag_name>/')
+@main_bp.route('/tag/<tag_name>/')
 def tag(tag_name):
     tag = tag_name
     all_posts = Post.query.order_by(Post.timestamp.desc()).all()
@@ -167,7 +148,7 @@ def tag(tag_name):
     return render_template('main/tag.html', tag=tag, posts=posts)
 
 
-@main.route('/category/<category_name>/')
+@main_bp.route('/category/<category_name>/')
 def category(category_name):
     category = Category.query.filter_by(category=category_name).first()
 
@@ -178,7 +159,7 @@ def category(category_name):
                            title='分类：' + category.category)
 
 
-@main.route('/archives/')
+@main_bp.route('/archives/')
 def archives():
     count = Post.query.filter_by(draft=False).count()
     page = request.args.get('page', 1, type=int)
@@ -201,7 +182,7 @@ def archives():
                            pagination=pagination)
 
 
-@main.route('/search/', methods=['POST'])
+@main_bp.route('/search/', methods=['POST'])
 def search():
     if g.search_form.validate_on_submit():
         query = g.search_form.search.data
@@ -213,7 +194,7 @@ def search():
 
 
 # /search-result?keywords=query
-@main.route('/search-result')
+@main_bp.route('/search-result')
 def search_result():
     query = request.args.get('keywords')
     page = request.args.get('page', 1, type=int)
@@ -232,7 +213,7 @@ def search_result():
 
 
 # 侧栏 love me 插件
-@main.route('/loveme', methods=['POST'])
+@main_bp.route('/loveme', methods=['POST'])
 def love_me():
     """
     :return: json
@@ -241,13 +222,13 @@ def love_me():
     if data.get('i_am_handsome', '') == 'yes':
         # 更新缓存
         global_cache = cache_tool.get(cache_tool.GLOBAL_KEY)
-        global_cache['loves'] += 1
+        global_cache['love_count'] += 1
         cache_tool.set(cache_tool.GLOBAL_KEY, global_cache)
         love_me_counts = LoveMe.query.all()[0]
-        love_me_counts.loveMe += 1
+        love_me_counts.love_count += 1
         db.session.add(love_me_counts)
         db.session.commit()
-        return jsonify(counts=love_me_counts.loveMe)
+        return jsonify(counts=love_me_counts.love_count)
     return jsonify(you_are_sb='yes')
 
 
@@ -304,7 +285,7 @@ def save_comment(post, form):
     return data
 
 
-@main.route('/<url>/comment', methods=['POST'])
+@main_bp.route('/<url>/comment', methods=['POST'])
 def comment(url):
     post = Post.query.filter_by(url_name=url).first()
     if not post:
@@ -319,23 +300,23 @@ def comment(url):
                    website=data['website'], body=data['comment'], post=post.title)
 
 
-@main.route('/shuoshuo')
-def shuoshuo():
-    shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
-    years = list(set([y.year for y in shuos]))[::-1]
+@main_bp.route('/shuoshuo')
+def talk():
+    talks = Talk.query.order_by(Talk.timestamp.desc()).all()
+    years = list(set([y.year for y in talks]))[::-1]
     data = {}
-    year_shuo = []
+    year_by_talk = []
     for y in years:
-        for s in shuos:
+        for s in talks:
             if y == s.year:
-                year_shuo.append(s)
-                data[y] = year_shuo
-        year_shuo = []
+                year_by_talk.append(s)
+                data[y] = year_by_talk
+        year_by_talk = []
     return render_template('main/shuoshuo.html', title='说说', years=years, data=data)
 
 
 # friend link page
-@main.route('/friends')
+@main_bp.route('/friends')
 def friends():
     friends = SiteLink.query.filter_by(isFriendLink=True).order_by(SiteLink.id.desc()).all()
     great_links = (link for link in friends if link.isGreatLink is True)

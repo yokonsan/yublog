@@ -1,11 +1,11 @@
 from flask import render_template, request, jsonify, \
     current_app, redirect, url_for, make_response
 
-from yublog.app.main import column
-from yublog.app import db, cache
-from yublog.app.models import Column, Article, Comment
-from yublog.app.main.views import save_comment
-from yublog.app.main.forms import ArticlePasswordForm
+from yublog.views import column_bp
+from yublog.models import Column, Article, Comment, db
+from yublog.views.main import save_comment
+from yublog.forms import ArticlePasswordForm
+from yublog.caches import cache_tool
 
 
 def get_all_articles_cache(column_id, key):
@@ -14,12 +14,13 @@ def get_all_articles_cache(column_id, key):
     :param column_id:
     :param key: column_ + column_url
     """
-    data = cache.get(key)
+    data = cache_tool.get(key)
     if data:
         return data
 
     _, column_url = key.split('_')
-    articles = Article.query.filter_by(column_id=int(column_id)).order_by(Article.timestamp.asc()).all()
+    articles = Article.query.filter_by(
+        column_id=int(column_id)).order_by(Article.timestamp.asc()).all()
     items = []
     for i in articles:
         items.append({
@@ -27,13 +28,13 @@ def get_all_articles_cache(column_id, key):
             'title': i.title,
             'secrecy': i.secrecy
         })
-    cache.set(key, items, timeout=60 * 60 * 24 * 30)
+    cache_tool.set(key, items, timeout=60 * 60 * 24 * 30)
     return items
 
 
 def get_article_cache(column_id, key):
     """获取博客文章缓存"""
-    data = cache.get(key)
+    data = cache_tool.get(key)
     if data:
         return data
     else:
@@ -63,7 +64,7 @@ def set_article_cache(column_id, column_url, id):
         'title': prev_article['title']
     } if prev_article else None
     cache_key = '_'.join(['article', column_url, str(id)])
-    cache.set(cache_key, data, timeout=60 * 60 * 24 * 30)
+    cache_tool.set(cache_key, data, timeout=60 * 60 * 24 * 30)
     return data
 
 
@@ -79,14 +80,14 @@ def enum_list(list):
     return data
 
 
-@column.route('/')
+@column_bp.route('/')
 def index():
     columns = Column.query.order_by(Column.id.desc()).all()
 
     return render_template('column/index.html', title='专栏目录', columns=columns)
 
 
-@column.route('/<int:id>')
+@column_bp.route('/<int:id>')
 def _column(id):
     column = Column.query.get_or_404(id)
 
@@ -107,7 +108,7 @@ def _column(id):
     return resp
 
 
-@column.route('/<url>/<int:id>')
+@column_bp.route('/<url>/<int:id>')
 def article(url, id):
     column = Column.query.filter_by(url_name=url).first()
     # get this article cache
@@ -142,7 +143,7 @@ def article(url, id):
                            counts=len(comments) + len(replys))
 
 
-@column.route('/article/<url>/<int:id>/password', methods=['GET', 'POST'])
+@column_bp.route('/article/<url>/<int:id>/password', methods=['GET', 'POST'])
 def enter_password(url, id):
     form = ArticlePasswordForm()
     if form.validate_on_submit():
@@ -157,7 +158,7 @@ def enter_password(url, id):
                            url=url, id=id, title='输如密码')
 
 
-@column.route('/love/<int:id>')
+@column_bp.route('/love/<int:id>')
 def love_column(id):
     column = Column.query.get_or_404(id)
     column.love_num += 1
@@ -166,7 +167,7 @@ def love_column(id):
     return jsonify(counts=column.love_num)
 
 
-@column.route('/<int:id>/comment', methods=['POST'])
+@column_bp.route('/<int:id>/comment', methods=['POST'])
 def comment(id):
     post = Article.query.filter_by(id=id).first()
     form = request.get_json()

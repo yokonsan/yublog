@@ -48,7 +48,7 @@
                             <a href="{{ url_for('main.page', page_url=page.url_name) }}">{{ page.title }}</a>
                         </li>
                         {% endfor %}
-                        <li class="menu-item"><a href="{{url_for('main.shuoshuo')}}">说说</a></li>
+                        <li class="menu-item"><a href="{{url_for('main.talk')}}">说说</a></li>
                         <li class="menu-item category-nav"><a href="#">分类</a>
                             <ul id="drop">
                                 {% for category in categories %}
@@ -98,7 +98,7 @@
                         </ul>
                     </li>
                     <li><a class="mobile-nav-item" href="{{url_for('main.archives')}}"><i class="demo-icon icon-box"></i> 归档</a></li>
-                    <li><a class="mobile-nav-item" href="{{url_for('main.shuoshuo')}}"><i class="demo-icon icon-comment-empty"></i> 说说</a></li>
+                    <li><a class="mobile-nav-item" href="{{url_for('main.talk')}}"><i class="demo-icon icon-comment-empty"></i> 说说</a></li>
                     {% for page in pages %}
                     <li>
                         <a href="{{ url_for('main.page', page_url=page.url_name) }}" class="mobile-nav-item mobile-add-page"> {{ page.title }}</a>
@@ -137,7 +137,7 @@
                         </div>
 
                         <div class="new-shuo">
-                            <a href="{{url_for('main.shuoshuo')}}">
+                            <a href="{{url_for('main.talk')}}">
                                 <p>{% if newShuo %}{{ newShuo | striptags }}{% else %}无说说{% endif %}</p>
                             </a>
                         </div>
@@ -179,7 +179,7 @@
                             <div class="love-me-con">
                                 <span class="love-me-icon">
                                     <i class="icon-heart-empty"></i>
-                                    <span class="love-me-count">{{loves}}</span>
+                                    <span class="love-me-count">{{love_count}}</span>
                                 </span>
                             </div>
                             <div class="clear"></div>

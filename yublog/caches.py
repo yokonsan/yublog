@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from yublog.app import cache
+from yublog import cache
 
 
 class CacheTools(object):
@@ -14,8 +14,8 @@ class CacheTools(object):
         return cache.get(key)
 
     @staticmethod
-    def set(key, value):
-        cache.set(key, value)
+    def set(key, value, **kwargs):
+        cache.set(key, value, **kwargs)
 
     def clean(self, key):
         """

@@ -1,8 +1,8 @@
-from flask import jsonify, current_app, request, g
+from flask import jsonify, current_app, request
 from flask_login import login_required
 
-from yublog.app.api import api
-from yublog.app.models import *
+from yublog.views import api_bp
+from yublog.models import *
 
 
 """
@@ -19,7 +19,7 @@ api 路由：
 """
 
 
-@api.route('/posts')
+@api_bp.route('/posts')
 def get_posts():
     page = request.args.get('page', 1, type=int)
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
@@ -41,7 +41,7 @@ def get_posts():
     })
 
 
-@api.route('/post/<int:id>')
+@api_bp.route('/post/<int:id>')
 def get_post(id):
     post = Post.query.filter_by(id=id).first()
     if post:
@@ -55,7 +55,7 @@ def get_post(id):
 
 
 # post请求
-@api.route('/post', methods=['POST'])
+@api_bp.route('/post', methods=['POST'])
 @login_required
 def new_post():
     post = Post.from_json(request.json)
@@ -65,7 +65,7 @@ def new_post():
 
 
 # put请求
-@api.route('/posts/<int:id>', methods=['PUT'])
+@api_bp.route('/posts/<int:id>', methods=['PUT'])
 @login_required
 def edit_post(id):
     post = Post.query.get_or_404(id)
@@ -76,7 +76,7 @@ def edit_post(id):
     return jsonify(post.to_json())
 
 
-@api.route('/pages')
+@api_bp.route('/pages')
 def get_pages():
     pages = Page.query.order_by(Page.id.desc()).all()
 
@@ -86,7 +86,7 @@ def get_pages():
     })
 
 
-@api.route('/page/<int:id>')
+@api_bp.route('/page/<int:id>')
 def get_page(id):
     page = Page.query.get_or_404(id)
     if page:
@@ -99,7 +99,7 @@ def get_page(id):
     return jsonify({'msg': '没有信息...'})
 
 
-@api.route('/tags')
+@api_bp.route('/tags')
 def get_tags():
     tags = Tag.query.all()
 
@@ -109,7 +109,7 @@ def get_tags():
     })
 
 
-@api.route('/tag/<tag>')
+@api_bp.route('/tag/<tag>')
 def get_tag_posts(tag):
     tag = Tag.query.filter_by(tag=tag).first()
     if tag:
@@ -122,7 +122,7 @@ def get_tag_posts(tag):
     return jsonify({'msg': '没有信息...'})
 
 
-@api.route('/categories')
+@api_bp.route('/categories')
 def get_categories():
     categories = Category.query.all()
 
@@ -132,7 +132,7 @@ def get_categories():
     })
 
 
-@api.route('/category/<category>')
+@api_bp.route('/category/<category>')
 def get_category_posts(category):
     category = Category.query.filter_by(category=category).first()
     if category:
@@ -145,7 +145,7 @@ def get_category_posts(category):
     return jsonify({'msg': '没有信息...'})
 
 
-@api.route('/shuos')
+@api_bp.route('/shuos')
 def get_shuos():
     shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
 
@@ -155,7 +155,7 @@ def get_shuos():
     })
 
 
-@api.route('/comments/post/<int:id>')
+@api_bp.route('/comments/post/<int:id>')
 def get_post_comments(id):
     post = Post.query.filter_by(id=id).first()
     if post:
@@ -165,7 +165,7 @@ def get_post_comments(id):
     return jsonify({'msg': '没有信息...'})
 
 
-@api.route('/comments/page/<int:id>')
+@api_bp.route('/comments/page/<int:id>')
 def get_page_comments(id):
     page = Page.query.get_or_404(id)
     if page:
@@ -175,7 +175,7 @@ def get_page_comments(id):
     return jsonify({'msg': '没有信息...'})
 
 # post views
-@api.route('/view/<type>/<int:id>', methods=['GET'])
+@api_bp.route('/view/<type>/<int:id>', methods=['GET'])
 def views(type, id):
     """浏览量"""
     view = View.query.filter_by(type=type, relationship_id=id).first()

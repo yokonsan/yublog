@@ -1,17 +1,15 @@
-# coding: utf-8
-
 import os
 import re
 
 from flask import render_template, redirect, request, flash, current_app
 from flask_login import login_required, login_user, logout_user, current_user
 
-from yublog.app import qn
-from yublog.app.models import *
-from yublog.app.admin import admin
-from yublog.app.admin.forms import *
-from yublog.app.utils.tools import get_sitemap, save_file, gen_rss_xml, asyncio_send
-from yublog.app.caches import cache_tool
+from yublog import qn
+from yublog.models import *
+from yublog.views import admin_bp
+from yublog.forms import *
+from yublog.utils.tools import get_sitemap, save_file, gen_rss_xml, asyncio_send
+from yublog.caches import cache_tool
 
 
 def update_first_cache():
@@ -80,14 +78,14 @@ def update_xml(update_time):
     asyncio.run(save_file(rss, 'atom.xml'))
 
 
-@admin.route('/')
-@admin.route('/index')
+@admin_bp.route('/')
+@admin_bp.route('/index')
 @login_required
 def index():
     return render_template('admin/admin_index.html')
 
 
-@admin.route('/login/', methods=['GET', 'POST'])
+@admin_bp.route('/login/', methods=['GET', 'POST'])
 def login():
     form = AdminLogin()
     if form.validate_on_submit():
@@ -99,7 +97,7 @@ def login():
     return render_template('admin/login.html', title='登录', form=form)
 
 
-@admin.route('/logout')
+@admin_bp.route('/logout')
 @login_required
 def logout():
     logout_user()
@@ -107,7 +105,7 @@ def logout():
     return redirect(url_for('admin.index'))
 
 
-@admin.route('/setting', methods=['GET', 'POST'])
+@admin_bp.route('/setting', methods=['GET', 'POST'])
 @login_required
 def set_site():
     form = AdminSiteForm()
@@ -132,7 +130,7 @@ def set_site():
     return render_template('admin/admin_profile.html', title='设置网站信息', form=form)
 
 
-@admin.route('/change-password', methods=['GET', 'POST'])
+@admin_bp.route('/change-password', methods=['GET', 'POST'])
 @login_required
 def change_password():
     form = ChangePasswordForm()
@@ -150,7 +148,7 @@ def change_password():
     return render_template('admin/change_password.html', form=form, title='更改密码')
 
 
-@admin.route('/links', methods=['GET', 'POST'])
+@admin_bp.route('/links', methods=['GET', 'POST'])
 @login_required
 def add_link():
     form = SocialLinkForm()
@@ -190,7 +188,7 @@ def add_link():
                            form=form, fr_form=fr_form)
 
 
-@admin.route('/admin-links')
+@admin_bp.route('/admin-links')
 @login_required
 def admin_links():
     links = SiteLink.query.order_by(SiteLink.id.desc()).all()
@@ -200,7 +198,7 @@ def admin_links():
                            social_links=social_links, friend_links=friend_links)
 
 
-@admin.route('/delete/link/<int:id>')
+@admin_bp.route('/delete/link/<int:id>')
 @login_required
 def delete_link(id):
     link = SiteLink.query.get_or_404(id)
@@ -215,7 +213,7 @@ def delete_link(id):
     return redirect(url_for('admin.admin_links'))
 
 
-@admin.route('/great/link/<int:id>')
+@admin_bp.route('/great/link/<int:id>')
 @login_required
 def great_link(id):
     link = SiteLink.query.get_or_404(id)
@@ -230,7 +228,7 @@ def great_link(id):
     return redirect(url_for('admin.admin_links'))
 
 
-@admin.route('/write', methods=['GET', 'POST'])
+@admin_bp.route('/write', methods=['GET', 'POST'])
 @login_required
 def write():
     form = AdminWrite()
@@ -255,7 +253,7 @@ def write():
 
 
 # 编辑文章或草稿
-@admin.route('/edit/<int:time>/<name>', methods=['GET', 'POST'])
+@admin_bp.route('/edit/<int:time>/<name>', methods=['GET', 'POST'])
 @login_required
 def admin_edit(time, name):
     timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
@@ -306,7 +304,7 @@ def admin_edit(time, name):
                            form=form, post=post, title='编辑文章')
 
 
-@admin.route('/add-page', methods=['GET', 'POST'])
+@admin_bp.route('/add-page', methods=['GET', 'POST'])
 @login_required
 def add_page():
     form = AddPageForm()
@@ -328,7 +326,7 @@ def add_page():
                            title='添加页面')
 
 
-@admin.route('/edit-page/<name>', methods=['GET', 'POST'])
+@admin_bp.route('/edit-page/<name>', methods=['GET', 'POST'])
 @login_required
 def edit_page(name):
     page = Page.query.filter_by(url_name=name).first()
@@ -357,7 +355,7 @@ def edit_page(name):
                            page=page)
 
 
-@admin.route('/page/delete/<name>')
+@admin_bp.route('/page/delete/<name>')
 @login_required
 def delete_page(name):
     page = Page.query.filter_by(title=name).first()
@@ -370,7 +368,7 @@ def delete_page(name):
     return redirect(url_for('admin.admin_pages'))
 
 
-@admin.route('/draft')
+@admin_bp.route('/draft')
 @login_required
 def admin_drafts():
     posts = Post.query.order_by(Post.id.desc()).all()
@@ -380,7 +378,7 @@ def admin_drafts():
                            title='管理草稿')
 
 
-@admin.route('/pages')
+@admin_bp.route('/pages')
 @login_required
 def admin_pages():
     pages = Page.query.order_by(Page.id.desc()).all()
@@ -389,7 +387,7 @@ def admin_pages():
                            title='管理页面')
 
 
-@admin.route('/posts')
+@admin_bp.route('/posts')
 @login_required
 def admin_posts():
     page = request.args.get('page', 1, type=int)
@@ -404,7 +402,7 @@ def admin_posts():
                            pagination=pagination)
 
 
-@admin.route('/delete/<int:time>/<name>')
+@admin_bp.route('/delete/<int:time>/<name>')
 @login_required
 def delete_post(time, name):
     timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
@@ -418,7 +416,7 @@ def delete_post(time, name):
     return redirect(url_for('admin.admin_posts'))
 
 
-@admin.route('/comments')
+@admin_bp.route('/comments')
 @login_required
 def admin_comments():
     page = request.args.get('page', 1, type=int)
@@ -431,7 +429,7 @@ def admin_comments():
                            comments=comments, pagination=pagination)
 
 
-@admin.route('/delete/comment/<int:id>')
+@admin_bp.route('/delete/comment/<int:id>')
 @login_required
 def delete_comment(id):
     comment = Comment.query.get_or_404(id)
@@ -454,7 +452,7 @@ def delete_comment(id):
     return redirect(url_for('admin.admin_comments'))
 
 
-@admin.route('/allow/comment/<int:id>')
+@admin_bp.route('/allow/comment/<int:id>')
 @login_required
 def allow_comment(id):
     comment = Comment.query.get_or_404(id)
@@ -506,7 +504,7 @@ def allow_comment(id):
     return redirect(url_for('admin.admin_comments'))
 
 
-@admin.route('/unable/comment/<int:id>')
+@admin_bp.route('/unable/comment/<int:id>')
 @login_required
 def unable_comment(id):
     comment = Comment.query.get_or_404(id)
@@ -530,12 +528,12 @@ def unable_comment(id):
     return redirect(url_for('admin.admin_comments'))
 
 
-@admin.route('/write/shuoshuo', methods=['GET', 'POST'])
+@admin_bp.route('/write/shuoshuo', methods=['GET', 'POST'])
 @login_required
 def write_shuoshuo():
     form = ShuoForm()
     if form.validate_on_submit():
-        shuo = Shuoshuo(shuo=form.shuoshuo.data)
+        shuo = Talk(talk=form.shuoshuo.data)
         db.session.add(shuo)
         db.session.commit()
         flash('发布成功')
@@ -546,32 +544,32 @@ def write_shuoshuo():
                            title='写说说', form=form)
 
 
-@admin.route('/shuos')
+@admin_bp.route('/shuos')
 @login_required
 def admin_shuos():
-    shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
+    shuos = Talk.query.order_by(Talk.timestamp.desc()).all()
     return render_template('admin/admin_shuoshuo.html',
                            title='管理说说',
                            shuos=shuos)
 
 
-@admin.route('/delete/shuoshuo/<int:id>')
+@admin_bp.route('/delete/shuoshuo/<int:id>')
 @login_required
 def delete_shuo(id):
-    shuo = Shuoshuo.query.get_or_404(id)
+    shuo = Talk.query.get_or_404(id)
     db.session.delete(shuo)
     db.session.commit()
     flash('删除成功')
 
     # update cache
-    new_shuo = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).first()
+    new_shuo = Talk.query.order_by(Talk.timestamp.desc()).first()
     value = new_shuo.body_to_html if new_shuo else '这家伙啥都不想说...'
     cache_tool.update_global('newShuo', value)
     return redirect(url_for('admin.admin_shuos'))
 
 
 # 管理主题
-@admin.route('/write/column', methods=['GET', 'POST'])
+@admin_bp.route('/write/column', methods=['GET', 'POST'])
 @login_required
 def write_column():
     form = ColumnForm()
@@ -587,7 +585,7 @@ def write_column():
                            form=form, title='编辑专题')
 
 
-@admin.route('/edit/column/<int:id>', methods=['GET', 'POST'])
+@admin_bp.route('/edit/column/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_column(id):
     column = Column.query.get_or_404(id)
@@ -613,7 +611,7 @@ def edit_column(id):
                            form=form, title='更新专题', column=column)
 
 
-@admin.route('/admin/columns')
+@admin_bp.route('/admin/columns')
 @login_required
 def admin_columns():
     columns = Column.query.all()
@@ -621,7 +619,7 @@ def admin_columns():
                            columns=columns, title='管理专题')
 
 
-@admin.route('/admin/column/<int:id>')
+@admin_bp.route('/admin/column/<int:id>')
 @login_required
 def admin_column(id):
     column = Column.query.get_or_404(id)
@@ -630,7 +628,7 @@ def admin_column(id):
                            articles=articles, title=column.column)
 
 
-@admin.route('/delete/column/<int:id>')
+@admin_bp.route('/delete/column/<int:id>')
 @login_required
 def delete_column(id):
     column = Column.query.get_or_404(id)
@@ -645,7 +643,7 @@ def delete_column(id):
     return redirect(url_for('admin.admin_columns'))
 
 
-@admin.route('/<url>/write/article', methods=['GET', 'POST'])
+@admin_bp.route('/<url>/write/article', methods=['GET', 'POST'])
 @login_required
 def write_column_article(url):
     column = Column.query.filter_by(url_name=url).first()
@@ -663,7 +661,7 @@ def write_column_article(url):
                            title='编辑文章', column=column)
 
 
-@admin.route('/<url>/edit/article/<int:id>', methods=['GET', 'POST'])
+@admin_bp.route('/<url>/edit/article/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_column_article(url, id):
     column = Column.query.filter_by(url_name=url).first()
@@ -694,7 +692,7 @@ def edit_column_article(url, id):
                            title='更新文章', column=column, article=article)
 
 
-@admin.route('/<url>/delete/article/<int:id>')
+@admin_bp.route('/<url>/delete/article/<int:id>')
 @login_required
 def delete_column_article(url, id):
     column = Column.query.filter_by(url_name=url).first()
@@ -709,7 +707,7 @@ def delete_column_article(url, id):
 
 
 # 上传文件到静态目录
-@admin.route('/upload/file', methods=['GET', 'POST'])
+@admin_bp.route('/upload/file', methods=['GET', 'POST'])
 @login_required
 def upload_file():
     source_folder = current_app.config['UPLOAD_PATH']
@@ -724,7 +722,7 @@ def upload_file():
 
 
 # 侧栏box---begin
-@admin.route('/add/sidebox', methods=['GET', 'POST'])
+@admin_bp.route('/add/sidebox', methods=['GET', 'POST'])
 @login_required
 def add_side_box():
     form = SideBoxForm()
@@ -742,7 +740,7 @@ def add_side_box():
                            title='添加插件')
 
 
-@admin.route('/edit/sidebox/<int:id>', methods=['GET', 'POST'])
+@admin_bp.route('/edit/sidebox/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_side_box(id):
     box = SideBox.query.get_or_404(id)
@@ -765,14 +763,14 @@ def edit_side_box(id):
                            title='更新插件', box=box)
 
 
-@admin.route('/sideboxs')
+@admin_bp.route('/sideboxs')
 @login_required
 def admin_side_box():
     boxes = SideBox.query.order_by(SideBox.id.desc()).all()
     return render_template('admin/admin_sidebox.html', boxes=boxes, title='管理插件')
 
 
-@admin.route('/unable/box/<int:id>')
+@admin_bp.route('/unable/box/<int:id>')
 @login_required
 def unable_side_box(id):
     box = SideBox.query.get_or_404(id)
@@ -787,7 +785,7 @@ def unable_side_box(id):
     return redirect(url_for('admin.admin_side_box'))
 
 
-@admin.route('/delete/box/<int:id>')
+@admin_bp.route('/delete/box/<int:id>')
 @login_required
 def delete_side_box(id):
     box = SideBox.query.get_or_404(id)
@@ -801,7 +799,7 @@ def delete_side_box(id):
 
 
 # qiniu picture bed begin
-@admin.route('/qiniu/picbed', methods=['GET', 'POST'])
+@admin_bp.route('/qiniu/picbed', methods=['GET', 'POST'])
 @login_required
 def qiniu_picbed():
     # 判断是否需要七牛图床
@@ -831,7 +829,7 @@ def qiniu_picbed():
                            title="七牛图床", images=images, counts=counts)
 
 
-@admin.route('/qiniu/delete', methods=['GET', 'POST'])
+@admin_bp.route('/qiniu/delete', methods=['GET', 'POST'])
 @login_required
 def delete_img():
     key = request.get_json()['key']
@@ -842,7 +840,7 @@ def delete_img():
     return redirect(url_for('admin.qiniu_picbed'))
 
 
-@admin.route('/qiniu/rename', methods=['GET', 'POST'])
+@admin_bp.route('/qiniu/rename', methods=['GET', 'POST'])
 @login_required
 def rename_img():
     key = request.get_json()['key']
@@ -857,7 +855,7 @@ def rename_img():
 # qiniu picture bed end
 
 
-@admin.route('/clean/cache/all')
+@admin_bp.route('/clean/cache/all')
 @login_required
 def clean_all_cache():
     cache_tool.clean(cache_tool.ALL_KEY)
@@ -865,7 +863,7 @@ def clean_all_cache():
     return redirect(url_for('admin.index'))
 
 
-@admin.route('/reindex')
+@admin_bp.route('/reindex')
 @login_required
 def whooshee_reindex():
     whooshee.reindex()
