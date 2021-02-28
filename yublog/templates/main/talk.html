@@ -2,18 +2,18 @@
 
 {% block content %}
 <div class="shuo-content site-box">
-    {% if years %}
-    {% for y in years %}
+    {% if data|length > 0 %}
+    {% for y, talks in data.items() %}
     <article>
         <h3>{{y}}</h3>
-        {% for i in data[y] %}
+        {% for t in talks %}
         <section>
             <span class="point-time point-orange"></span>
-            <span class="date-time">{{i.month_and_day}}</span>
+            <span class="date-time">{{t.month_and_day}}</span>
             <aside>
-                <p class="things">{{i.body_to_html|safe}}</p>
+                <p class="things">{{t.body_to_html|safe}}</p>
                 <p class="brief">
-                <span class="mobile-date-time">{{i.month_and_day}}</span>
+                <span class="mobile-date-time">{{t.month_and_day}}</span>
                 </p>
             </aside>
         </section>
@@ -21,7 +21,7 @@
     </article>
     {% endfor %}
     {% else %}
-    <p>小主人你好啊，你还没有发过说说哦！</p>
+    <p>你好啊，你还没有发过说说哦！</p>
     {% endif %}
 </div>
 {% endblock %}

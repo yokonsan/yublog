@@ -147,7 +147,7 @@ def get_category_posts(category):
 
 @api_bp.route('/shuos')
 def get_shuos():
-    shuos = Shuoshuo.query.order_by(Shuoshuo.timestamp.desc()).all()
+    shuos = Talk.query.order_by(Talk.timestamp.desc()).all()
 
     return jsonify({
         'shuoshuo': [shuo.to_json() for shuo in shuos],

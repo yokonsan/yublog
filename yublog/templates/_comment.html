@@ -87,16 +87,15 @@
 
     <div class="comment-send">
         <div class="textarea-container">
+            <!--<form>-->
                 <div class="author-info">
                     <div class="input-div">
                         <label>名字：</label>
                         <input type="text" name="author" placeholder="必填">
-
                     </div>
                     <div class="input-div">
                         <label>邮箱：</label>
                         <input type="text" name="email" placeholder="必填">
-
                     </div>
                     <div class="input-div">
                         <label>网站：</label>
@@ -106,12 +105,10 @@
                 <i class="logined">已登录，<a class="delete-user">注销</a></i>
                 <textarea cols="80" name="comment" rows="6" placeholder="评论支持 Markdown 语法。" class="ipt-txt"></textarea>
                 <span class="cancel">取消</span>
-                <button type="submit" class="comment-submit"
-                        posturl="{%if post%}{{post.url}}{%elif page%}{{page.url_name}}{%else%}column/{{article.id}}{%endif%}"
+                <button type="submit" class="comment-submit" targetType="{%if post%}post{%elif page%}page{%else%}column{%endif%}"
+                        targetId="{%if post%}{{post.id}}{%elif page%}{{page.id}}{%else%}column/{{article.id}}{%endif%}"
                         replyid="" replyto="">发表评论</button>
-
-
-
+            <!--</form>-->
         </div>
         <div class="clear"></div>
         <!-- <div class="comment-emoji">

@@ -81,7 +81,7 @@ class Page(db.Model):
             'title': self.title,
             'url': self.url_name,
             'api': url_for('api.get_page', id=self.id, _external=True),
-            'isNav': self.isNav,
+            'show_nav': self.show_nav,
             'comment_count': self.comments.count() if self.able_comment else None,
             'comments': url_for('api.get_page_comments', id=self.id, _external=True) if self.able_comment else None
         }
@@ -192,11 +192,14 @@ class Comment(db.Model):
     author = db.Column(db.String(25))
     email = db.Column(db.String(255))
     website = db.Column(db.String(255), nullable=True)
-    is_reply = db.Column(db.Boolean, default=False)
-    reply_to = db.Column(db.Integer, nullable=True)
+    # is_reply = db.Column(db.Boolean, default=False)
+    # reply_to = db.Column(db.Integer, nullable=True)
     disabled = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
 
+    replies = db.relationship('Comment', back_populates='replied', cascade='all, delete-orphan')
+    replied = db.relationship('Comment', back_populates='replies', remote_side=[id])
+    replied_id = db.Column(db.Integer, db.ForeignKey('comments.id'))
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
     page_id = db.Column(db.Integer, db.ForeignKey('pages.id'))
     article_id = db.Column(db.Integer, db.ForeignKey('articles.id'))
@@ -325,13 +328,13 @@ class Talk(db.Model):
 
     def to_json(self):
         shuo = {
-            'shuo': self.talk,
+            'talk': self.talk,
             'datetime': self.strptime
         }
         return shuo
 
     def __repr__(self):
-        return '<Shuoshuo body: {}>'.format(self.talk)
+        return '<Talk body: {}>'.format(self.talk)
 
 
 class Column(db.Model):
@@ -341,8 +344,8 @@ class Column(db.Model):
     column = db.Column(db.String(64))
     url_name = db.Column(db.String(64), unique=True)
     body = db.Column(db.Text)
-    view_num = db.Column(db.Integer, default=0)
-    love_num = db.Column(db.Integer, default=0)
+    view_cnt = db.Column(db.Integer, default=0)
+    love_cnt = db.Column(db.Integer, default=0)
     timestamp = db.Column(db.String(64))
     password_hash = db.Column(db.String(500))
 

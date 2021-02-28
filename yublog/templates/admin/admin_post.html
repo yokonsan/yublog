@@ -7,15 +7,15 @@
         {% for post in posts %}
         <li>
             {{ post.timestamp }}
-            <a class="article-title" href="{{url_for('admin.admin_edit',time=post.timestampInt, name=post.url_name)}}">
+            <a class="article-title" href="{{url_for('admin.admin_edit',time=post.timestamp_int, name=post.url_name)}}">
                 {{ post.title }}
             </a>
 
-            <button onclick="firm('{{url_for('admin.delete_post',time=post.timestampInt,name=post.url_name)}}')" class="delete-btn">
+            <button onclick="firm('{{url_for('admin.delete_post',time=post.timestamp_int,name=post.url_name)}}')" class="delete-btn">
                 删除
             </button>
 
-            <a href="{{url_for('admin.admin_edit', time=post.timestampInt, name=post.url_name)}}">
+            <a href="{{url_for('admin.admin_edit', time=post.timestamp_int, name=post.url_name)}}">
                 <button class="edit-btn">编辑</button>
             </a>
         </li>

@@ -7,15 +7,15 @@
         {% for draft in drafts %}
         <li>
             {{ draft.timestamp }}
-            <a class="article-title" href="{{url_for('admin.admin_edit',time=draft.timestampInt, name=draft.url_name)}}">
+            <a class="article-title" href="{{url_for('admin.admin_edit',time=draft.timestamp_int, name=draft.url_name)}}">
                 {{ draft.title }}
             </a>
 
-            <button onclick="firm('{{url_for('admin.delete_post',time=draft.timestampInt,name=draft.url_name)}}')" class="delete-btn">
+            <button onclick="firm('{{url_for('admin.delete_post',time=draft.timestamp_int,name=draft.url_name)}}')" class="delete-btn">
                 删除
             </button>
 
-            <a href="{{url_for('admin.admin_edit', time=draft.timestampInt, name=draft.url_name)}}">
+            <a href="{{url_for('admin.admin_edit', time=draft.timestamp_int, name=draft.url_name)}}">
                 <button class="edit-btn">编辑</button>
             </a>
         </li>

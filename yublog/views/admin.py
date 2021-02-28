@@ -1,15 +1,15 @@
 import os
 import re
+import asyncio
 
-from flask import render_template, redirect, request, flash, current_app
+from flask import redirect, request, flash
 from flask_login import login_required, login_user, logout_user, current_user
 
 from yublog import qn
-from yublog.models import *
-from yublog.views import admin_bp
+from yublog.views import *
 from yublog.forms import *
-from yublog.utils.tools import get_sitemap, save_file, gen_rss_xml, asyncio_send
-from yublog.caches import cache_tool
+from yublog.utils.tools import get_sitemap, save_file, gen_rss_xml
+from yublog.exceptions import DuplicateEntryException
 
 
 def update_first_cache():
@@ -233,6 +233,11 @@ def great_link(id):
 def write():
     form = AdminWrite()
     if form.validate_on_submit():
+        exist = Post.get_or_404(url_name=form.url_name.data)
+        if exist:
+            flash('文章出现重复')
+            raise DuplicateEntryException('文章出现重复')
+
         # 保存草稿
         if 'save_draft' in request.form and form.validate():
             post = save_post(form, True)
@@ -317,7 +322,7 @@ def add_page():
         db.session.add(page)
         db.session.commit()
         flash('添加成功')
-        if page.isNav is True:
+        if page.show_nav is True:
             # 清除缓存
             cache_tool.clean(cache_tool.GLOBAL_KEY)
         return redirect(url_for('admin.add_page'))

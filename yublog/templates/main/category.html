@@ -8,7 +8,7 @@
         {% for post in posts %}
         <li>
             {{ post.timestamp }}
-            <a href="{{url_for('main.post',year=post.year,month=post.month,article_name=post.url_name)}}">
+            <a href="{{url_for('main.post',year=post.year,month=post.month,post_url=post.url_name)}}">
                 {{ post.title }}
             </a>
         </li>

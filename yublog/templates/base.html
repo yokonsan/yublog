@@ -145,15 +145,15 @@
                         <div class="blog-info">
                             <ul>
                                 <li><a href="{{url_for('main.archives')}}">
-                                    <strong>{% if postCounts %}{{ postCounts }}{% else %}0{% endif %}</strong>
+                                    <strong>{% if post_count %}{{ post_count }}{% else %}0{% endif %}</strong>
                                     <span>文章</span>
                                 </a></li>
                                 <li><a href="{{url_for('main.friends')}}">
-                                    <strong>{% if friendCounts %}{{ friendCounts }}{% else %}0{% endif %}</strong>
+                                    <strong>{% if friend_count %}{{ friend_count }}{% else %}0{% endif %}</strong>
                                     <span>朋友</span>
                                 </a></li>
-                                <li class="last-li"><a href="{{ url_for('main.page',page_url='guestbook') }}">
-                                    <strong>{% if guestbookCounts %}{{ guestbookCounts }}{% else %}0{% endif %}</strong>
+                                <li class="last-li"><a href="{{ url_for('main.page',page_url='guest-book') }}">
+                                    <strong>{% if guest_book_count %}{{ guest_book_count }}{% else %}0{% endif %}</strong>
                                     <span>留言</span>
                                 </a></li>
                             </ul>

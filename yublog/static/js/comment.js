@@ -91,18 +91,19 @@
     submitBtn.onclick = function() {
         let replyId = this.attributes["replyid"].value;
         let replyTo = this.attributes["replyto"].value;
-        let postUrl = this.attributes["posturl"].value;
+        let targetId = this.attributes["targetId"].value;
+        let targetType = this.attributes["targetType"].value
         let emailRe = /^(\w)+(\.\w+)*@(\w)+((\.\w+)+)$/;
         if (userIpt.value.trimEnd() !== '' && emailIpt.value.trimEnd() !== '' && textarea.value.trimEnd() !== '' && emailRe.test(emailIpt.value)) {
             resetForm(submitBtn);
-            postClick(postUrl, replyId, replyTo);
+            postClick(targetType, targetId, replyId, replyTo);
         } else {
             alert('请正确填写必填项...')
         }
 
     };
 
-    function postClick(url, replyId, replyName) {
+    function postClick(targetType, target_id, replyId, replyName) {
         let request;
         if (window.XMLHttpRequest) {
             request = new XMLHttpRequest();
@@ -122,7 +123,7 @@
             }
         };
         if (replyId) {
-            request.open('POST', '/'+ url +'/comment');
+            request.open('POST', '/'+ targetType + '/' + target_id +'/comment');
             request.setRequestHeader('Content-Type', 'application/json');
             nickname = userIpt.value;
             website = websiteIpt.value;
@@ -139,7 +140,7 @@
             saveUser('user', val1);
             request.send(FormData);
         } else {
-            request.open('POST', '/'+ url +'/comment');
+            request.open('POST', '/'+ targetType + '/'+ target_id +'/comment');
             request.setRequestHeader('Content-Type', 'application/json');
             FormData= JSON.stringify({
                 nickname: userIpt.value,

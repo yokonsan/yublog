@@ -135,7 +135,7 @@ async def _global_data():
     global_data['categories'] = categories
     global_data['pages'] = pages
     global_data['love_count'] = love_me_counts.love_count
-    global_data['postCounts'] = posts
+    global_data['post_count'] = posts
     global_data['talk'] = talk.body_to_html
     guest_book_counts = guest_book.comments.count() if guest_book.comments else 0
     global_data['guest_book_count'] = guest_book_counts
@@ -144,7 +144,7 @@ async def _global_data():
         social_links = [link for link in links if link.is_friend is False]
         friend_links_counts = len(links) - len(social_links)
         global_data['social_links'] = social_links
-        global_data['friend_counts'] = friend_links_counts
+        global_data['friend_count'] = friend_links_counts
     if boxes:
         adv_boxes = [box for box in boxes if box.unable is False and box.is_advertising is True]
         global_data['ads_boxes'] = adv_boxes

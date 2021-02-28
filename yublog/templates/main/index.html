@@ -18,7 +18,7 @@
 {% for post in posts %}
 <div class="post-item site-box">
     <h1 class="post-title">
-        <a href="{{ url_for('main.post',year=post.year,month=post.month,article_name=post.url) }}">
+        <a href="{{ url_for('main.post',year=post.year,month=post.month,post_url=post.url) }}">
             {{ post.title }}
         </a>
     </h1>

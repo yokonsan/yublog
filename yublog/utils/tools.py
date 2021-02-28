@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
+import re
 import smtplib
 from threading import Thread
 from email.header import Header
@@ -8,6 +9,11 @@ from email.mime.text import MIMEText
 
 from markdown import Markdown
 from flask import current_app
+
+
+async def regular_url(url):
+    pattern = '^http[s]*?://[\u4e00-\u9fff\w./]+$'
+    return await re.match(pattern, url)
 
 
 def get_sitemap(posts):
@@ -23,7 +29,7 @@ def get_sitemap(posts):
     for post in posts:
         content = """
             <url>
-                <loc>http://www.yukunweb.com/{post.timestampInt}/{post.url_name}/</loc>
+                <loc>http://www.yukunweb.com/{post.timestamp_int}/{post.url_name}/</loc>
                 <lastmod>{post.timestamp}</lastmod>
             </url>
         """.format(post=post)
@@ -34,8 +40,7 @@ def get_sitemap(posts):
 
 async def save_file(sitemap, file):
     """保存xml文件到静态文件目录"""
-    path = os.getcwd().replace('\\', '/')
-    filename = path + '/app/static/' + file
+    filename = os.path.join(os.getcwd(), '/yublog/static/', file)
     is_exists = os.path.exists(filename)
     if is_exists: os.remove(filename)
 
