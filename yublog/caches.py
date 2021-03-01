@@ -3,6 +3,21 @@
 from yublog import cache
 
 
+class GlobalCacheKey(object):
+    ADMIN = 'admin'
+    TAGS = 'tags'
+    CATEGORIES = 'categories'
+    PAGES = 'pages'
+    LOVE_COUNT = 'love_count'
+    POST_COUNT = 'post_count'
+    TALK = 'talk'
+    GUEST_BOOK_COUNT = 'guest_book_count'
+    SOCIAL_LINKS = 'social_links'
+    FRIEND_COUNT = 'friend_count'
+    ADS_BOXES = 'ads_boxes'
+    MY_BOXES = 'my_boxes'
+
+
 class CacheTools(object):
     ALL_KEY = 'all'
     GLOBAL_KEY = 'global'
@@ -53,4 +68,5 @@ class CacheTools(object):
         return True
 
 
+global_cache_key = GlobalCacheKey()
 cache_tool = CacheTools()

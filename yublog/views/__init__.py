@@ -1,7 +1,7 @@
 from flask import Blueprint, abort, render_template, current_app
 
 from yublog.models import *
-from yublog.caches import cache_tool
+from yublog.caches import cache_tool, global_cache_key
 from yublog.utils.tools import asyncio_send, regular_url
 from yublog.exceptions import NoPostException
 

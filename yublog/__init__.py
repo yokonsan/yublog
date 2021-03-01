@@ -5,7 +5,7 @@ import click
 from flask import Flask, g
 
 from yublog.extensions import migrate, db, whooshee, cache, qn, lm
-from yublog.caches import cache_tool
+from yublog.caches import cache_tool, global_cache_key
 from yublog.forms import SearchForm, MobileSearchForm
 from yublog.config import config
 from yublog.models import Admin, SiteLink, Tag, \
@@ -130,26 +130,26 @@ async def _global_data():
     guest_book = Page.query.filter_by(url_name='guest-book').first()
     boxes = SideBox.query.order_by(SideBox.id.desc()).all()
 
-    global_data['admin'] = administrator
-    global_data['tags'] = tags
-    global_data['categories'] = categories
-    global_data['pages'] = pages
-    global_data['love_count'] = love_me_counts.love_count
-    global_data['post_count'] = posts
-    global_data['talk'] = talk.body_to_html
+    global_data[global_cache_key.ADMIN] = administrator
+    global_data[global_cache_key.TAGS] = tags
+    global_data[global_cache_key.CATEGORIES] = categories
+    global_data[global_cache_key.PAGES] = pages
+    global_data[global_cache_key.LOVE_COUNT] = love_me_counts.love_count
+    global_data[global_cache_key.POST_COUNT] = posts
+    global_data[global_cache_key.TALK] = talk.body_to_html
     guest_book_counts = guest_book.comments.count() if guest_book.comments else 0
-    global_data['guest_book_count'] = guest_book_counts
+    global_data[global_cache_key.GUEST_BOOK_COUNT] = guest_book_counts
 
     if links:
         social_links = [link for link in links if link.is_friend is False]
         friend_links_counts = len(links) - len(social_links)
-        global_data['social_links'] = social_links
-        global_data['friend_count'] = friend_links_counts
+        global_data[global_cache_key.SOCIAL_LINKS] = social_links
+        global_data[global_cache_key.FRIEND_COUNT] = friend_links_counts
     if boxes:
         adv_boxes = [box for box in boxes if box.unable is False and box.is_advertising is True]
-        global_data['ads_boxes'] = adv_boxes
+        global_data[global_cache_key.ADS_BOXES] = adv_boxes
         my_boxes = [box for box in boxes if box.unable is False and box.is_advertising is False]
-        global_data['my_boxes'] = my_boxes
+        global_data[global_cache_key.MY_BOXES] = my_boxes
 
     cache_tool.set(cache_tool.GLOBAL_KEY, global_data, timeout=60*60*24*30)
     return global_data

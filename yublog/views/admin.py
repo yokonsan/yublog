@@ -182,7 +182,7 @@ def add_link():
             db.session.commit()
             flash('添加成功')
             # update cache
-            cache_tool.update_global('friendCounts', 1, cache_tool.ADD)
+            cache_tool.update_global(global_cache_key.FRIEND_COUNT, 1, cache_tool.ADD)
             return redirect(url_for('admin.add_link'))
     return render_template('admin/admin_add_link.html', title="站点链接",
                            form=form, fr_form=fr_form)
@@ -206,7 +206,7 @@ def delete_link(id):
     db.session.commit()
     # update cache
     if link.isFriendLink is True:
-        cache_tool.update_global('friendCounts', 1, cache_tool.ADD)
+        cache_tool.update_global(global_cache_key.FRIEND_COUNT, 1, cache_tool.ADD)
     else:
         cache_tool.clean(cache_tool.GLOBAL_KEY)
 
@@ -417,7 +417,7 @@ def delete_post(time, name):
     flash('删除成功')
     # update cache
     if post.draft is False:
-        cache_tool.update_global('postCounts', 1, cache_tool.REMOVE)
+        cache_tool.update_global(global_cache_key.POST_COUNT, 1, cache_tool.REMOVE)
     return redirect(url_for('admin.admin_posts'))
 
 
@@ -445,9 +445,9 @@ def delete_comment(id):
     flash('删除成功')
 
     if comment.disabled is True:
-        if page and page.url_name == 'guestbook':
+        if page and page.url_name == 'guest-book':
             # 清除缓存
-            cache_tool.update_global('guestbookCounts', 1, cache_tool.REMOVE)
+            cache_tool.update_global(global_cache_key.GUEST_BOOK_COUNT, 1, cache_tool.REMOVE)
         elif post and isinstance(post, Post):
             # 删除文章缓存
             cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
@@ -469,8 +469,8 @@ def allow_comment(id):
     # 发送邮件
     admin_mail = current_app.config['ADMIN_MAIL']
 
-    if comment.isReply:
-        reply_to_comment = Comment.query.get_or_404(comment.replyTo)
+    if comment.replied_id:
+        reply_to_comment = Comment.query.get_or_404(comment.replied_id)
         reply_email = reply_to_comment.email
         if reply_email != admin_mail:
             # 邮件配置
@@ -496,9 +496,9 @@ def allow_comment(id):
 
     page = comment.page
     post = comment.post
-    if page and page.url_name == 'guestbook':
+    if page and page.url_name == 'guest-book':
         # 清除缓存
-        cache_tool.update_global('guestbookCounts', 1, cache_tool.ADD)
+        cache_tool.update_global(global_cache_key.GUEST_BOOK_COUNT, 1, cache_tool.ADD)
     elif post and isinstance(post, Post):
         # 更新文章缓存
         cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
@@ -520,9 +520,9 @@ def unable_comment(id):
 
     page = comment.page
     post = comment.post
-    if page and page.url_name == 'guestbook':
+    if page and page.url_name == 'guest-book':
         # 清除缓存
-        cache_tool.update_global('guestbookCounts', 1, cache_tool.REMOVE)
+        cache_tool.update_global(global_cache_key.GUEST_BOOK_COUNT, 1, cache_tool.REMOVE)
     elif post and isinstance(post, Post):
         # 更新文章缓存
         cache_key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
@@ -543,7 +543,7 @@ def write_shuoshuo():
         db.session.commit()
         flash('发布成功')
         # 清除缓存
-        cache_tool.update_global('newShuo', shuo.body_to_html)
+        cache_tool.update_global(global_cache_key.TALK, shuo.body_to_html)
         return redirect(url_for('admin.write_shuoshuo'))
     return render_template('admin/admin_write_shuoshuo.html',
                            title='写说说', form=form)
@@ -569,7 +569,7 @@ def delete_shuo(id):
     # update cache
     new_shuo = Talk.query.order_by(Talk.timestamp.desc()).first()
     value = new_shuo.body_to_html if new_shuo else '这家伙啥都不想说...'
-    cache_tool.update_global('newShuo', value)
+    cache_tool.update_global(global_cache_key.TALK, value)
     return redirect(url_for('admin.admin_shuos'))
 
 
