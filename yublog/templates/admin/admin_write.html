@@ -1,0 +1,52 @@
+{% extends "admin.html" %}
+
+{% block tab %}编辑文章{% endblock %}
+{% block content %}
+<div class="admin-write">
+
+    <form action="{%if title== '写文章'%}{{url_for('admin.write')}}{%else%}{{url_for('admin.admin_edit',time=post.timestamp_int,name=post.url_name)}}{%endif%}" method="post">
+        {{form.hidden_tag()}}
+        <div class="aticle-data">
+            <div class="data-ipt">
+                <p>分类：{{form.category(placeholder="只能写一个")}}</p>
+                <p>标签：{{form.tags(placeholder="用英文逗号隔开")}}</p>
+                <p>链接：{{form.url_name(placeholder="url文章名")}}</p>
+                <p>日期：{{form.time(placeholder="使用-连接年月日")}}</p>
+            </div>
+        </div>
+        <div class="aticle-body">
+            <div class="write-body">
+                <p>{{form.title(class="aticle-title",placeholder="标题")}}</p>
+                <div>
+                    {{form.body(id="editormd",style="display:block;",rows="5",cols="80")}}<br>
+                </div>
+                {% if title == '写文章' %}
+                <p>{{ form.save_draft(class="write-btn first-btn",value="保存草稿") }}</p>
+                <p>{{ form.submit(class="write-btn",value="发布") }}</p>
+                {% else %}
+                <p>{{ form.save_draft(class="write-btn first-btn",value="保存草稿",style="display:none;") }}</p>
+                <p>{{ form.submit(class="write-btn",value="更新") }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="clear"></div>
+    </form>
+
+</div>
+{% endblock %}
+
+{% block script %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/simplemde/1.11.2/simplemde.min.css">
+    <script src="https://cdn.bootcss.com/simplemde/1.11.2/simplemde.min.js"></script>
+    <script>
+         new SimpleMDE({
+         element: document.getElementById("editormd"),
+         spellChecker: false,
+         autosave: {
+            enabled: false
+         }
+      });
+    </script>
+{% endblock %}

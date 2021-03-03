@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="shuo-content site-box">
+    {% if data|length > 0 %}
+    {% for y, talks in data.items() %}
+    <article>
+        <h3>{{y}}</h3>
+        {% for t in talks %}
+        <section>
+            <span class="point-time point-orange"></span>
+            <span class="date-time">{{t.month_and_day}}</span>
+            <aside>
+                <p class="things">{{t.body_to_html|safe}}</p>
+                <p class="brief">
+                <span class="mobile-date-time">{{t.month_and_day}}</span>
+                </p>
+            </aside>
+        </section>
+        {% endfor %}
+    </article>
+    {% endfor %}
+    {% else %}
+    <p>你好啊，你还没有发过说说哦！</p>
+    {% endif %}
+</div>
+{% endblock %}

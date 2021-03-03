@@ -1,0 +1,120 @@
+<div id="comments" class="post-comments site-box">
+
+    <div class="comment-title">
+        <span>{{ counts }} 条评论</span>
+    </div>
+
+    <form >
+        <ol class="comment-list">
+            {% if comments %}
+            {% for comment in comments %}
+            <li class="comment" id="{{comment.id}}">
+                <div class="comment-body">
+                    <div class="comment-author">
+                        <img class="avatar" src="{{comment.gravatar(size=38)}}" alt="author">
+                    </div>
+                    <span class="comment-time">{{ comment.strptime }}</span>
+                    <div class="comment-content">
+                        <span class="comment-name">
+                            {% if comment.website %}
+                            <a href="{{ comment.website }}" target="_blank" class="comment-user">
+                                {{ comment.author }}
+                            </a>
+                            {% else %}
+                            {{ comment.author }}
+                            {% endif %}
+                        </span>
+                        <div class="reply-comment">
+                            <a class="comment-reply-link" curid="{{comment.id}}" replyid="{{comment.id}}" replyto="{{comment.author}}">回复</a>
+                        </div>
+                        <div class="comment-text">
+                            <p>{{ comment.body_to_html | safe }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% if comment.replies %}
+                <ul class="comment-children">
+                    {% for reply in comment.replies %}
+                    <li id="{{ reply.id }}" class="comment">
+                        <div class="comment-body">
+                            <div class="comment-author">
+                                <img alt="" src="{{reply.gravatar(size=26)}}" class="avatar">
+                            </div>
+                            <span class="comment-time">{{ reply.strptime }}</span>
+                            <div class="comment-content">
+    {#                            <span class="comment-name">{{ reply.author }}</span>#}
+                                <div class="reply-comment children-reply">
+                                    <a class="comment-reply-link" curid="{{ reply.id }}" replyid="{{comment.id}}" replyto="{{reply.author}}">回复</a>
+                                </div>
+                                <div class="comment-text">
+                                        {{ reply.body_to_html | safe }}
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </li>
+            {% endfor %}
+            {% endif %}
+        </ol>
+    </form>
+
+    <div class="comments-navi">
+        <a {% if not pagination.has_prev %}style="display:none;"{% endif %} class="prev"
+           href="{%if pagination.has_prev%}{%if post%}{{url_for('main.post',year=post.year,month=post.month,post_url=post.url,page=pagination.prev_num)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=pagination.prev_num)}}{%else%}{{url_for('column.article',url=column.url_name,id=article.id,page=p)}}{%endif%}{%else%}#{%endif%}">
+            上一页
+        </a>
+        {% for p in pagination.iter_pages() %}
+            {% if p %}
+                {% if p == pagination.page %}
+                    <a  class="current-page"
+                        href="{%if post%}{{url_for('main.post',year=post.year,month=post.month,post_url=post.url,page=p)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=p)}}{%else%}{{url_for('column.article',url=column.url_name,id=article.id,page=p)}}{%endif%}">{{ p }}</a>
+                {% else %}
+                    <a href="{%if post%}{{url_for('main.post',year=post.year,month=post.month,post_url=post.url,page=p)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=p)}}{%else%}{{url_for('column.article',url=column.url_name,id=article.id,page=p)}}{%endif%}">{{ p }}</a>
+                {% endif %}
+            {% else %}
+            <a class="disabled" href="#">&hellip;</a>
+            {% endif %}
+        {% endfor %}
+        <a {%if not pagination.has_next%}style="display:none;"{%endif%}
+           href="{%if pagination.has_next%}{%if post%}{{url_for('main.post',year=post.year,month=post.month,post_url=post.url,page=pagination.next_num)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=pagination.next_num)}}{%else%}{{url_for('column.article',url=column.url_name,id=article.id,page=p)}}{%endif%}{%else%}#{%endif%}">
+            下一页
+        </a>
+    </div>
+
+    <div class="comment-send">
+        <div class="textarea-container">
+            <!--<form>-->
+                <div class="author-info">
+                    <div class="input-div">
+                        <label>名字：</label>
+                        <input type="text" name="author" placeholder="必填">
+                    </div>
+                    <div class="input-div">
+                        <label>邮箱：</label>
+                        <input type="text" name="email" placeholder="必填">
+                    </div>
+                    <div class="input-div">
+                        <label>网站：</label>
+                        <input type="text" name="url" placeholder="选填">
+                    </div>
+                </div>
+                <i class="logined">已登录，<a class="delete-user">注销</a></i>
+                <textarea cols="80" name="comment" rows="6" placeholder="评论支持 Markdown 语法。" class="ipt-txt"></textarea>
+                <span class="cancel">取消</span>
+                <button type="submit" class="comment-submit" targetType="{%if post%}post{%elif page%}page{%else%}column{%endif%}"
+                        targetId="{%if post%}{{post.id}}{%elif page%}{{page.id}}{%else%}column/{{article.id}}{%endif%}"
+                        replyid="" replyto="">发表评论</button>
+            <!--</form>-->
+        </div>
+        <div class="clear"></div>
+        <!-- <div class="comment-emoji">
+            <i class="face"></i>
+            <span class="text">表情</span>
+        </div> -->
+    </div>
+
+</div>
+

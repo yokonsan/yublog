@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{#{% import "_pagination.html" as page %}#}
+
+{% block styles %}
+{{ super() }}
+    <style>
+        .post-item h1.post-title {
+            font-weight: 600;
+            font-size: 18px;
+        }
+        .post-item .post-meta {
+            margin: 5px 0 15px 0;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+{% for post in posts %}
+<div class="post-item site-box">
+    <h1 class="post-title">
+        <a href="{{ url_for('main.post',year=post.year,month=post.month,post_url=post.url) }}">
+            {{ post.title }}
+        </a>
+    </h1>
+    <div class="post-meta">
+        <span class="post-time"><i class="demo-icon icon-calendar"></i> 发表于{{ post.datetime }}</span>
+        <span class="post-category">
+            <i class="demo-icon icon-folder-empty"></i> 分类：
+            <a href="{{ url_for('main.category', category_name=post.category) }}">{{ post.category }}</a>
+        </span>
+        <span class="post-comments-count">
+            <i class="demo-icon icon-comment-empty"></i> 评论： {{ post.comment_count }}
+        </span>
+    </div>
+    <div class="post-body">
+        {{ post.body | striptags | truncate(250)}}
+{#        <div class="read-more-btn">#}
+{#            <a href="{{ url_for('main.post',year=post.year,month=post.month,article_name=post.url_name) }}">阅读全文</a>#}
+{#        </div>#}
+    </div>
+</div>
+{% endfor %}
+
+<div class="post-page site-box">
+    <ul class="pages">
+{#        {{ page.pages(pagination, 'main.index') }}#}
+        <li {% if page==1 %}style="display:none;"{% endif %}>
+            <a href="{% if page != 1 %}{{ url_for('main.index', page=page - 1) }}{% else %}#{% endif %}">
+                &laquo;
+            </a>
+        </li>
+        {% for p in pagination %}
+            {% if p %}
+                {% if p == page %}
+                <li>
+                    <a  class="active" href="#">{{ p }}</a>
+                </li>
+                {% else %}
+                <li>
+                    <a href="{{ url_for('main.index', page=p) }}">{{ p }}</a>
+                </li>
+                {% endif %}
+            {% else %}
+            <li class="disabled"><a href="#">&hellip;</a></li>
+            {% endif %}
+        {% endfor %}
+        <li {% if page == max_page %}style="display:none;"{% endif %}>
+            <a href="{% if page != max_page %}{{ url_for('main.index', page=page + 1) }}{% else %}#{% endif %}">
+                &raquo;
+            </a>
+        </li>
+    </ul>
+</div>
+{% endblock %}

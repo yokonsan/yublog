@@ -1,0 +1,35 @@
+{% extends "admin.html" %}
+{% import "_pagination.html" as page %}
+{% block tab %}管理评论{% endblock %}
+{% block content %}
+<div class="admin-post">
+    <ul>
+        {% for comment in comments %}
+        <li>
+            {{ comment.strptime }}
+            <a class="comment-author" href="{{comment.website}}">{{comment.author}}</a>
+            在{%if comment.post%}文章{%elif comment.page%}页面{%else%}专栏文章{%endif%}
+            <a class="comment-post"
+               href="{%if comment.post%}{{url_for('main.post',year=comment.post.year,month=comment.post.month,post_url=comment.post.url_name)}}{%elif comment.page%}{{url_for('main.page',page_url=comment.page.url_name)}}{%else%}#{%endif%}">
+                {%if comment.post%}{{comment.post.title}}{%elif comment.page%}{{comment.page.title}}{%else%}{{comment.article.title}}{%endif%}
+            </a>下发布评论：
+            <p>{{comment.comment}}</p>
+            <p>
+                <button onclick="firm('{{url_for('admin.delete_comment',id=comment.id)}}')" class="delete-btn">删除</button>
+                {% if comment.disabled == False %}
+                <a href="{{url_for('admin.allow_comment',id=comment.id)}}"><button class="allow-btn">通过</button></a>
+                {% else %}
+                <a href="{{url_for('admin.unable_comment',id=comment.id)}}"><button class="edit-btn">隐藏</button></a>
+                {% endif %}
+            </p>
+            <div class="clear"></div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+<div class="post-page site-box">
+    <ul class="pages">
+        {{ page.pages(pagination, 'admin.admin_comments') }}
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% import "_pagination.html" as page %}
+{% block content %}
+<div class="archives-title site-box">
+    共计 {{ count }} 篇文章，继续努力哦！
+</div>
+<div class="archives site-box">
+    {% for y, posts in data.items() %}
+    <div class="archives-year">
+        {{ y }}
+    </div>
+    <div class="archives-posts">
+        <ul>
+            {% for p in posts %}
+            <li>
+                <span class="circular"></span>
+                {{ p.timestamp }}
+                <a href="{{ url_for('main.post', year=p.year,month=p.month, post_url=p.url_name) }}">{{ p.title }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+</div>
+<div class="post-page site-box">
+    <ul class="pages">
+        {{ page.pages(pagination, 'main.archives') }}
+    </ul>
+</div>
+{% endblock %}
