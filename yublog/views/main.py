@@ -35,10 +35,12 @@ def post(year, month, post_url):
         counts = _post.get('comment_count', 0)
         page_cnt = (counts - 1) / current_app.config['COMMENTS_PER_PAGE'] + 1
 
-    pagination = Comment.query.filter_by(post_id=_post['id'], disabled=True)\
+    pagination = Comment.query.filter_by(post_id=_post['id'], disabled=True, replied_id=None)\
         .order_by(Comment.timestamp.desc())\
         .paginate(page_cnt, per_page=current_app.config['COMMENTS_PER_PAGE'], error_out=False)
     comments = pagination.items
+    # print([c.replied for c in comments])
+    # print([c.replies for c in comments])
     meta_tags = ','.join(_post['tags'])
     return render_template('main/post.html', post=_post, title=_post['title'],
                            pagination=pagination, comments=comments,
@@ -66,16 +68,21 @@ def page(page_url):
 
 @main_bp.route('/tag/<tag_name>/')
 def tag(tag_name):
-    _tag = tag_name
-    all_posts = Post.query.order_by(Post.timestamp.desc()).all()
-    posts = (p for p in all_posts if p.tag_in_post(_tag) and p.draft is False)
+    _tag = Tag.query.get_or_404(tag=tag_name)
+    if not _tag:
+        abort(404)
 
-    return render_template('main/tag.html', tag=_tag, posts=posts)
+    all_posts = Post.query.order_by(Post.timestamp.desc()).all()
+    posts = (p for p in all_posts if p.tag_in_post(tag_name) and p.draft is False)
+
+    return render_template('main/tag.html', tag=tag_name, posts=posts)
 
 
 @main_bp.route('/category/<category_name>/')
 def category(category_name):
     _category = Category.query.filter_by(category=category_name).first()
+    if not _category:
+        abort(404)
 
     posts = Post.query.filter_by(category=_category,
                                  draft=False).order_by(Post.timestamp.desc()).all()
@@ -149,11 +156,8 @@ def comment(target_type, target_id):
         _post = Post.query.get_or_404(target_id)
     else:
         _post = Page.query.get_or_404(target_id)
-    print(_post)
     form = request.get_json()
-    print(form)
     data = save_comment(_post, form)
-    print(data)
 
     return jsonify(nickname=data['nickname'], email=data['email'],
                    website=data['website'], body=data['comment'], post=_post.title)

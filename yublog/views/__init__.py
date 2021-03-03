@@ -1,7 +1,7 @@
 from flask import Blueprint, abort, render_template, current_app
 
 from yublog.models import *
-from yublog.caches import cache_tool, global_cache_key
+from yublog.caches import *
 from yublog.utils.tools import asyncio_send, regular_url
 from yublog.exceptions import NoPostException
 
@@ -86,12 +86,11 @@ def save_comment(target, form):
     email = form['email']
     website = form['website'] or None
     body = form['comment']
-    reply_to = form.get('reply_to', '')
+    reply_to = form.get('replyTo', '')
     data = {'nickname': nickname, 'email': email, 'website': website, 'comment': body}
 
     if reply_to:
-        replied_comment = Comment.query.filter_by(id=reply_to).first()
-        reply_author = replied_comment.author
+        reply_author = form.get('replyName', '')
         if website and regular_url(website):
             nickname_p_tag = '<a class="comment-user" href="{website}" target="_blank">{nickname}</a>'.format(
                 website=website, nickname=nickname)
@@ -103,20 +102,16 @@ def save_comment(target, form):
                       '</p>\n\n{body}'.format(nickname=nickname, reply_author=reply_author, body=body)
 
         _comment = Comment(comment=comment_html, author=nickname, email=email, website=website)
-        _comment.replied = replied_comment
+        _comment.replied_id = int(reply_to)
     else:
         _comment = Comment(comment=body, author=nickname, email=email, website=website)
 
-    post_url = ''
-    if isinstance(target, Post):
-        post_url = url_for('main.post', year=target.year, month=target.month, post_url=target.url_name)
-        _comment.post = target
-    elif isinstance(target, Page):
-        post_url = url_for('main.page', post_url=target.url_name)
-        _comment.page = target
-    elif isinstance(target, Article):
-        post_url = url_for('column.article', url=target.column.url_name, id=target.id)
-        _comment.article = target
+    attr, post_url = _get_comment_post(target)
+    if not (post_url and attr):
+        current_app.logger.warning('评论保存失败：未获取到目标类型或url')
+        return data
+
+    setattr(_comment, attr, target)
     # 发送邮件
     if email != to_mail_address:
         msg = render_template('admin_mail.html', nickname=nickname,
@@ -126,6 +121,20 @@ def save_comment(target, form):
     db.session.add(_comment)
     db.session.commit()
     return data
+
+
+def _get_comment_post(target):
+    if isinstance(target, Post):
+        post_url = url_for('main.post', year=target.year, month=target.month, post_url=target.url_name)
+        return 'post', post_url
+    if isinstance(target, Page):
+        post_url = url_for('main.page', post_url=target.url_name)
+        return 'page', post_url
+    if isinstance(target, Article):
+        post_url = url_for('column.article', url=target.column.url_name, id=target.id)
+        return 'article', post_url
+
+    return None, None
 
 
 from yublog.views import main, admin, column, site, api, error  # noqa

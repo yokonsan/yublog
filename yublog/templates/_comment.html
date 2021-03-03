@@ -4,63 +4,62 @@
         <span>{{ counts }} 条评论</span>
     </div>
 
-    <ol class="comment-list">
-        {% if comments %}
-        {% for comment in comments %}
-        <li class="comment" id="{{comment.id}}">
-            <div class="comment-body">
-                <div class="comment-author">
-                    <img class="avatar" src="{{comment.gravatar(size=38)}}" alt="author">
-                </div>
-                <span class="comment-time">{{ comment.strptime }}</span>
-                <div class="comment-content">
-                    <span class="comment-name">
-                        {% if comment.website %}
-                        <a href="{{ comment.website }}" target="_blank" class="comment-user">
+    <form >
+        <ol class="comment-list">
+            {% if comments %}
+            {% for comment in comments %}
+            <li class="comment" id="{{comment.id}}">
+                <div class="comment-body">
+                    <div class="comment-author">
+                        <img class="avatar" src="{{comment.gravatar(size=38)}}" alt="author">
+                    </div>
+                    <span class="comment-time">{{ comment.strptime }}</span>
+                    <div class="comment-content">
+                        <span class="comment-name">
+                            {% if comment.website %}
+                            <a href="{{ comment.website }}" target="_blank" class="comment-user">
+                                {{ comment.author }}
+                            </a>
+                            {% else %}
                             {{ comment.author }}
-                        </a>
-                        {% else %}
-                        {{ comment.author }}
-                        {% endif %}
-                    </span>
-                    <div class="reply-comment">
-                        <a class="comment-reply-link" curid="{{comment.id}}" replyid="{{comment.id}}" replyto="{{comment.author}}">回复</a>
-                    </div>
-                    <div class="comment-text">
-                        <p>{{ comment.body_to_html | safe }}</p>
+                            {% endif %}
+                        </span>
+                        <div class="reply-comment">
+                            <a class="comment-reply-link" curid="{{comment.id}}" replyid="{{comment.id}}" replyto="{{comment.author}}">回复</a>
+                        </div>
+                        <div class="comment-text">
+                            <p>{{ comment.body_to_html | safe }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            {% if replys %}
-            <ul class="comment-children">
-                {% for reply in replys %}
-                {% if reply.replyTo==comment.id %}
-                <li id="{{ reply.id }}" class="comment">
-                    <div class="comment-body">
-                        <div class="comment-author">
-                            <img alt="" src="{{reply.gravatar(size=26)}}" class="avatar">
-                        </div>
-                        <span class="comment-time">{{ reply.strptime }}</span>
-                        <div class="comment-content">
-{#                            <span class="comment-name">{{ reply.author }}</span>#}
-                            <div class="reply-comment children-reply">
-                                <a class="comment-reply-link" curid="{{ reply.id }}" replyid="{{comment.id}}" replyto="{{reply.author}}">回复</a>
+                {% if comment.replies %}
+                <ul class="comment-children">
+                    {% for reply in comment.replies %}
+                    <li id="{{ reply.id }}" class="comment">
+                        <div class="comment-body">
+                            <div class="comment-author">
+                                <img alt="" src="{{reply.gravatar(size=26)}}" class="avatar">
                             </div>
-                            <div class="comment-text">
-                                    {{ reply.body_to_html | safe }}
+                            <span class="comment-time">{{ reply.strptime }}</span>
+                            <div class="comment-content">
+    {#                            <span class="comment-name">{{ reply.author }}</span>#}
+                                <div class="reply-comment children-reply">
+                                    <a class="comment-reply-link" curid="{{ reply.id }}" replyid="{{comment.id}}" replyto="{{reply.author}}">回复</a>
+                                </div>
+                                <div class="comment-text">
+                                        {{ reply.body_to_html | safe }}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </li>
+                    </li>
+                    {% endfor %}
+                </ul>
                 {% endif %}
-                {% endfor %}
-            </ul>
+            </li>
+            {% endfor %}
             {% endif %}
-        </li>
-        {% endfor %}
-        {% endif %}
-    </ol>
-
+        </ol>
+    </form>
 
     <div class="comments-navi">
         <a {% if not pagination.has_prev %}style="display:none;"{% endif %} class="prev"

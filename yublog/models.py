@@ -231,7 +231,6 @@ class Comment(db.Model):
     def to_json(self):
         comment = {
             'id': self.id,
-            'is_reply': self.is_reply,
             'author': self.author,
             'avatar': self.gravatar(38),
             'mail': self.email,
@@ -239,9 +238,9 @@ class Comment(db.Model):
             'datetime': self.strptime,
             'comment': self.body_to_html
         }
-        if self.is_reply:
+        if self.replied_id:
             comment['avatar'] = self.gravatar(26)
-            comment['reply_to'] = self.reply_to
+            comment['reply_to'] = self.replied_id
         return comment
 
     def __repr__(self):
@@ -253,6 +252,7 @@ class Tag(db.Model):
     __tablename__ = 'tags'
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String(25), index=True, unique=True)
+    is_show = db.Column(db.Boolean, default=True, index=True)
 
     def to_json(self):
         tag = {
@@ -270,6 +270,7 @@ class Category(db.Model):
     __tablename__ = 'category'
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String(6), index=True, unique=True)
+    is_show = db.Column(db.Boolean, default=True, index=True)
 
     posts = db.relationship('Post', backref='category', lazy='dynamic')
 

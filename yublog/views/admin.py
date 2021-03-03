@@ -44,10 +44,7 @@ def save_post(form, draft=False):
     :param draft: 是否保存草稿
     :return: post object
     """
-    category = Category.query.filter_by(category=form.category.data).first()
-    if not category:
-        category = Category(category=form.category.data)
-        db.session.add(category)
+    category = update_category(form.category.data)
 
     tags = [tag for tag in form.tags.data.split(',')]
     post = Post(body=form.body.data, title=form.title.data, 
@@ -62,6 +59,26 @@ def save_post(form, draft=False):
     return post
 
 
+def update_category(old_category, new_category=None, is_show=True):
+    # 是否需要删除旧的分类
+    if new_category:
+        category = Category.query.filter_by(category=old_category).first()
+        if category.posts.count() == 1:
+            db.session.delete(category)
+            db.session.commit()
+            # 更新分类缓存
+            cache_tool.clean(cache_tool.GLOBAL_KEY)
+        old_category = new_category
+
+    # 是否新的分类需要添加
+    category = Category.query.filter_by(category=old_category).first()
+    if not category:
+        category = Category(category=old_category)
+        db.session.add(category)
+        db.session.commit()
+    return category
+
+
 # 编辑文章后更新sitemap
 def update_xml(update_time):
     # 获取配置信息
@@ -71,11 +88,11 @@ def update_xml(update_time):
     posts = [post for post in post_list if post.draft is False]
     # sitemap
     sitemap = get_sitemap(posts)
-    asyncio.run(save_file(sitemap, 'sitemap.xml'))
+    save_file(sitemap, 'sitemap.xml')
     # rss
     rss_posts = posts[:count]
     rss = gen_rss_xml(update_time, rss_posts)
-    asyncio.run(save_file(rss, 'atom.xml'))
+    save_file(rss, 'atom.xml')
 
 
 @admin_bp.route('/')
@@ -233,7 +250,7 @@ def great_link(id):
 def write():
     form = AdminWrite()
     if form.validate_on_submit():
-        exist = Post.get_or_404(url_name=form.url_name.data)
+        exist = Post.query.filter_by(url_name=form.url_name.data).first()
         if exist:
             flash('文章出现重复')
             raise DuplicateEntryException('文章出现重复')
@@ -266,7 +283,11 @@ def admin_edit(time, name):
 
     form = AdminWrite()
     if form.validate_on_submit():
-        category = Category.query.filter_by(category=form.category.data).first()
+        # category = Category.query.filter_by(category=form.category.data).first()
+        category = post.category
+        if form.category.data != post.category.category:
+            category = update_category(post.category.category, form.category.data)
+
         post.category = category
         post.tags = form.tags.data
         post.url_name = form.url_name.data
@@ -340,8 +361,8 @@ def edit_page(name):
     if form.validate_on_submit():
         page.title = form.title.data
         page.body = form.body.data
-        page.canComment = form.can_comment.data
-        page.isNav = form.is_nav.data
+        page.able_comment = form.can_comment.data
+        page.show_nav = form.is_nav.data
         page.url_name = form.url_name.data
         db.session.add(page)
         db.session.commit()
@@ -351,8 +372,8 @@ def edit_page(name):
         return redirect(url_for('admin.edit_page', name=page.url_name))
     form.title.data = start_title
     form.body.data = page.body
-    form.can_comment.data = page.canComment
-    form.is_nav.data = page.isNav
+    form.can_comment.data = page.able_comment
+    form.is_nav.data = page.show_nav
     form.url_name.data = page.url_name
     return render_template('admin/admin_add_page.html',
                            title="编辑页面",

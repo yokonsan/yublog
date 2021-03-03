@@ -23,14 +23,14 @@
         {% endif %}
     </div>
 </div>
-{% if page.canComment == true %}
+{% if page.able_comment == true %}
 {% include "_comment.html" %}
 {% endif %}
 {% endblock %}
 
 {% block script %}
 {{ super() }}
-{% if page.canComment == true %}
+{% if page.able_comment == true %}
 <script src="{{url_for('static', filename='js/comment.js')}}"></script>
 {% endif %}
 

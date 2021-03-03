@@ -11,9 +11,9 @@ from markdown import Markdown
 from flask import current_app
 
 
-async def regular_url(url):
+def regular_url(url):
     pattern = '^http[s]*?://[\u4e00-\u9fff\w./]+$'
-    return await re.match(pattern, url)
+    return re.match(pattern, url)
 
 
 def get_sitemap(posts):
@@ -38,25 +38,20 @@ def get_sitemap(posts):
     return sitemap
 
 
-async def save_file(sitemap, file):
+def save_file(sitemap, file):
     """保存xml文件到静态文件目录"""
-    filename = os.path.join(os.getcwd(), '/yublog/static/', file)
+    filename = os.path.join(os.getcwd(), 'yublog', 'static', file)
     is_exists = os.path.exists(filename)
     if is_exists: os.remove(filename)
 
-    async with open(filename, 'w', encoding='utf-8') as f:
-        await f.write(sitemap)
+    with open(filename, 'w', encoding='utf-8') as f:
+        f.write(sitemap)
         return True
 
 
-def send_mail(to_addr, msg):
-    mail_username = current_app.config['MAIL_USERNAME']
-    mail_password = current_app.config['MAIL_PASSWORD']
-    mail_server = current_app.config['MAIL_SERVER']
-    mail_port = current_app.config['MAIL_PORT']
-    
+def send_mail(to_addr, msg, mail_username, mail_password, mail_server, mail_port):
     content = MIMEText(msg, 'html', 'utf-8')
-    content['Subject'] = Header('博客评论……', 'utf-8').encode()
+    content['Subject'] = Header('新的评论', 'utf-8').encode()
     server = smtplib.SMTP_SSL(mail_server, mail_port)
     server.login(mail_username, mail_password)
     server.sendmail(mail_username, [to_addr], content.as_string())
@@ -65,7 +60,17 @@ def send_mail(to_addr, msg):
 
 def asyncio_send(to_addr, msg):
     """异步发送邮件"""
-    t = Thread(target=send_mail, args=(to_addr, msg))
+    # 线程共享
+    mail_username = current_app.config['MAIL_USERNAME']
+    mail_password = current_app.config['MAIL_PASSWORD']
+    mail_server = current_app.config['MAIL_SERVER']
+    mail_port = current_app.config['MAIL_PORT']
+    if not (mail_username and mail_password):
+        current_app.logger.warning('无邮箱配置，邮件发送失败。')
+        return
+
+    t = Thread(target=send_mail, args=(to_addr, msg,
+                                       mail_username, mail_password, mail_server, mail_port))
     t.start()
     return t
 

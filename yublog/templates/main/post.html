@@ -80,12 +80,12 @@
 
     <div class="pre-next-post inner-box">
         {% if post.prev_post %}
-        <a class="pre-post" href="{{url_for('main.post',year=post.prev_post.year,month=post.prev_post.month,article_name=post.prev_post.url)}}">
+        <a class="pre-post" href="{{url_for('main.post',year=post.prev_post.year,month=post.prev_post.month,post_url=post.prev_post.url)}}">
              {{ post.prev_post.title }}
         </a>
         {% endif %}
         {% if post.next_post %}
-        <a class="next-post" href="{{url_for('main.post',year=post.next_post.year,month=post.next_post.month,article_name=post.next_post.url)}}">
+        <a class="next-post" href="{{url_for('main.post',year=post.next_post.year,month=post.next_post.month,post_url=post.next_post.url)}}">
             {{ post.next_post.title }}
         </a>
         {% endif %}

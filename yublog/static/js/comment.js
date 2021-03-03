@@ -39,21 +39,38 @@
     let commentIpt = document.getElementsByClassName('comment-send')[0];
     let replyBtns = commentCon.getElementsByClassName('comment-reply-link');
 
-    for (let b=0; b<replyBtns.length; b++) {
-        replyBtns[b].onclick = function() {
-            let currentId = this.attributes["curid"].value;
-            let replyId = this.attributes["replyid"].value;
-            let replyTo = this.attributes["replyto"].value;
-            let comment = document.getElementById(currentId);
-            let cancel = commentIpt.getElementsByClassName('cancel')[0];
-            let submitBtn = commentIpt.getElementsByClassName('comment-submit')[0];
+    function addOnclick() {
+        for (let b=0; b<replyBtns.length; b++) {
+            replyBtns[b].onclick = function() {
+                let currentId = this.attributes["curid"].value;
+                let replyId = this.attributes["replyid"].value;
+                let replyTo = this.attributes["replyto"].value;
+                let comment = document.getElementById(currentId);
+                let cancel = commentIpt.getElementsByClassName('cancel')[0];
+                let submitBtn = commentIpt.getElementsByClassName('comment-submit')[0];
 
-            submitBtn.attributes["replyid"].value = replyId;
-            submitBtn.attributes["replyto"].value = replyTo;
-            cancel.style.display = 'inline-block';
-            comment.appendChild(commentIpt);
+                submitBtn.attributes["replyid"].value = replyId;
+                submitBtn.attributes["replyto"].value = replyTo;
+                cancel.style.display = 'inline-block';
+                comment.appendChild(commentIpt);
+            }
         }
     }
+    addOnclick()
+
+//    function replyBtnOnclick (ele) {
+//        let currentId = ele.attributes["curid"].value;
+//        let replyId = ele.attributes["replyid"].value;
+//        let replyTo = ele.attributes["replyto"].value;
+//        let comment = document.getElementById(currentId);
+//        let cancel = commentIpt.getElementsByClassName('cancel')[0];
+//        let submitBtn = commentIpt.getElementsByClassName('comment-submit')[0];
+//
+//        submitBtn.attributes["replyid"].value = replyId;
+//        submitBtn.attributes["replyto"].value = replyTo;
+//        cancel.style.display = 'inline-block';
+//        comment.appendChild(commentIpt);
+//    }
 
     // 取消按钮
     let cancel = commentIpt.getElementsByClassName('cancel')[0];
@@ -78,6 +95,7 @@
         let msg = '<li class="comment" style="color: #df846c;">评论将在通过后展示...</li>';
 
         text.innerHTML = msg + text.innerHTML;
+        addOnclick()
     }
 
     function fail() {
@@ -85,6 +103,7 @@
         let msg = '<li class="comment" style="color: #df846c;">发布评论失败...</li>';
 
         text.innerHTML+=msg;
+        addOnclick()
     }
     // 发布按钮
     let submitBtn = commentIpt.getElementsByClassName('comment-submit')[0];
@@ -93,6 +112,7 @@
         let replyTo = this.attributes["replyto"].value;
         let targetId = this.attributes["targetId"].value;
         let targetType = this.attributes["targetType"].value
+//        let curId = this.attributes["curid"].value
         let emailRe = /^(\w)+(\.\w+)*@(\w)+((\.\w+)+)$/;
         if (userIpt.value.trimEnd() !== '' && emailIpt.value.trimEnd() !== '' && textarea.value.trimEnd() !== '' && emailRe.test(emailIpt.value)) {
             resetForm(submitBtn);
@@ -134,7 +154,8 @@
                 website: website,
                 comment: textValue,
                 isReply: true,
-                replyTo: replyId
+                replyTo: replyId,
+                replyName: replyName
             });
             let val1 = {nickname:userIpt.value,email: emailIpt.value,website: websiteIpt.value};
             saveUser('user', val1);
