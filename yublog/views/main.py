@@ -42,6 +42,7 @@ def post(year, month, post_url):
     # print([c.replied for c in comments])
     # print([c.replies for c in comments])
     meta_tags = ','.join(_post['tags'])
+    # print(_post)
     return render_template('main/post.html', post=_post, title=_post['title'],
                            pagination=pagination, comments=comments,
                            counts=len(comments), meta_tags=meta_tags)
@@ -68,7 +69,7 @@ def page(page_url):
 
 @main_bp.route('/tag/<tag_name>/')
 def tag(tag_name):
-    _tag = Tag.query.get_or_404(tag=tag_name)
+    _tag = Tag.query.filter_by(tag=tag_name).first()
     if not _tag:
         abort(404)
 
@@ -80,7 +81,7 @@ def tag(tag_name):
 
 @main_bp.route('/category/<category_name>/')
 def category(category_name):
-    _category = Category.query.filter_by(category=category_name).first()
+    _category = Category.query.filter_by(category=category_name, is_show=True).first()
     if not _category:
         abort(404)
 
