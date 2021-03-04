@@ -21,8 +21,7 @@ def get_sitemap(posts):
     if not posts:
         return None
 
-    header = """
-    <?xml version="1.0" encoding="UTF-8"?> 
+    header = """<?xml version="1.0" encoding="UTF-8"?> 
         <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     """
     footer, body = '</urlset>', ''
@@ -87,8 +86,7 @@ def gen_rss_xml(update_time, posts):
     protocol = current_app.config['WEB_PROTOCOL']
     url = current_app.config['WEB_URL']
     web_time = current_app.config['WEB_START_TIME']
-    header = """
-    <?xml version="1.0" encoding="UTF-8"?>
+    header = """<?xml version="1.0" encoding="UTF-8"?>
         <feed xmlns="http://www.w3.org/2005/Atom">
             <title>{title}</title>
             <subtitle>{subtitle}</subtitle>

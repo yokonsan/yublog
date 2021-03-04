@@ -128,7 +128,7 @@ def _get_comment_post(target):
         post_url = url_for('main.post', year=target.year, month=target.month, post_url=target.url_name)
         return 'post', post_url
     if isinstance(target, Page):
-        post_url = url_for('main.page', post_url=target.url_name)
+        post_url = url_for('main.page', page_url=target.url_name)
         return 'page', post_url
     if isinstance(target, Article):
         post_url = url_for('column.article', url=target.column.url_name, id=target.id)

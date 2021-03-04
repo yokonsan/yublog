@@ -1,28 +1,43 @@
-
-    <?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
         <feed xmlns="http://www.w3.org/2005/Atom">
             <title>意外</title>
             <subtitle>银时的博客</subtitle>
             <link rel="alternate" type="text/html" href="http://www.yukunweb.com/"/>
             <link href="http://www.yukunweb.com/atom.xml" rel="self"/>
             <id>tag:www.yukunweb.com,2017-05-25://1</id>
-            <updated>2021-02-12T00:00:00Z</updated>
+            <updated>2021-02-11T00:00:00Z</updated>
             <generator uri="https://github.com/Blackyukun/YuBlog">YuBlog</generator>
     
 
             <entry>
                 <title>胡说八道</title>
-                <link rel="alternate" type="text/html" href="http://www.yukunweb.com/2021/2/qcc-header-sign11"/>
+                <link rel="alternate" type="text/html" href="http://www.yukunweb.com/2021/2/qcc-header-signa"/>
                 <id>tag:www.yukunweb.com,2021://1.2</id>
                 <published>2021-02-12T00:00:00Z</published>
-                <updated>2021-02-12T00:00:00Z</updated>
+                <updated>2021-02-11T00:00:00Z</updated>
                 <summary>胡说八道</summary>
                 <author>
                 <name>银时</name>
                 <uri>http://www.yukunweb.com</uri>
                 </author>
                 <category term="技术" scheme="http://www.yukunweb.com/category/技术"/>
-                <content type="html"><![CDATA[<p>asdsa</p>]]></content>
+                <content type="html"><![CDATA[<p>categorycategorycategory</p>]]></content>
+            </entry>
+    
+
+            <entry>
+                <title>企查查请求头反爬破解</title>
+                <link rel="alternate" type="text/html" href="http://www.yukunweb.com/2021/2/qcc-header-signsdad"/>
+                <id>tag:www.yukunweb.com,2021://1.3</id>
+                <published>2021-02-12T00:00:00Z</published>
+                <updated>2021-02-11T00:00:00Z</updated>
+                <summary>企查查请求头反爬破解</summary>
+                <author>
+                <name>银时</name>
+                <uri>http://www.yukunweb.com</uri>
+                </author>
+                <category term="技术2" scheme="http://www.yukunweb.com/category/技术2"/>
+                <content type="html"><![CDATA[<p>企查查请求头反爬破解</p>]]></content>
             </entry>
     
 
@@ -31,24 +46,14 @@
                 <link rel="alternate" type="text/html" href="http://www.yukunweb.com/2021/2/qcc-header-sign"/>
                 <id>tag:www.yukunweb.com,2021://1.1</id>
                 <published>2021-02-11T00:00:00Z</published>
-                <updated>2021-02-12T00:00:00Z</updated>
+                <updated>2021-02-11T00:00:00Z</updated>
                 <summary>QCC请求头反爬破解</summary>
                 <author>
                 <name>银时</name>
                 <uri>http://www.yukunweb.com</uri>
                 </author>
-                <category term="技术1" scheme="http://www.yukunweb.com/category/技术1"/>
-                <content type="html"><![CDATA[<p>QCC请求头反爬破解QCC请求头反爬破解
-QCC请求头反爬破解</p>
-<p>QCC请求头反爬破解QCC请求头反爬破解QCC请求头反爬破解QCC请求头反爬破解QCC请求头反爬破解QCC请求头反爬破解</p>
-<p>QCC请求头反爬破解QCC请求头反爬破解QCC请求头反爬破解</p>
-<p>--</p>
-<p>QCC请求头反爬破解QCC请求头反爬破解</p>
-<div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="p">)</span>
-</pre></div>
-
-
-<p>QCC请求头反爬破解QCC请求头反爬破解QCC请求头反爬破解</p>]]></content>
+                <category term="技术4" scheme="http://www.yukunweb.com/category/技术4"/>
+                <content type="html"><![CDATA[<p>QCC请求头反爬破解</p>]]></content>
             </entry>
     
 

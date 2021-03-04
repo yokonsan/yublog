@@ -121,7 +121,7 @@ async def _global_data():
     global_data = {}
     administrator = Admin.query.first()
     links = SiteLink.query.order_by(SiteLink.id.desc()).all()
-    categories = Category.query.all()
+    categories = Category.query.filter_by(is_show=True).all()
     tags = Tag.query.all()
     pages = Page.query.filter_by(show_nav=True).all()
     love_me_counts = LoveMe.query.first()

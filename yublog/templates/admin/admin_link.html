@@ -22,7 +22,7 @@
             <a href="{{url_for('admin.delete_link',id=link.id)}}">
                 <button class="delete-btn">删除</button>
             </a>
-            {% if link.isGreatLink %}
+            {% if link.is_great %}
             <a href="{{url_for('admin.great_link',id=link.id)}}">
                 <button class="edit-btn">设为死链</button>
             </a>

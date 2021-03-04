@@ -44,7 +44,7 @@ def save_post(form, draft=False):
     :param draft: 是否保存草稿
     :return: post object
     """
-    category = update_category(form.category.data)
+    category = update_category(form.category.data, is_show=not draft)
 
     tags = [tag for tag in form.tags.data.split(',')]
     post = Post(body=form.body.data, title=form.title.data, 
@@ -73,7 +73,7 @@ def update_category(old_category, new_category=None, is_show=True):
     # 是否新的分类需要添加
     category = Category.query.filter_by(category=old_category).first()
     if not category:
-        category = Category(category=old_category)
+        category = Category(category=old_category, is_show=is_show)
         db.session.add(category)
         db.session.commit()
     return category
@@ -179,7 +179,7 @@ def add_link():
         else:
             url = form.link.data
             name = form.name.data
-            link = SiteLink(link=url, name=name, isFriendLink=False)
+            link = SiteLink(link=url, name=name, is_friend=False)
             db.session.add(link)
             db.session.commit()
             flash('添加成功')
@@ -194,7 +194,7 @@ def add_link():
             return redirect(url_for('admin.add_link'))
         else:
             link = SiteLink(link=fr_form.link.data, name=fr_form.name.data,
-                            info=fr_form.info.data, isFriendLink=True)
+                            info=fr_form.info.data, is_friend=True)
             db.session.add(link)
             db.session.commit()
             flash('添加成功')
@@ -209,8 +209,8 @@ def add_link():
 @login_required
 def admin_links():
     links = SiteLink.query.order_by(SiteLink.id.desc()).all()
-    social_links = [link for link in links if link.isFriendLink is False]
-    friend_links = [link for link in links if link.isFriendLink is True]
+    social_links = [link for link in links if link.is_friend is False]
+    friend_links = list(set(links) - set(social_links))
     return render_template('admin/admin_link.html', title="管理链接",
                            social_links=social_links, friend_links=friend_links)
 
@@ -222,7 +222,7 @@ def delete_link(id):
     db.session.delete(link)
     db.session.commit()
     # update cache
-    if link.isFriendLink is True:
+    if link.is_friend is True:
         cache_tool.update_global(global_cache_key.FRIEND_COUNT, 1, cache_tool.ADD)
     else:
         cache_tool.clean(cache_tool.GLOBAL_KEY)
@@ -234,10 +234,10 @@ def delete_link(id):
 @login_required
 def great_link(id):
     link = SiteLink.query.get_or_404(id)
-    if link.isGreatLink:
-        link.isGreatLink = False
+    if link.is_great:
+        link.is_great = False
     else:
-        link.isGreatLink = True
+        link.is_great = True
     db.session.add(link)
     db.session.commit()
     # 清除缓存
@@ -287,6 +287,8 @@ def admin_edit(time, name):
         category = post.category
         if form.category.data != post.category.category:
             category = update_category(post.category.category, form.category.data)
+        if not category.is_show:
+            category.is_show = True
 
         post.category = category
         post.tags = form.tags.data
@@ -338,8 +340,8 @@ def add_page():
         page = Page(title=form.title.data,
                     url_name=form.url_name.data,
                     body=form.body.data,
-                    canComment=form.can_comment.data,
-                    isNav=form.is_nav.data)
+                    able_comment=form.can_comment.data,
+                    show_nav=form.is_nav.data)
         db.session.add(page)
         db.session.commit()
         flash('添加成功')
