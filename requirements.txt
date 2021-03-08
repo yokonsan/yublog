@@ -8,7 +8,7 @@ Flask-Caching
 Flask-Login==0.4.0
 Flask-Migrate==2.0.3
 Flask-Script==2.0.5
-Flask-SQLAlchemy==2.2
+Flask-SQLAlchemy==2.4.1
 Flask-WTF==0.14.2
 html5lib==0.999999999
 itsdangerous==0.24

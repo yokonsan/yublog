@@ -2,6 +2,7 @@ from collections import OrderedDict
 from flask import redirect, request, g, jsonify
 
 from yublog.views import *
+from yublog.views.comment_utils import CommentUtils
 
 
 @main_bp.route('/')
@@ -69,9 +70,7 @@ def page(page_url):
 
 @main_bp.route('/tag/<tag_name>/')
 def tag(tag_name):
-    _tag = Tag.query.filter_by(tag=tag_name).first()
-    if not _tag:
-        abort(404)
+    _tag = Tag.query.first_or_404(tag=tag_name)
 
     all_posts = Post.query.order_by(Post.timestamp.desc()).all()
     posts = (p for p in all_posts if p.tag_in_post(tag_name) and p.draft is False)
@@ -81,9 +80,7 @@ def tag(tag_name):
 
 @main_bp.route('/category/<category_name>/')
 def category(category_name):
-    _category = Category.query.filter_by(category=category_name, is_show=True).first()
-    if not _category:
-        abort(404)
+    _category = Category.query.first_or_404(category=category_name, is_show=True)
 
     posts = Post.query.filter_by(category=_category,
                                  draft=False).order_by(Post.timestamp.desc()).all()
@@ -153,15 +150,12 @@ def love_me():
 
 @main_bp.route('/<target_type>/<target_id>/comment', methods=['POST'])
 def comment(target_type, target_id):
-    if target_type == 'post':
-        _post = Post.query.get_or_404(target_id)
-    else:
-        _post = Page.query.get_or_404(target_id)
     form = request.get_json()
-    data = save_comment(_post, form)
+    data = CommentUtils(target_type, form).save_comment(target_id)
 
+    # todo
     return jsonify(nickname=data['nickname'], email=data['email'],
-                   website=data['website'], body=data['comment'], post=_post.title)
+                   website=data['website'], body=data['body'])
 
 
 @main_bp.route('/talk')

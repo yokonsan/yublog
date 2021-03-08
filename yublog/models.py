@@ -119,16 +119,16 @@ class Post(db.Model):
     def month(self):
         return int(self.timestamp.split('-')[1])
 
+    @property
+    def body_to_html(self):
+        html = markdown_to_html(self.body)
+        return html
+
     def tag_in_post(self, tag):
         if self.tags.find(',') > -1:
             return tag in self.tags.split(',')
 
         return tag == self.tags
-
-    @property
-    def body_to_html(self):
-        html = markdown_to_html(self.body)
-        return html
 
     def to_json(self):
         post = {
@@ -192,8 +192,6 @@ class Comment(db.Model):
     author = db.Column(db.String(25))
     email = db.Column(db.String(255))
     website = db.Column(db.String(255), nullable=True)
-    # is_reply = db.Column(db.Boolean, default=False)
-    # reply_to = db.Column(db.Integer, nullable=True)
     disabled = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
 

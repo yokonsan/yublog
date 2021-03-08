@@ -44,7 +44,7 @@ def save_post(form, draft=False):
     :param draft: 是否保存草稿
     :return: post object
     """
-    category = update_category(form.category.data, is_show=not draft)
+    category = save_category(form.category.data, is_show=not draft)
 
     tags = [tag for tag in form.tags.data.split(',')]
     post = Post(body=form.body.data, title=form.title.data, 
@@ -59,7 +59,7 @@ def save_post(form, draft=False):
     return post
 
 
-def update_category(old_category, new_category=None, is_show=True):
+def save_category(old_category, new_category=None, is_show=True):
     # 是否需要删除旧的分类
     if new_category:
         category = Category.query.filter_by(category=old_category).first()
@@ -234,10 +234,8 @@ def delete_link(id):
 @login_required
 def great_link(id):
     link = SiteLink.query.get_or_404(id)
-    if link.is_great:
-        link.is_great = False
-    else:
-        link.is_great = True
+    link.is_great = False if link.is_great else True
+
     db.session.add(link)
     db.session.commit()
     # 清除缓存
@@ -286,7 +284,7 @@ def admin_edit(time, name):
         # category = Category.query.filter_by(category=form.category.data).first()
         category = post.category
         if form.category.data != post.category.category:
-            category = update_category(post.category.category, form.category.data)
+            category = save_category(post.category.category, form.category.data)
         if not category.is_show:
             category.is_show = True
 
@@ -297,7 +295,7 @@ def admin_edit(time, name):
         post.title = form.title.data
         post.body = form.body.data
         # 编辑草稿
-        if post.draft is True:
+        if post.draft:
             if 'save_draft' in request.form and form.validate():
                 db.session.add(post)
                 flash('保存成功！')
@@ -309,10 +307,7 @@ def admin_edit(time, name):
                 # 清除缓存
                 cache_tool.clean(cache_tool.GLOBAL_KEY)
                 update_first_cache()
-                # 更新 xml
                 update_xml(post.timestamp)
-            return redirect(url_for('admin.admin_edit', time=post.timestamp_int, name=post.url_name))
-        # 编辑文章
         else:
             db.session.add(post)
             db.session.commit()
@@ -321,7 +316,7 @@ def admin_edit(time, name):
             key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
             cache_tool.clean(key)
             update_xml(post.timestamp)
-            return redirect(url_for('admin.admin_edit', time=post.timestamp_int, name=post.url_name))
+        return redirect(url_for('admin.admin_edit', time=post.timestamp_int, name=post.url_name))
     form.category.data = post.category.category
     form.tags.data = post.tags
     form.url_name.data = post.url_name
@@ -419,11 +414,11 @@ def admin_pages():
 @login_required
 def admin_posts():
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.id.desc()).paginate(
+    pagination = Post.query.filter_by(draft=False).order_by(Post.id.desc()).paginate(
         page, per_page=current_app.config['ADMIN_POSTS_PER_PAGE'],
         error_out=False
     )
-    posts = [post for post in pagination.items if post.draft is False]
+    posts = [post for post in pagination.items]
     return render_template('admin/admin_post.html',
                            title='管理文章',
                            posts=posts,
@@ -802,10 +797,8 @@ def admin_side_box():
 @login_required
 def unable_side_box(id):
     box = SideBox.query.get_or_404(id)
-    if box.unable:
-        box.unable = False
-    else:
-        box.unable = True
+    box.unable = False if box.unable else True
+
     db.session.add(box)
     db.session.commit()
     # 清除缓存
@@ -878,10 +871,7 @@ def rename_img():
         return redirect(url_for('admin.qiniu_picbed'))
     flash('rename image fail')
     return redirect(url_for('admin.qiniu_picbed'))
-
-
 # qiniu picture bed end
-
 
 @admin_bp.route('/clean/cache/all')
 @login_required
