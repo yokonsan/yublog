@@ -1,8 +1,12 @@
 from collections import OrderedDict
-from flask import redirect, request, g, jsonify
+from flask import redirect, request, g, jsonify, current_app, render_template, url_for
 
-from yublog.views import *
+from yublog.views import main_bp
+from yublog.models import Post, Comment, Page, Category, Tag, Talk, SiteLink, LoveMe
+from yublog.caches import cache_tool
+from yublog.views.model_cache_util import get_model_cache
 from yublog.views.comment_utils import CommentUtils
+from yublog.extensions import db
 
 
 @main_bp.route('/')
@@ -20,7 +24,7 @@ def index():
     for p in _all:
         cache_key = '_'.join(map(str, ['post', p.year, p.month, p.url_name]))
         # print(f'key: {cache_key}')
-        posts.append(get_post_cache(cache_key))
+        posts.append(get_model_cache(cache_key))
     return render_template('main/index.html', title='首页',
                            posts=posts, page=_page, max_page=max_page,
                            pagination=range(1, max_page + 1))
@@ -29,7 +33,7 @@ def index():
 @main_bp.route('/<int:year>/<int:month>/<post_url>/')
 def post(year, month, post_url):
     cache_key = '_'.join(map(str, ['post', year, month, post_url]))
-    _post = get_post_cache(cache_key)
+    _post = get_model_cache(cache_key)
 
     page_cnt = request.args.get('page', 1, type=int)
     if page_cnt == -1:

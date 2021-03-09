@@ -1,98 +1,18 @@
 import os
 import re
-import asyncio
 
-from flask import redirect, request, flash
+from flask import redirect, request, flash, render_template, current_app, url_for
 from flask_login import login_required, login_user, logout_user, current_user
 
-from yublog import qn
-from yublog.views import *
+from yublog.caches import cache_tool, global_cache_key
+from yublog.models import Admin, Post, Page, SiteLink, SideBox, Column, Comment, Talk, Article
+from yublog.extensions import qn, db, whooshee
+from yublog.views import admin_bp
 from yublog.forms import *
-from yublog.utils.tools import get_sitemap, save_file, gen_rss_xml
+from yublog.utils.tools import asyncio_send
+from yublog.views.save_utils import save_post, save_category, save_xml
 from yublog.exceptions import DuplicateEntryException
-
-
-def update_first_cache():
-    """
-    在新文章更新后，清掉最近一篇文章的缓存
-    """
-    posts = Post.query.order_by(Post.timestamp.desc()).all()
-    if len(posts) > 1:
-        first_post = posts[1]
-        cache_key = '_'.join(map(str, ['post', first_post.year, first_post.month, first_post.url_name]))
-        cache_tool.clean(cache_key)
-    return True
-
-
-def save_tags(tags):
-    """
-    保存标签到模型
-    :param tags: 标签集合，创建时间，文章ID
-    """
-    for tag in tags:
-        exist_tag = Tag.query.filter_by(tag=tag).first()
-        if not exist_tag:
-            tag = Tag(tag=tag)
-            db.session.add(tag)
-    db.session.commit()
-
-
-def save_post(form, draft=False):
-    """
-    封装保存文章到数据库的重复操作
-    :param form: 表单类
-    :param draft: 是否保存草稿
-    :return: post object
-    """
-    category = save_category(form.category.data, is_show=not draft)
-
-    tags = [tag for tag in form.tags.data.split(',')]
-    post = Post(body=form.body.data, title=form.title.data, 
-                url_name=form.url_name.data, category=category,
-                tags=form.tags.data, timestamp=form.time.data, draft=draft)
-    if not draft:
-        # 保存标签模型
-        save_tags(tags)
-        # 更新xml
-        update_xml(post.timestamp)
-
-    return post
-
-
-def save_category(old_category, new_category=None, is_show=True):
-    # 是否需要删除旧的分类
-    if new_category:
-        category = Category.query.filter_by(category=old_category).first()
-        if category.posts.count() == 1:
-            db.session.delete(category)
-            db.session.commit()
-            # 更新分类缓存
-            cache_tool.clean(cache_tool.GLOBAL_KEY)
-        old_category = new_category
-
-    # 是否新的分类需要添加
-    category = Category.query.filter_by(category=old_category).first()
-    if not category:
-        category = Category(category=old_category, is_show=is_show)
-        db.session.add(category)
-        db.session.commit()
-    return category
-
-
-# 编辑文章后更新sitemap
-def update_xml(update_time):
-    # 获取配置信息
-    count = current_app.config['RSS_COUNTS']
-
-    post_list = Post.query.order_by(Post.timestamp.desc()).all()
-    posts = [post for post in post_list if post.draft is False]
-    # sitemap
-    sitemap = get_sitemap(posts)
-    save_file(sitemap, 'sitemap.xml')
-    # rss
-    rss_posts = posts[:count]
-    rss = gen_rss_xml(update_time, rss_posts)
-    save_file(rss, 'atom.xml')
+from yublog.views.model_cache_util import update_first_cache
 
 
 @admin_bp.route('/')
@@ -307,7 +227,7 @@ def admin_edit(time, name):
                 # 清除缓存
                 cache_tool.clean(cache_tool.GLOBAL_KEY)
                 update_first_cache()
-                update_xml(post.timestamp)
+                save_xml(post.timestamp)
         else:
             db.session.add(post)
             db.session.commit()
@@ -315,7 +235,7 @@ def admin_edit(time, name):
             # 清除对应文章缓存
             key = '_'.join(map(str, ['post', post.year, post.month, post.url_name]))
             cache_tool.clean(key)
-            update_xml(post.timestamp)
+            save_xml(post.timestamp)
         return redirect(url_for('admin.admin_edit', time=post.timestamp_int, name=post.url_name))
     form.category.data = post.category.category
     form.tags.data = post.tags

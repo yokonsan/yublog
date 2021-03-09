@@ -1,4 +1,3 @@
-from re import A
 from flask import render_template, current_app, url_for
 
 from yublog import db

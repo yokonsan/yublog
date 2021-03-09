@@ -4,7 +4,7 @@ from flask import current_app
 
 from yublog import create_app, db
 from yublog.models import Post, Page, Admin, Column, Article, \
-        Category, Tag, Shuoshuo, SiteLink, SideBox
+        Category, Tag, Talk, SiteLink, SideBox
 
 
 class AdminTestCase(unittest.TestCase):
@@ -89,10 +89,10 @@ class AdminTestCase(unittest.TestCase):
 
     def test_add_shuoshuo(self):
         """添加说说"""
-        test_shuo = Shuoshuo(talk='This a test shuoshuo.')
+        test_shuo = Talk(talk='This a test shuoshuo.')
         db.session.add(test_shuo)
         db.session.commit()
-        shuo = Shuoshuo.query.filter_by(talk='This a test shuoshuo.').first()
+        shuo = Talk.query.filter_by(talk='This a test shuoshuo.').first()
         self.assertIsNotNone(shuo)
 
     def test_add_link(self):
@@ -173,19 +173,19 @@ class AdminTestCase(unittest.TestCase):
 
     def test_admin_shuoshuo(self):
         """管理说说"""
-        test_shuo = Shuoshuo.query.filter_by(talk='This a test shuoshuo.').first()
+        test_shuo = Talk.query.filter_by(talk='This a test shuoshuo.').first()
         test_shuo.shuo = 'This a new shuoshuo.'
         db.session.add(test_shuo)
         db.session.commit()
-        shuo = Shuoshuo.query.filter_by(talk='This a new shuoshuo.').first()
+        shuo = Talk.query.filter_by(talk='This a new shuoshuo.').first()
         self.assertIsNotNone(shuo)
 
     def test_delete_shuoshuo(self):
         """删除说说"""
-        test_shuo = Shuoshuo.query.filter_by(talk='This a new shuoshuo.').first()
+        test_shuo = Talk.query.filter_by(talk='This a new shuoshuo.').first()
         db.session.delete(test_shuo)
         db.session.commit()
-        shuo = Shuoshuo.query.filter_by(talk='This a new shuoshuo.').first()
+        shuo = Talk.query.filter_by(talk='This a new shuoshuo.').first()
         self.assertIsNone(shuo)
 
     def test_admin_link(self):
