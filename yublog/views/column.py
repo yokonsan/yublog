@@ -3,7 +3,7 @@ from flask import render_template, request, jsonify, \
 
 from yublog.views import column_bp
 from yublog.models import Column, Article, Comment, db
-from yublog.views.main import save_comment
+from yublog.views.comment_utils import CommentUtils
 from yublog.forms import ArticlePasswordForm
 from yublog.caches import cache_tool
 
@@ -169,12 +169,11 @@ def love_column(id):
 
 @column_bp.route('/<int:id>/comment', methods=['POST'])
 def comment(id):
-    post = Article.query.filter_by(id=id).first()
     form = request.get_json()
-    data = save_comment(post, form)
+    data = CommentUtils('article', form).save_comment(id)
     if data.get('reply_to'):
         return jsonify(nickname=data['nickname'], email=data['email'],
-                       website=data['website'], body=data['comment'],
-                       isReply=data['is_reply'], replyTo=data['reply_to'], post=post.title)
+                       website=data['website'], body=data['body'],
+                       replyTo=data['reply_to'])
     return jsonify(nickname=data['nickname'], email=data['email'],
-                   website=data['website'], body=data['comment'], post=post.title)
+                   website=data['website'], body=data['body'])

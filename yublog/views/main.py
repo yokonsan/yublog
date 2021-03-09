@@ -1,7 +1,12 @@
 from collections import OrderedDict
-from flask import redirect, request, g, jsonify
+from flask import redirect, request, g, jsonify, current_app, render_template, url_for
 
-from yublog.views import *
+from yublog.views import main_bp
+from yublog.models import Post, Comment, Page, Category, Tag, Talk, SiteLink, LoveMe
+from yublog.caches import cache_tool
+from yublog.views.model_cache_util import get_model_cache
+from yublog.views.comment_utils import CommentUtils
+from yublog.extensions import db
 
 
 @main_bp.route('/')
@@ -19,7 +24,7 @@ def index():
     for p in _all:
         cache_key = '_'.join(map(str, ['post', p.year, p.month, p.url_name]))
         # print(f'key: {cache_key}')
-        posts.append(get_post_cache(cache_key))
+        posts.append(get_model_cache(cache_key))
     return render_template('main/index.html', title='首页',
                            posts=posts, page=_page, max_page=max_page,
                            pagination=range(1, max_page + 1))
@@ -28,7 +33,7 @@ def index():
 @main_bp.route('/<int:year>/<int:month>/<post_url>/')
 def post(year, month, post_url):
     cache_key = '_'.join(map(str, ['post', year, month, post_url]))
-    _post = get_post_cache(cache_key)
+    _post = get_model_cache(cache_key)
 
     page_cnt = request.args.get('page', 1, type=int)
     if page_cnt == -1:
@@ -69,9 +74,7 @@ def page(page_url):
 
 @main_bp.route('/tag/<tag_name>/')
 def tag(tag_name):
-    _tag = Tag.query.filter_by(tag=tag_name).first()
-    if not _tag:
-        abort(404)
+    _tag = Tag.query.first_or_404(tag=tag_name)
 
     all_posts = Post.query.order_by(Post.timestamp.desc()).all()
     posts = (p for p in all_posts if p.tag_in_post(tag_name) and p.draft is False)
@@ -81,9 +84,7 @@ def tag(tag_name):
 
 @main_bp.route('/category/<category_name>/')
 def category(category_name):
-    _category = Category.query.filter_by(category=category_name, is_show=True).first()
-    if not _category:
-        abort(404)
+    _category = Category.query.first_or_404(category=category_name, is_show=True)
 
     posts = Post.query.filter_by(category=_category,
                                  draft=False).order_by(Post.timestamp.desc()).all()
@@ -153,15 +154,12 @@ def love_me():
 
 @main_bp.route('/<target_type>/<target_id>/comment', methods=['POST'])
 def comment(target_type, target_id):
-    if target_type == 'post':
-        _post = Post.query.get_or_404(target_id)
-    else:
-        _post = Page.query.get_or_404(target_id)
     form = request.get_json()
-    data = save_comment(_post, form)
+    data = CommentUtils(target_type, form).save_comment(target_id)
 
+    # todo
     return jsonify(nickname=data['nickname'], email=data['email'],
-                   website=data['website'], body=data['comment'], post=_post.title)
+                   website=data['website'], body=data['body'])
 
 
 @main_bp.route('/talk')

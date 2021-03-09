@@ -2,9 +2,9 @@ import unittest
 
 from flask import current_app
 
-from app import create_app, db
-from app.models import Post, Page, Admin, Column, Article, \
-        Category, Tag, Shuoshuo, SiteLink, SideBox
+from yublog import create_app, db
+from yublog.models import Post, Page, Admin, Column, Article, \
+        Category, Tag, Talk, SiteLink, SideBox
 
 
 class AdminTestCase(unittest.TestCase):
@@ -81,7 +81,7 @@ class AdminTestCase(unittest.TestCase):
     def test_add_page(self):
         """添加页面"""
         test_page = Page(title='test', url_name='test-page',
-                         body='This is a test page.', canComment=False, isNav=False)
+                         body='This is a test page.', able_comment=False, show_nav=False)
         db.session.add(test_page)
         db.session.commit()
         page = Page.query.filter_by(title='test').first()
@@ -89,19 +89,19 @@ class AdminTestCase(unittest.TestCase):
 
     def test_add_shuoshuo(self):
         """添加说说"""
-        test_shuo = Shuoshuo(shuo='This a test shuoshuo.')
+        test_shuo = Talk(talk='This a test shuoshuo.')
         db.session.add(test_shuo)
         db.session.commit()
-        shuo = Shuoshuo.query.filter_by(shuo='This a test shuoshuo.').first()
+        shuo = Talk.query.filter_by(talk='This a test shuoshuo.').first()
         self.assertIsNotNone(shuo)
 
     def test_add_link(self):
         """添加链接"""
         test_social_link = SiteLink(link='http://www.baidu.com', name='baidu',
-                        isFriendLink=False)
+                        is_friend=False)
         db.session.add(test_social_link)
         test_friend_link = SiteLink(link='http://www.yukunweb.com', name='yukun',
-                        info='This is a friend link.', isFriendLink=True)
+                        info='This is a friend link.', is_friend=True)
         db.session.add(test_friend_link)
         db.session.commit()
         exist_link = SiteLink.query.filter_by(link='http://www.yukunweb.com').first()
@@ -173,32 +173,32 @@ class AdminTestCase(unittest.TestCase):
 
     def test_admin_shuoshuo(self):
         """管理说说"""
-        test_shuo = Shuoshuo.query.filter_by(shuo='This a test shuoshuo.').first()
+        test_shuo = Talk.query.filter_by(talk='This a test shuoshuo.').first()
         test_shuo.shuo = 'This a new shuoshuo.'
         db.session.add(test_shuo)
         db.session.commit()
-        shuo = Shuoshuo.query.filter_by(shuo='This a new shuoshuo.').first()
+        shuo = Talk.query.filter_by(talk='This a new shuoshuo.').first()
         self.assertIsNotNone(shuo)
 
     def test_delete_shuoshuo(self):
         """删除说说"""
-        test_shuo = Shuoshuo.query.filter_by(shuo='This a new shuoshuo.').first()
+        test_shuo = Talk.query.filter_by(talk='This a new shuoshuo.').first()
         db.session.delete(test_shuo)
         db.session.commit()
-        shuo = Shuoshuo.query.filter_by(shuo='This a new shuoshuo.').first()
+        shuo = Talk.query.filter_by(talk='This a new shuoshuo.').first()
         self.assertIsNone(shuo)
 
     def test_admin_link(self):
         """管理链接"""
-        test_social_link = SiteLink.query.filter_by(isFriendLink=False).first()
-        test_friend_link = SiteLink.query.filter_by(isFriendLink=True).first()
+        test_social_link = SiteLink.query.filter_by(is_friend=False).first()
+        test_friend_link = SiteLink.query.filter_by(is_friend=True).first()
         test_social_link.name = 'google'
         test_friend_link.name ='kyu'
         db.session.add(test_social_link)
         db.session.add(test_friend_link)
         db.session.commit()
-        social_link = SiteLink.query.filter_by(isFriendLink=False).first()
-        friend_link = SiteLink.query.filter_by(isFriendLink=True).first()
+        social_link = SiteLink.query.filter_by(is_friend=False).first()
+        friend_link = SiteLink.query.filter_by(is_friend=True).first()
         self.assertEqual(social_link.name, 'google')
         self.assertNotEqual(friend_link.name, 'yukun')
 
