@@ -17,7 +17,7 @@
         <a href="{{ url_for('column._column',id=column.id) }}">{{ column.column }}</a>
     </div>
     <ul>
-        {% for i in data %}
+        {% for i in articles %}
         <li>
             <span>{{ i.num }}</span>
             <a href="{{ url_for('column.article',url=column.url_name,id=i.item.id) }}" class="{% if i.item==article %}current{% else %}{% endif %}">

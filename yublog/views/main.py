@@ -19,9 +19,8 @@ def index():
     counts = _posts.count()
     max_page = counts // per_page + 1 if counts % per_page != 0 else counts // per_page
     post_list = _posts.limit(per_page).offset((_page - 1) * per_page).all()
-    _all = (p for p in post_list if p.draft is False)
     posts = []
-    for p in _all:
+    for p in post_list:
         cache_key = '_'.join(map(str, ['post', p.year, p.month, p.url_name]))
         # print(f'key: {cache_key}')
         posts.append(get_model_cache(cache_key))

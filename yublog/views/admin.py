@@ -96,31 +96,31 @@ def add_link():
         if exist_link:
             flash('链接已经存在哦...')
             return redirect(url_for('admin.add_link'))
-        else:
-            url = form.link.data
-            name = form.name.data
-            link = SiteLink(link=url, name=name, is_friend=False)
-            db.session.add(link)
-            db.session.commit()
-            flash('添加成功')
-            # update cache
-            cache_tool.clean(cache_tool.GLOBAL_KEY)
-            return redirect(url_for('admin.add_link'))
+
+        url = form.link.data
+        name = form.name.data
+        link = SiteLink(link=url, name=name, is_friend=False)
+        db.session.add(link)
+        db.session.commit()
+        flash('添加成功')
+        # update cache
+        cache_tool.clean(cache_tool.GLOBAL_KEY)
+        return redirect(url_for('admin.add_link'))
     # 友链
     if fr_form.submit2.data and fr_form.validate_on_submit():
         exist_link = SiteLink.query.filter_by(link=fr_form.link.data).first()
         if exist_link:
             flash('链接已经存在哦...')
             return redirect(url_for('admin.add_link'))
-        else:
-            link = SiteLink(link=fr_form.link.data, name=fr_form.name.data,
-                            info=fr_form.info.data, is_friend=True)
-            db.session.add(link)
-            db.session.commit()
-            flash('添加成功')
-            # update cache
-            cache_tool.update_global(global_cache_key.FRIEND_COUNT, 1, cache_tool.ADD)
-            return redirect(url_for('admin.add_link'))
+
+        link = SiteLink(link=fr_form.link.data, name=fr_form.name.data,
+                        info=fr_form.info.data, is_friend=True)
+        db.session.add(link)
+        db.session.commit()
+        flash('添加成功')
+        # update cache
+        cache_tool.update_global(global_cache_key.FRIEND_COUNT, 1, cache_tool.ADD)
+        return redirect(url_for('admin.add_link'))
     return render_template('admin/admin_add_link.html', title="站点链接",
                            form=form, fr_form=fr_form)
 
@@ -517,7 +517,7 @@ def delete_shuo(id):
 def write_column():
     form = ColumnForm()
     if form.validate_on_submit():
-        column = Column(column=form.column.data, timestamp=form.date.data,
+        column = Column(title=form.column.data, timestamp=form.date.data,
                         url_name=form.url_name.data, body=form.body.data,
                         password=form.password.data)
         db.session.add(column)
@@ -534,7 +534,7 @@ def edit_column(id):
     column = Column.query.get_or_404(id)
     form = ColumnForm()
     if form.validate_on_submit():
-        column.column = form.column.data
+        column.title = form.column.data
         column.timestamp = form.date.data
         column.url_name = form.url_name.data
         column.body = form.body.data
@@ -546,7 +546,7 @@ def edit_column(id):
         flash('专题更新成功！')
         return redirect(url_for('admin.admin_column', id=column.id))
 
-    form.column.data = column.column
+    form.column.data = column.title
     form.date.data = column.timestamp
     form.url_name.data = column.url_name
     form.body.data = column.body
@@ -568,7 +568,7 @@ def admin_column(id):
     column = Column.query.get_or_404(id)
     articles = column.articles.order_by(Article.timestamp.desc()).all()
     return render_template('admin_column/admin_column.html', column=column,
-                           articles=articles, title=column.column)
+                           articles=articles, title=column.title)
 
 
 @admin_bp.route('/delete/column/<int:id>')

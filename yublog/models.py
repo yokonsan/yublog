@@ -340,11 +340,9 @@ class Column(db.Model):
     """专栏数据模型"""
     __tablename__ = 'columns'
     id = db.Column(db.Integer, primary_key=True)
-    column = db.Column(db.String(64))
-    url_name = db.Column(db.String(64), unique=True)
+    title = db.Column(db.String(64))
+    url_name = db.Column(db.String(64), unique=True, index=True)
     body = db.Column(db.Text)
-    view_cnt = db.Column(db.Integer, default=0)
-    love_cnt = db.Column(db.Integer, default=0)
     timestamp = db.Column(db.String(64))
     password_hash = db.Column(db.String(500))
 
@@ -366,6 +364,17 @@ class Column(db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+    
+    def to_dict(self):
+        column = {
+            'id': self.id,
+            'title': self.title,
+            'body': self.body_to_html,
+            'timestamp': self.timestamp,
+            'url_name': self.url_name,
+            'articles': []
+        }
+        return column
 
     def __repr__(self):
         return '<Column name: {}>'.format(self.column)
