@@ -5,20 +5,19 @@
 
     <div class="column-item">
         <div class="column-title">
-            <h1>{{ column.column }}</h1>
+            <h1>{{ column.title }}</h1>
         </div>
 
         <div class="column-meta">
             <span class="post-time"><i class="demo-icon icon-calendar"></i> {{ column.timestamp }}</span>
-             | <span class="love-count"><i class="demo-icon icon-heart-empty"></i> {{ column.love_num }}</span>
-             | <span class="post-view-count"><i class="demo-icon icon-eye"></i> {{ column.view_num }}</span>
+             <!-- | <span class="love-count"><i class="demo-icon icon-heart-empty"></i> {{ column.love_num }}</span> -->
+             | <span class="post-view-count" postid="{{ column.id }}"><i class="demo-icon icon-eye"></i> </span>
         </div>
 
         <div class="column-body">
             <div class="column-desc">
-                {{ column.body_to_html | safe }}
+                {{ column.body | safe }}
                 <div class="column-btn">
-                    <button class="love-column" href="{{ url_for('column.love_column',id=column.id) }}">喜欢主题</button>
                     <a class="read-column"
                        href="{% if first_id %}{{ url_for('column.article',url=column.url_name,id=first_id) }}{% else %}#{% endif %}">
                         阅读主题
@@ -30,8 +29,8 @@
 
     <div class="column-articles">
         <div class="column-menu">主题目录</div>
-        {% if data %}
-        {% for i in data %}
+        {% if articles %}
+        {% for i in articles %}
         <div class="article-item">
             <span class="article-num">{{ i.num }}</span>
             <a href="{{ url_for('column.article',url=column.url_name,id=i.item.id) }}">{{ i.item.title }}</a>
@@ -51,30 +50,29 @@
 {% block script %}
 {{ super() }}
 <script>
-    var loveBtn = document.getElementsByClassName('love-column')[0];
-    var loveCount = document.getElementsByClassName('love-count')[0];
-    var counts = parseInt(loveCount.innerText);
-    var request;
-    if (window.XMLHttpRequest) {
-        request = new XMLHttpRequest();
-    } else {
-        request = new ActiveXObject('Microsoft.XMLHTTP');
-    }
-
-    loveBtn.onclick = function() {
-        // 判断本地是否有登录记录
-        var love = ms.get('love_{{ column.id }}');
-        if (love) {
-            alert('您已喜欢过我了QAQ~')
+    function getViewCount(id) {
+        var request;
+        if (window.XMLHttpRequest) {
+            request = new XMLHttpRequest();
         } else {
-            ms.set('love_{{ column.id }}', 'loved');
-            counts += 1;
-            loveCount.innerHTML = '<i class="demo-icon icon-heart-empty"></i> ' + counts.toString();
-
-            // 发送请求:
-            request.open('GET', '/column/love/{{ column.id }}');
-            request.send();
+            request = new ActiveXObject('Microsoft.XMLHTTP');
         }
-    };
-</script>
+        request.onreadystatechange = function () { // 状态发生变化时，函数被回调
+            if (request.readyState === 4) {
+                if (request.status === 200) {
+                    respText = JSON.parse(request.responseText);
+                    viewSpans.innerHTML += respText.count;
+                } else {
+                    console.log('Ajax fail');
+                }
+            }
+        };
+        request.open('GET', '/api/view/column/'+id);
+        request.send();
+    }
+    
+    var viewSpans = document.getElementsByClassName('post-view-count')[0];
+    var postId = viewSpans.attributes["postid"].value;
+    getViewCount(postId)
+    </script>
 {% endblock %}

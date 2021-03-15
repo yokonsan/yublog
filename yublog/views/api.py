@@ -175,33 +175,22 @@ def get_page_comments(id):
     return jsonify({'msg': '没有信息...'})
 
 # post views
-@api_bp.route('/view/<type>/<int:id>', methods=['GET'])
-def views(type, id):
+@api_bp.route('/view/<_type>/<int:id>', methods=['GET'])
+def views(_type, id):
     """浏览量"""
-    view = View.query.filter_by(type=type, relationship_id=id).first()
+    # print(request.cookies)
+    view, cookie_flag, resp = None, False, None
+    cookie_flag = request.cookies.get('{0}_{1}'.format(_type, str(id)))
+    view = View.query.filter_by(type=_type, relationship_id=id).first()
     if not view:
-        view = View(type=type, count=1, relationship_id=id)
-        db.session.add(view)
-        db.session.commit()
-        resp = jsonify(count=1)
-        resp.set_cookie('post_' + str(id), '1', max_age=1 * 24 * 60 * 60)
-        return resp
-
-    if type == 'post':
-        if not request.cookies.get('post_' + str(id)):
-            view.count += 1
-            db.session.add(view)
-            db.session.commit()
-            resp = jsonify(count=view.count)
-            resp.set_cookie('post_' + str(id), '1', max_age=1 * 24 * 60 * 60)
-            return resp
+        view = View(type=_type, count=0, relationship_id=id)
+    if cookie_flag:
         return jsonify(count=view.count)
-    elif type == 'column':
-        if not request.cookies.get('article_' + str(id)):
-            view.count += 1
-            db.session.add(view)
-            db.session.commit()
-            resp = jsonify(count=view.count)
-            resp.set_cookie('article_' + str(id), '1', max_age=1 * 24 * 60 * 60)
-            return resp
-        return jsonify(count=view.count)
+    
+    view.count += 1
+    db.session.add(view)
+    db.session.commit()
+    resp = jsonify(count=view.count)
+    resp.set_cookie('{0}_{1}'.format(_type, str(id)), '1', max_age=1 * 24 * 60 * 60)
+    
+    return resp

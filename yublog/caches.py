@@ -3,6 +3,15 @@
 from yublog import cache
 
 
+class CacheScheme(object):
+    SCHEME = {
+        'posts': [],
+        'pages': [],
+        'columns': [],
+        'articles': []
+    }
+
+
 class GlobalCacheKey(object):
     ADMIN = 'admin'
     TAGS = 'tags'

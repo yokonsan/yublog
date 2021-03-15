@@ -5,13 +5,13 @@
     <div class="column-list">
         {% for column in columns %}
         <div class="column-box">
-            <a class="column" href="{{ url_for('column._column',id=column.id) }}">{{ column.column }}</a>
+            <a class="column" href="{{ url_for('column._column',url_name=column.url_name) }}">{{ column.title }}</a>
             <div class="article-meta" style="padding: 0;">
                 <span class="post-time"><i class="demo-icon icon-calendar"></i>{{ column.timestamp }}</span>
-                <span><i class="demo-icon icon-heart-empty">喜欢：{{ column.love_num }}</i></span>
+                <!-- <span><i class="demo-icon icon-heart-empty">喜欢：{{ column.love_num }}</i></span> -->
             </div>
             <div class="column-profile">
-            {{ column.body_to_html | striptags | truncate(200) }}
+            {{ column.body | striptags | truncate(200) }}
             </div>
         </div>
         {% endfor %}

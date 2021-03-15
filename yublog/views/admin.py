@@ -5,7 +5,8 @@ from flask import redirect, request, flash, render_template, current_app, url_fo
 from flask_login import login_required, login_user, logout_user, current_user
 
 from yublog.caches import cache_tool, global_cache_key
-from yublog.models import Admin, Post, Page, SiteLink, SideBox, Column, Comment, Talk, Article
+from yublog.models import Admin, Post, Page, SiteLink, SideBox, \
+    Column, Comment, Talk, Article, Category, Tag
 from yublog.extensions import qn, db, whooshee
 from yublog.views import admin_bp
 from yublog.forms import *
@@ -96,31 +97,31 @@ def add_link():
         if exist_link:
             flash('链接已经存在哦...')
             return redirect(url_for('admin.add_link'))
-        else:
-            url = form.link.data
-            name = form.name.data
-            link = SiteLink(link=url, name=name, is_friend=False)
-            db.session.add(link)
-            db.session.commit()
-            flash('添加成功')
-            # update cache
-            cache_tool.clean(cache_tool.GLOBAL_KEY)
-            return redirect(url_for('admin.add_link'))
+
+        url = form.link.data
+        name = form.name.data
+        link = SiteLink(link=url, name=name, is_friend=False)
+        db.session.add(link)
+        db.session.commit()
+        flash('添加成功')
+        # update cache
+        cache_tool.clean(cache_tool.GLOBAL_KEY)
+        return redirect(url_for('admin.add_link'))
     # 友链
     if fr_form.submit2.data and fr_form.validate_on_submit():
         exist_link = SiteLink.query.filter_by(link=fr_form.link.data).first()
         if exist_link:
             flash('链接已经存在哦...')
             return redirect(url_for('admin.add_link'))
-        else:
-            link = SiteLink(link=fr_form.link.data, name=fr_form.name.data,
-                            info=fr_form.info.data, is_friend=True)
-            db.session.add(link)
-            db.session.commit()
-            flash('添加成功')
-            # update cache
-            cache_tool.update_global(global_cache_key.FRIEND_COUNT, 1, cache_tool.ADD)
-            return redirect(url_for('admin.add_link'))
+
+        link = SiteLink(link=fr_form.link.data, name=fr_form.name.data,
+                        info=fr_form.info.data, is_friend=True)
+        db.session.add(link)
+        db.session.commit()
+        flash('添加成功')
+        # update cache
+        cache_tool.update_global(global_cache_key.FRIEND_COUNT, 1, cache_tool.ADD)
+        return redirect(url_for('admin.add_link'))
     return render_template('admin/admin_add_link.html', title="站点链接",
                            form=form, fr_form=fr_form)
 
@@ -350,6 +351,10 @@ def admin_posts():
 def delete_post(time, name):
     timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
     post = Post.query.filter_by(timestamp=timestamp, url_name=name).first()
+    _category = Category.query.get_or_404(post.category_id)
+    if _category.posts.count() == 1:
+        db.session.delete(_category)
+
     db.session.delete(post)
     db.session.commit()
     flash('删除成功')
@@ -517,7 +522,7 @@ def delete_shuo(id):
 def write_column():
     form = ColumnForm()
     if form.validate_on_submit():
-        column = Column(column=form.column.data, timestamp=form.date.data,
+        column = Column(title=form.column.data, timestamp=form.date.data,
                         url_name=form.url_name.data, body=form.body.data,
                         password=form.password.data)
         db.session.add(column)
@@ -534,7 +539,7 @@ def edit_column(id):
     column = Column.query.get_or_404(id)
     form = ColumnForm()
     if form.validate_on_submit():
-        column.column = form.column.data
+        column.title = form.column.data
         column.timestamp = form.date.data
         column.url_name = form.url_name.data
         column.body = form.body.data
@@ -544,9 +549,10 @@ def edit_column(id):
         db.session.add(column)
         db.session.commit()
         flash('专题更新成功！')
+        cache_tool.clean('column_' + column.url_name)
         return redirect(url_for('admin.admin_column', id=column.id))
 
-    form.column.data = column.column
+    form.column.data = column.title
     form.date.data = column.timestamp
     form.url_name.data = column.url_name
     form.body.data = column.body
@@ -558,6 +564,7 @@ def edit_column(id):
 @login_required
 def admin_columns():
     columns = Column.query.all()
+    # print(f'columns: {columns}')
     return render_template('admin_column/admin_columns.html',
                            columns=columns, title='管理专题')
 
@@ -568,7 +575,7 @@ def admin_column(id):
     column = Column.query.get_or_404(id)
     articles = column.articles.order_by(Article.timestamp.desc()).all()
     return render_template('admin_column/admin_column.html', column=column,
-                           articles=articles, title=column.column)
+                           articles=articles, title=column.title)
 
 
 @admin_bp.route('/delete/column/<int:id>')
@@ -581,8 +588,6 @@ def delete_column(id):
     flash('删除专题')
     # clean all of this column cache
     cache_tool.clean('column_' + column.url_name)
-    for i in articles:
-        cache_tool.clean('_'.join(['article', column.url_name, str(i.id)]))
     return redirect(url_for('admin.admin_columns'))
 
 
@@ -621,10 +626,7 @@ def edit_column_article(url, id):
         db.session.commit()
         flash('更新文章成功！')
         # clear cache
-        cache_tool.clean('_'.join(['article', url, str(id)]))
-        if article.title != _title:
-            # the title is change
-            cache_tool.clean('column_' + url)
+        cache_tool.clean('column_' + url)
         return redirect(url_for('admin.admin_column', id=column.id))
 
     form.title.data = article.title
@@ -644,7 +646,6 @@ def delete_column_article(url, id):
     db.session.commit()
     flash('删除文章成功！')
     # 清除对于缓存
-    cache_tool.clean('_'.join(['article', url, str(id)]))
     cache_tool.clean('column_' + url)
     return redirect(url_for('admin.admin_column', id=column.id))
 
@@ -659,7 +660,6 @@ def upload_file():
         filename = file.filename
         path = os.path.join(source_folder, filename)
         file.save(path)
-
         return redirect(url_for('admin.index'))
     return render_template('admin/upload_file.html', title="上传文件")
 

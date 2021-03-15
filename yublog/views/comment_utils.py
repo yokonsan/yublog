@@ -59,7 +59,6 @@ class CommentUtils(object):
             return None
 
         target = self.COMMENT_TARGET_TYPE.get(self._target_type).query.get_or_404(target_id)
-        
         url = self._get_comment_post(target)
         if not url:
             current_app.logger.warning('评论保存失败：未获取到目标url')
