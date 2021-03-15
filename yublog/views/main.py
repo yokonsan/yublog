@@ -73,7 +73,7 @@ def page(page_url):
 
 @main_bp.route('/tag/<tag_name>/')
 def tag(tag_name):
-    _tag = Tag.query.first_or_404(tag=tag_name)
+    _tag = Tag.query.filter_by(tag=tag_name).first()
 
     all_posts = Post.query.order_by(Post.timestamp.desc()).all()
     posts = (p for p in all_posts if p.tag_in_post(tag_name) and p.draft is False)
@@ -83,7 +83,7 @@ def tag(tag_name):
 
 @main_bp.route('/category/<category_name>/')
 def category(category_name):
-    _category = Category.query.first_or_404(category=category_name, is_show=True)
+    _category = Category.query.filter_by(category=category_name, is_show=True).first()
 
     posts = Post.query.filter_by(category=_category,
                                  draft=False).order_by(Post.timestamp.desc()).all()

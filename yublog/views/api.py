@@ -178,8 +178,9 @@ def get_page_comments(id):
 @api_bp.route('/view/<_type>/<int:id>', methods=['GET'])
 def views(_type, id):
     """浏览量"""
+    # print(request.cookies)
     view, cookie_flag, resp = None, False, None
-    cookie_flag = request.cookies.get('post_' + str(id))
+    cookie_flag = request.cookies.get('{0}_{1}'.format(_type, str(id)))
     view = View.query.filter_by(type=_type, relationship_id=id).first()
     if not view:
         view = View(type=_type, count=0, relationship_id=id)
@@ -190,9 +191,6 @@ def views(_type, id):
     db.session.add(view)
     db.session.commit()
     resp = jsonify(count=view.count)
-    if _type == 'post':
-        resp.set_cookie('post_' + str(id), '1', max_age=1 * 24 * 60 * 60)
-    elif _type == 'column':
-        resp.set_cookie('article_' + str(id), '1', max_age=1 * 24 * 60 * 60)
+    resp.set_cookie('{0}_{1}'.format(_type, str(id)), '1', max_age=1 * 24 * 60 * 60)
     
     return resp

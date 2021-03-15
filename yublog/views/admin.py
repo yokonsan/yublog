@@ -5,7 +5,8 @@ from flask import redirect, request, flash, render_template, current_app, url_fo
 from flask_login import login_required, login_user, logout_user, current_user
 
 from yublog.caches import cache_tool, global_cache_key
-from yublog.models import Admin, Post, Page, SiteLink, SideBox, Column, Comment, Talk, Article
+from yublog.models import Admin, Post, Page, SiteLink, SideBox, \
+    Column, Comment, Talk, Article, Category, Tag
 from yublog.extensions import qn, db, whooshee
 from yublog.views import admin_bp
 from yublog.forms import *
@@ -350,6 +351,10 @@ def admin_posts():
 def delete_post(time, name):
     timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
     post = Post.query.filter_by(timestamp=timestamp, url_name=name).first()
+    _category = Category.query.get_or_404(post.category_id)
+    if _category.posts.count() == 1:
+        db.session.delete(_category)
+
     db.session.delete(post)
     db.session.commit()
     flash('删除成功')
@@ -544,6 +549,7 @@ def edit_column(id):
         db.session.add(column)
         db.session.commit()
         flash('专题更新成功！')
+        cache_tool.clean('column_' + column.url_name)
         return redirect(url_for('admin.admin_column', id=column.id))
 
     form.column.data = column.title
@@ -558,6 +564,7 @@ def edit_column(id):
 @login_required
 def admin_columns():
     columns = Column.query.all()
+    # print(f'columns: {columns}')
     return render_template('admin_column/admin_columns.html',
                            columns=columns, title='管理专题')
 
@@ -581,8 +588,6 @@ def delete_column(id):
     flash('删除专题')
     # clean all of this column cache
     cache_tool.clean('column_' + column.url_name)
-    for i in articles:
-        cache_tool.clean('_'.join(['article', column.url_name, str(i.id)]))
     return redirect(url_for('admin.admin_columns'))
 
 
@@ -621,10 +626,7 @@ def edit_column_article(url, id):
         db.session.commit()
         flash('更新文章成功！')
         # clear cache
-        cache_tool.clean('_'.join(['article', url, str(id)]))
-        if article.title != _title:
-            # the title is change
-            cache_tool.clean('column_' + url)
+        cache_tool.clean('column_' + url)
         return redirect(url_for('admin.admin_column', id=column.id))
 
     form.title.data = article.title
@@ -644,7 +646,6 @@ def delete_column_article(url, id):
     db.session.commit()
     flash('删除文章成功！')
     # 清除对于缓存
-    cache_tool.clean('_'.join(['article', url, str(id)]))
     cache_tool.clean('column_' + url)
     return redirect(url_for('admin.admin_column', id=column.id))
 
@@ -659,7 +660,6 @@ def upload_file():
         filename = file.filename
         path = os.path.join(source_folder, filename)
         file.save(path)
-
         return redirect(url_for('admin.index'))
     return render_template('admin/upload_file.html', title="上传文件")
 

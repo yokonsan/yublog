@@ -95,11 +95,25 @@ def _generate_article_cache(field):
 
 
 def _generate_column_cache(field):
+    def linked_article_data(a):
+        return {
+            'id': a.id,
+            'title': a.title
+        }
     cur = Column.query.filter_by(url_name=field).first_or_404()
     data = cur.to_dict()
 
     _articles = Article.query.filter_by(
         column_id=cur.id).order_by(Article.timestamp.asc()).all()
-    articles = [a.to_dict() for a in _articles]
+    articles = []
+    for i, a in enumerate(_articles):
+        article = a.to_dict()
+        _prev = None if i == 0 else linked_article_data(_articles[i-1])
+        _next = None if i == len(_articles)-1 else linked_article_data(_articles[i+1])
+        article.update({
+            'next_article': _next,
+            'prev_article': _prev
+        })
+        articles.append(article)
     data['articles'] = articles
     return data

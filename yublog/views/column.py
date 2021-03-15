@@ -1,3 +1,4 @@
+from os import abort
 from flask import render_template, request, jsonify, \
     current_app, redirect, url_for, make_response
 
@@ -31,14 +32,19 @@ def _column(url_name):
 @column_bp.route('/<url>/<int:id>')
 def article(url, id):
     column = get_model_cache('column_{0}'.format(url))
-    article = get_model_cache('column_{0}_article_{1}'.format(url, id))
+    # get this column all articles cache at sidebar
+    article, articles = None, []
+    for i, a in enumerate(column['articles']):
+        articles.append({'num': i, 'item': a})
+        if a['id'] == id:
+            article = a
+    if article is None:
+        abort(404)
     # judge whether secrecy
     if article.get('secrecy'):
         secrecy = request.cookies.get('secrecy')
         if not secrecy or secrecy != column.password_hash:
             return redirect(url_for('column.enter_password', url=url, id=id))
-    # get this column all articles cache at sidebar
-    articles = [{'num': i,'item': a} for i, a in enumerate(column['articles'])]
 
     page = request.args.get('page', 1, type=int)
     if page == -1:
@@ -51,7 +57,7 @@ def article(url, id):
         error_out=False
     )
     comments = pagination.items
-
+    
     return render_template('column/article.html', column=column, articles=articles,
                            title=article['title'], article=article,
                            pagination=pagination, comments=comments,
@@ -73,13 +79,10 @@ def enter_password(url, id):
                            url=url, id=id, title='输如密码')
 
 
-@column_bp.route('/<int:id>/comment', methods=['POST'])
+@column_bp.route('/column/<int:id>/comment', methods=['POST'])
 def comment(id):
     form = request.get_json()
     data = CommentUtils('article', form).save_comment(id)
-    if data.get('reply_to'):
-        return jsonify(nickname=data['nickname'], email=data['email'],
-                       website=data['website'], body=data['body'],
-                       replyTo=data['reply_to'])
+
     return jsonify(nickname=data['nickname'], email=data['email'],
                    website=data['website'], body=data['body'])
