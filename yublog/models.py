@@ -168,9 +168,9 @@ class View(db.Model):
     __tablename__ = 'views'
     id = db.Column(db.Integer, primary_key=True)
     count = db.Column(db.Integer, default=0)
-    type = db.Column(db.String(25), default='post')
+    type = db.Column(db.String(25), default='post', index=True)
 
-    relationship_id = db.Column(db.Integer)
+    relationship_id = db.Column(db.Integer, index=True)
 
     def __repr__(self):
         return '<View count: {}>'.format(self.count)
@@ -377,7 +377,7 @@ class Column(db.Model):
         return column
 
     def __repr__(self):
-        return '<Column name: {}>'.format(self.column)
+        return '<Column name: {}>'.format(self.title)
 
 
 class Article(db.Model):
@@ -404,7 +404,7 @@ class Article(db.Model):
             'body': self.body_to_html,
             'secrecy': self.secrecy,
             'timestamp': self.timestamp,
-            'column': self.column.column,
+            'column': self.column.title,
             'comment_count': self.comments.count()
         }
         return article
