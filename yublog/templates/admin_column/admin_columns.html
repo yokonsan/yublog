@@ -7,7 +7,7 @@
         <li>
             {{ column.timestamp }}
             <a class="article-title" href="{{url_for('admin.edit_column',id=column.id)}}">
-                {{ column.column }}
+                {{ column.title }}
             </a>
 
             <button onclick="firm('{{url_for('admin.delete_column', id=column.id)}}')" class="delete-btn">删除</button>

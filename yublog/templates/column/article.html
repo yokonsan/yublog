@@ -14,7 +14,7 @@
 <div class="menu-list" style="display: none;">
     <div class="column-menu">主题目录</div>
     <div class="menu-title">
-        <a href="{{ url_for('column._column',id=column.id) }}">{{ column.column }}</a>
+        <a href="{{ url_for('column._column',url_name=column.url_name) }}">{{ column.title }}</a>
     </div>
     <ul>
         {% for i in articles %}
@@ -102,7 +102,7 @@
                 }
             }
         };
-        request.open('GET', '/api/view/column/'+id);
+        request.open('GET', '/api/view/article/'+id);
         request.send();
     }
 

@@ -16,7 +16,7 @@
 
         <div class="column-body">
             <div class="column-desc">
-                {{ column.body_to_html | safe }}
+                {{ column.body | safe }}
                 <div class="column-btn">
                     <a class="read-column"
                        href="{% if first_id %}{{ url_for('column.article',url=column.url_name,id=first_id) }}{% else %}#{% endif %}">
