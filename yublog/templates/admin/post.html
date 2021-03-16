@@ -1,4 +1,4 @@
-{% extends "admin.html" %}
+{% extends "admin_base.html" %}
 {% import "_pagination.html" as page %}
 {% block tab %}管理文章{% endblock %}
 {% block content %}
@@ -7,15 +7,15 @@
         {% for post in posts %}
         <li>
             {{ post.timestamp }}
-            <a class="article-title" href="{{url_for('admin.admin_edit',time=post.timestamp_int, name=post.url_name)}}">
+            <a class="article-title" href="{{url_for('admin.admin_edit', id=post.id)}}">
                 {{ post.title }}
             </a>
 
-            <button onclick="firm('{{url_for('admin.delete_post',time=post.timestamp_int,name=post.url_name)}}')" class="delete-btn">
+            <button onclick="firm('{{url_for('admin.delete_post', id=post.id)}}')" class="delete-btn">
                 删除
             </button>
 
-            <a href="{{url_for('admin.admin_edit', time=post.timestamp_int, name=post.url_name)}}">
+            <a href="{{url_for('admin.admin_edit', id=post.id)}}">
                 <button class="edit-btn">编辑</button>
             </a>
         </li>

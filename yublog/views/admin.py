@@ -6,7 +6,7 @@ from flask_login import login_required, login_user, logout_user, current_user
 
 from yublog.caches import cache_tool, global_cache_key
 from yublog.models import Admin, Post, Page, SiteLink, SideBox, \
-    Column, Comment, Talk, Article, Category, Tag
+    Column, Comment, Talk, Article, Category
 from yublog.extensions import qn, db, whooshee
 from yublog.views import admin_bp
 from yublog.forms import *
@@ -20,7 +20,7 @@ from yublog.views.model_cache_util import update_first_cache
 @admin_bp.route('/index')
 @login_required
 def index():
-    return render_template('admin/admin_index.html')
+    return render_template('admin/index.html')
 
 
 @admin_bp.route('/login/', methods=['GET', 'POST'])
@@ -31,7 +31,7 @@ def login():
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
             return redirect(url_for('admin.index'))
-        flash('账号或密码无效。')
+        flash('Invalid account or password.')
     return render_template('admin/login.html', title='登录', form=form)
 
 
@@ -65,7 +65,7 @@ def set_site():
     form.site_name.data = user.site_name
     form.site_title.data = user.site_title
     form.record_info.data = user.record_info or None
-    return render_template('admin/admin_profile.html', title='设置网站信息', form=form)
+    return render_template('admin/profile.html', title='设置网站信息', form=form)
 
 
 @admin_bp.route('/change-password', methods=['GET', 'POST'])
@@ -122,7 +122,7 @@ def add_link():
         # update cache
         cache_tool.update_global(global_cache_key.FRIEND_COUNT, 1, cache_tool.ADD)
         return redirect(url_for('admin.add_link'))
-    return render_template('admin/admin_add_link.html', title="站点链接",
+    return render_template('admin/edit_link.html', title="站点链接",
                            form=form, fr_form=fr_form)
 
 
@@ -132,7 +132,7 @@ def admin_links():
     links = SiteLink.query.order_by(SiteLink.id.desc()).all()
     social_links = [link for link in links if link.is_friend is False]
     friend_links = list(set(links) - set(social_links))
-    return render_template('admin/admin_link.html', title="管理链接",
+    return render_template('admin/link.html', title="管理链接",
                            social_links=social_links, friend_links=friend_links)
 
 
@@ -155,7 +155,7 @@ def delete_link(id):
 @login_required
 def great_link(id):
     link = SiteLink.query.get_or_404(id)
-    link.is_great = False if link.is_great else True
+    link.is_great = not link.is_great
 
     db.session.add(link)
     db.session.commit()
@@ -189,16 +189,15 @@ def write():
             update_first_cache()
         db.session.commit()
         return redirect(url_for('admin.write'))
-    return render_template('admin/admin_write.html',
+    return render_template('admin/edit_post.html',
                            form=form, title='写文章')
 
 
 # 编辑文章或草稿
-@admin_bp.route('/edit/<int:time>/<name>', methods=['GET', 'POST'])
+@admin_bp.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
-def admin_edit(time, name):
-    timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
-    post = Post.query.filter_by(timestamp=timestamp, url_name=name).first()
+def admin_edit(id):
+    post = Post.query.get_or_404(id)
 
     form = AdminWrite()
     if form.validate_on_submit():
@@ -244,7 +243,7 @@ def admin_edit(time, name):
     form.time.data = post.timestamp
     form.title.data = post.title
     form.body.data = post.body
-    return render_template('admin/admin_write.html',
+    return render_template('admin/edit_post.html',
                            form=form, post=post, title='编辑文章')
 
 
@@ -265,7 +264,7 @@ def add_page():
             # 清除缓存
             cache_tool.clean(cache_tool.GLOBAL_KEY)
         return redirect(url_for('admin.add_page'))
-    return render_template('admin/admin_add_page.html',
+    return render_template('admin/edit_page.html',
                            form=form,
                            title='添加页面')
 
@@ -293,7 +292,7 @@ def edit_page(name):
     form.can_comment.data = page.able_comment
     form.is_nav.data = page.show_nav
     form.url_name.data = page.url_name
-    return render_template('admin/admin_add_page.html',
+    return render_template('admin/edit_page.html',
                            title="编辑页面",
                            form=form,
                            page=page)
@@ -315,9 +314,8 @@ def delete_page(name):
 @admin_bp.route('/draft')
 @login_required
 def admin_drafts():
-    posts = Post.query.order_by(Post.id.desc()).all()
-    drafts = [post for post in posts if post.draft]
-    return render_template('admin/admin_draft.html',
+    drafts = Post.query.filter_by(draft=True).order_by(Post.id.desc()).all()
+    return render_template('admin/draft.html',
                            drafts=drafts,
                            title='管理草稿')
 
@@ -326,7 +324,7 @@ def admin_drafts():
 @login_required
 def admin_pages():
     pages = Page.query.order_by(Page.id.desc()).all()
-    return render_template('admin/admin_page.html',
+    return render_template('admin/page.html',
                            pages=pages,
                            title='管理页面')
 
@@ -340,17 +338,16 @@ def admin_posts():
         error_out=False
     )
     posts = [post for post in pagination.items]
-    return render_template('admin/admin_post.html',
+    return render_template('admin/post.html',
                            title='管理文章',
                            posts=posts,
                            pagination=pagination)
 
 
-@admin_bp.route('/delete/<int:time>/<name>')
+@admin_bp.route('/delete/<int:id>')
 @login_required
-def delete_post(time, name):
-    timestamp = str(time)[0:4] + '-' + str(time)[4:6] + '-' + str(time)[6:8]
-    post = Post.query.filter_by(timestamp=timestamp, url_name=name).first()
+def delete_post(id):
+    post = Post.query.get_or_404(id)
     _category = Category.query.get_or_404(post.category_id)
     if _category.posts.count() == 1:
         db.session.delete(_category)
@@ -373,7 +370,7 @@ def admin_comments():
         error_out=False
     )
     comments = pagination.items
-    return render_template('admin/admin_comment.html', title='管理评论',
+    return render_template('admin/comment.html', title='管理评论',
                            comments=comments, pagination=pagination)
 
 
@@ -488,7 +485,7 @@ def write_shuoshuo():
         # 清除缓存
         cache_tool.update_global(global_cache_key.TALK, shuo.body_to_html)
         return redirect(url_for('admin.write_shuoshuo'))
-    return render_template('admin/admin_write_shuoshuo.html',
+    return render_template('admin/edit_talk.html',
                            title='写说说', form=form)
 
 
@@ -496,7 +493,7 @@ def write_shuoshuo():
 @login_required
 def admin_shuos():
     shuos = Talk.query.order_by(Talk.timestamp.desc()).all()
-    return render_template('admin/admin_shuoshuo.html',
+    return render_template('admin/talk.html',
                            title='管理说说',
                            shuos=shuos)
 
@@ -565,7 +562,7 @@ def edit_column(id):
 def admin_columns():
     columns = Column.query.all()
     # print(f'columns: {columns}')
-    return render_template('admin_column/admin_columns.html',
+    return render_template('admin_column/columns.html',
                            columns=columns, title='管理专题')
 
 
@@ -574,7 +571,7 @@ def admin_columns():
 def admin_column(id):
     column = Column.query.get_or_404(id)
     articles = column.articles.order_by(Article.timestamp.desc()).all()
-    return render_template('admin_column/admin_column.html', column=column,
+    return render_template('admin_column/column.html', column=column,
                            articles=articles, title=column.title)
 
 
@@ -605,7 +602,7 @@ def write_column_article(url):
         # clean cache
         cache_tool.clean('column_' + url)
         return redirect(url_for('admin.admin_column', id=column.id))
-    return render_template('admin_column/write_article.html', form=form,
+    return render_template('admin_column/edit_article.html', form=form,
                            title='编辑文章', column=column)
 
 
@@ -633,7 +630,7 @@ def edit_column_article(url, id):
     form.date.data = article.timestamp
     form.body.data = article.body
     form.secrecy.data = article.secrecy
-    return render_template('admin_column/write_article.html', form=form,
+    return render_template('admin_column/edit_article.html', form=form,
                            title='更新文章', column=column, article=article)
 
 
@@ -679,7 +676,7 @@ def add_side_box():
         # update cache
         cache_tool.clean(cache_tool.GLOBAL_KEY)
         return redirect(url_for('admin.admin_side_box'))
-    return render_template('admin/admin_edit_sidebox.html', form=form,
+    return render_template('admin/edit_sidebox.html', form=form,
                            title='添加插件')
 
 
@@ -702,7 +699,7 @@ def edit_side_box(id):
     form.title.data = box.title
     form.body.data = box.body
     form.is_advertising.data = box.is_advertising
-    return render_template('admin/admin_edit_sidebox.html', form=form,
+    return render_template('admin/edit_sidebox.html', form=form,
                            title='更新插件', box=box)
 
 
@@ -710,7 +707,7 @@ def edit_side_box(id):
 @login_required
 def admin_side_box():
     boxes = SideBox.query.order_by(SideBox.id.desc()).all()
-    return render_template('admin/admin_sidebox.html', boxes=boxes, title='管理插件')
+    return render_template('admin/sidebox.html', boxes=boxes, title='管理插件')
 
 
 @admin_bp.route('/unable/box/<int:id>')
