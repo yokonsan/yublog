@@ -54,8 +54,8 @@ class AdminSiteForm(FlaskForm):
     record_info = StringField('record info')
 
 
-class ShuoForm(FlaskForm):
-    shuoshuo = TextAreaField('shuoshuo', validators=[DataRequired()])
+class TalkForm(FlaskForm):
+    talk = TextAreaField('talk', validators=[DataRequired()])
 
 
 # 专题表单 start

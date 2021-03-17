@@ -1,10 +1,10 @@
-{% extends "admin.html" %}
+{% extends "admin_base.html" %}
 
 {% block tab %}编辑文章{% endblock %}
 {% block content %}
 <div class="admin-write">
 
-    <form action="{%if title== '写文章'%}{{url_for('admin.write')}}{%else%}{{url_for('admin.admin_edit',time=post.timestamp_int,name=post.url_name)}}{%endif%}" method="post">
+    <form action="{%if title== '写文章'%}{{url_for('admin.write')}}{%else%}{{url_for('admin.admin_edit',id=post.id)}}{%endif%}" method="post">
         {{form.hidden_tag()}}
         <div class="aticle-data">
             <div class="data-ipt">

@@ -1,14 +1,13 @@
-{% extends "admin.html" %}
-{% block tab %}添加页面{% endblock %}
+{% extends "admin_base.html" %}
+{% block tab %}编辑专栏文章{% endblock %}
 {% block content %}
 <div class="admin-write">
-    <form action="{%if title=='添加页面'%}{{url_for('admin.add_page')}}{%else%}{{url_for('admin.edit_page',name=page.url_name)}}{%endif%}" method="post">
+    <form action="{%if title== '编辑文章'%}{{url_for('admin.write_column_article',url=column.url_name)}}{%else%}{{url_for('admin.edit_column_article',url=column.url_name,id=article.id)}}{%endif%}" method="post">
         {{form.hidden_tag()}}
         <div class="aticle-data">
             <div class="data-ipt">
-                <p>允许评论：{{form.can_comment()}}</p>
-                <p>导航显示：{{form.is_nav()}}</p>
-                <p>链接：{{form.url_name(placeholder="url")}}</p>
+                <p>日期：{{form.date(placeholder="使用-连接年月日")}}</p>
+                <p>保密：{{form.secrecy()}}</p>
             </div>
         </div>
         <div class="aticle-body">
@@ -17,7 +16,11 @@
                 <div>
                     {{form.body(id="editormd",style="display:block;",rows="5",cols="80")}}<br>
                 </div>
+                {% if title == '编辑文章' %}
                 <p>{{ form.submit(class="write-btn",value="发布") }}</p>
+                {% else %}
+                <p>{{ form.submit(class="write-btn",value="更新") }}</p>
+                {% endif %}
             </div>
         </div>
         <div class="clear"></div>

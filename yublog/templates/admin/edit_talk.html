@@ -1,11 +1,11 @@
-{% extends "admin.html" %}
+{% extends "admin_base.html" %}
 {% block tab %}写说说{% endblock %}
 {% block content %}
 <div class="admin-write">
-    <form action="{{url_for('admin.write_shuoshuo')}}" method="post">
+    <form action="{{url_for('admin.write_talk')}}" method="post">
         {{form.hidden_tag()}}
         <div class="write-shuo">
-            {{form.shuoshuo(placeholder="支持markdown",cols="30",rows="10")}}
+            {{form.talk(placeholder="支持markdown",cols="30",rows="10")}}
             <input type="submit" value="发布">
         </div>
     </form>

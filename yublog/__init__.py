@@ -137,7 +137,7 @@ async def _global_data():
     global_data[global_cache_key.LOVE_COUNT] = love_me_counts.love_count
     global_data[global_cache_key.POST_COUNT] = posts
     global_data[global_cache_key.TALK] = talk.body_to_html
-    guest_book_counts = guest_book.comments.count() if guest_book.comments else 0
+    guest_book_counts = guest_book.comments.count() if guest_book and guest_book.comments else 0
     global_data[global_cache_key.GUEST_BOOK_COUNT] = guest_book_counts
 
     if links:

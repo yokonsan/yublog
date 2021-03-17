@@ -1,15 +1,15 @@
-{% extends "admin.html" %}
+{% extends "admin_base.html" %}
 {% block tab %}管理说说{% endblock %}
 {% block content %}
 <div class="admin-post">
     <ul>
-        {% for shuo in shuos %}
+        {% for talk in talks %}
         <li>
-            {{ shuo.strptime }}
-            <a href="{{url_for('admin.delete_shuo',id=shuo.id)}}">
+            {{ talk.strptime }}
+            <a href="{{url_for('admin.delete_talk',id=talk.id)}}">
                 <button class="delete-btn">删除</button>
             </a>
-            <p>{{shuo.talk}}</p>
+            <p>{{talk.talk}}</p>
         </li>
         {% endfor %}
     </ul>
