@@ -6,7 +6,7 @@ from yublog.views import column_bp
 from yublog.models import Column, Comment
 from yublog.views.comment_utils import CommentUtils
 from yublog.forms import ArticlePasswordForm
-from yublog.views.model_cache_util import get_model_cache
+from yublog.views.model_cache_utils import get_model_cache
 
 
 @column_bp.route('/')
