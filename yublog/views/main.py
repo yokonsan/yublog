@@ -3,8 +3,8 @@ from flask import redirect, request, g, jsonify, current_app, render_template, u
 
 from yublog.views import main_bp
 from yublog.models import Post, Comment, Page, Category, Tag, Talk, SiteLink, LoveMe
-from yublog.caches import cache_tool
-from yublog.views.model_cache_util import get_model_cache
+from yublog.caches import cache_tool, global_cache_key 
+from yublog.views.model_cache_utils import get_model_cache
 from yublog.views.comment_utils import CommentUtils
 from yublog.extensions import db
 
@@ -43,13 +43,10 @@ def post(year, month, post_url):
         .order_by(Comment.timestamp.desc())\
         .paginate(page_cnt, per_page=current_app.config['COMMENTS_PER_PAGE'], error_out=False)
     comments = pagination.items
-    # print([c.replied for c in comments])
-    # print([c.replies for c in comments])
-    meta_tags = ','.join(_post['tags'])
-    # print(_post)
+    
     return render_template('main/post.html', post=_post, title=_post['title'],
                            pagination=pagination, comments=comments,
-                           counts=len(comments), meta_tags=meta_tags)
+                           counts=len(comments), meta_tags=','.join(_post['tags']))
 
 
 @main_bp.route('/page/<page_url>/')
@@ -62,23 +59,23 @@ def page(page_url):
     pagination = Comment.query.filter_by(page=_page, disabled=True).order_by(
         Comment.timestamp.desc()).paginate(
         p, per_page=current_app.config['COMMENTS_PER_PAGE'],
-        error_out=False
-    )
+        error_out=False)
     comments = pagination.items
 
     return render_template('main/page.html', page=_page, title=_page.title,
-                           pagination=pagination, comments=comments,
+                           pagination=pagination, comments=pagination.items,
                            counts=len(comments))
 
 
 @main_bp.route('/tag/<tag_name>/')
 def tag(tag_name):
-    _tag = Tag.query.filter_by(tag=tag_name).first()
+    Tag.query.filter_by(tag=tag_name).first()
 
-    all_posts = Post.query.order_by(Post.timestamp.desc()).all()
-    posts = (p for p in all_posts if p.tag_in_post(tag_name) and p.draft is False)
+    all_posts = Post.query.filter_by(draft=False).order_by(Post.timestamp.desc()).all()
+    posts = (p for p in all_posts if p.tag_in_post(tag_name))
 
-    return render_template('main/tag.html', tag=tag_name, posts=posts)
+    return render_template('main/tag.html', tag=tag_name, 
+                           posts=posts, title='标签：{}'.format(tag_name))
 
 
 @main_bp.route('/category/<category_name>/')
@@ -88,21 +85,21 @@ def category(category_name):
     posts = Post.query.filter_by(category=_category,
                                  draft=False).order_by(Post.timestamp.desc()).all()
     return render_template('main/category.html', category=_category,
-                           posts=posts, title='分类：' + _category.category)
+                           posts=posts, title='分类：{}'.format(_category.category))
 
 
 @main_bp.route('/archives/')
 def archives():
     count = Post.query.filter_by(draft=False).count()
     page_cnt = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
-        page_cnt, per_page=current_app.config['ACHIVES_POSTS_PER_PAGE'], error_out=False)
-    posts = (p for p in pagination.items if p.draft is False)
+    pagination = Post.query.filter_by(draft=False)\
+            .order_by(Post.timestamp.desc())\
+            .paginate(page_cnt, error_out=False,
+                per_page=current_app.config['ACHIVES_POSTS_PER_PAGE'])
+    posts=pagination.items
     data = OrderedDict()
     for p in posts:
-        year = p.year
-        data.setdefault(year, [])
-        data[year].append(p)
+        data.setdefault(p.year, []).append(p)
 
     return render_template('main/archives.html', title='归档', posts=posts,
                            data=data, count=count, pagination=pagination)
@@ -126,12 +123,13 @@ def search_result():
     page_cnt = request.args.get('page', 1, type=int)
     pagination = Post.query.whooshee_search(query)\
         .order_by(Post.id.desc())\
-        .paginate(page_cnt, per_page=current_app.config['SEARCH_POSTS_PER_PAGE'],
-                  error_out=False)
+        .paginate(page_cnt, error_out=False, 
+            per_page=current_app.config['SEARCH_POSTS_PER_PAGE'])
     results = (p for p in pagination.items if p.draft is False)
+
     return render_template('main/results.html', results=results,
                            query=query, pagination=pagination,
-                           title=query + '的搜索结果')
+                           title='{}的搜索结果'.format(query))
 
 
 # 侧栏 love me 插件
@@ -141,10 +139,11 @@ def love_me():
     if data.get('i_am_handsome', '') == 'yes':
         # 更新缓存
         global_cache = cache_tool.get(cache_tool.GLOBAL_KEY)
-        global_cache['love_count'] += 1
+        global_cache[global_cache_key.LOVE_COUNT] += 1
         cache_tool.set(cache_tool.GLOBAL_KEY, global_cache)
-        love_me_counts = LoveMe.query.all()[0]
+        love_me_counts = LoveMe.query.first()
         love_me_counts.love_count += 1
+
         db.session.add(love_me_counts)
         db.session.commit()
         return jsonify(counts=love_me_counts.love_count)
@@ -166,9 +165,7 @@ def talk():
     talks = Talk.query.order_by(Talk.timestamp.desc()).all()
     data = OrderedDict()
     for t in talks:
-        year = t.year
-        data.setdefault(year, [])
-        data[year].append(t)
+        data.setdefault(t.year, []).append(t)
 
     return render_template('main/talk.html', title='说说', data=data)
 

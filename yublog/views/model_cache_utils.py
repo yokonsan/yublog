@@ -36,13 +36,14 @@ def set_model_cache(key):
     return data
 
 
-def update_first_cache():
+def update_linked_cache(cur):
     """在新文章更新后，清掉最近一篇文章的缓存"""
-    posts = Post.query.order_by(Post.timestamp.desc()).all()
-    if len(posts) > 1:
-        first_post = posts[1]
-        cache_key = '_'.join(map(str, ['post', first_post.year, first_post.month, first_post.url_name]))
-        cache_tool.clean(cache_key)
+    posts = Post.query.filter_by(draft=False).order_by(Post.timestamp.desc()).all()
+    idx = posts.index(cur)
+    prev_post = posts[idx-1] if idx > 0 else None
+    next_post = posts[idx+1] if idx < len(posts)-1 else None
+    cache_tool.clean('_'.join(map(str, ['post', prev_post.year, prev_post.month, prev_post.url_name])))
+    cache_tool.clean('_'.join(map(str, ['post', next_post.year, next_post.month, next_post.url_name])))
     return True
 
 
@@ -61,8 +62,8 @@ def _generate_post_cache(field):
     tags = cur.tags.split(',')
     data = cur.to_dict()
 
-    _next = linked_post_data(posts[posts.index(cur) + 1]) if posts[-1] != cur else None
-    _prev = linked_post_data(posts[posts.index(cur) - 1]) if posts[0] != cur else None
+    _next = linked_post_data(posts[posts.index(cur)+1]) if posts[-1] != cur else None
+    _prev = linked_post_data(posts[posts.index(cur)-1]) if posts[0] != cur else None
     data.update({
         'tags': tags,
         'next_post': _next,
@@ -85,8 +86,8 @@ def _generate_article_cache(field):
     articles = column_cache['articles']
     data = cur.to_dict()
 
-    _next = linked_article_data(articles[articles.index(cur) + 1]) if articles[-1] != cur else None
-    _prev = linked_article_data(articles[articles.index(cur) - 1]) if articles[0] != cur else None
+    _next = linked_article_data(articles[articles.index(cur)+1]) if articles[-1] != cur else None
+    _prev = linked_article_data(articles[articles.index(cur)-1]) if articles[0] != cur else None
     data.update({
         'next_article': _next,
         'prev_article': _prev

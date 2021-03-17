@@ -1,3 +1,4 @@
+from operator import pos
 import os
 import re
 
@@ -13,7 +14,7 @@ from yublog.forms import *
 from yublog.utils.tools import asyncio_send
 from yublog.views.save_utils import save_post, save_category, save_xml
 from yublog.exceptions import DuplicateEntryException
-from yublog.views.model_cache_util import update_first_cache
+from yublog.views.model_cache_utils import update_linked_cache
 
 
 @admin_bp.route('/')
@@ -28,7 +29,7 @@ def login():
     form = AdminLogin()
     if form.validate_on_submit():
         user = Admin.query.filter_by(login_name=form.username.data).first()
-        if user is not None and user.verify_password(form.password.data):
+        if user and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
             return redirect(url_for('admin.index'))
         flash('Invalid account or password.')
@@ -177,16 +178,17 @@ def write():
         if 'save_draft' in request.form and form.validate():
             post = save_post(form, True)
             db.session.add(post)
+            db.session.commit()
             flash('Saved successfully.')
         # 发布文章
         elif 'submit' in request.form and form.validate():
             post = save_post(form)
             db.session.add(post)
+            db.session.commit()
             flash('Posted successfully.')
             # updata cache
             cache_tool.clean(cache_tool.GLOBAL_KEY)
-            update_first_cache()
-        db.session.commit()
+            update_linked_cache(post)
         return redirect(url_for('admin.write'))
     return render_template('admin/edit_post.html', form=form, title='写文章')
 
@@ -596,7 +598,7 @@ def write_column_article(url):
 def edit_column_article(url, id):
     column = Column.query.filter_by(url_name=url).first()
     article = Article.query.filter_by(id=id).first()
-    _title = article.title
+    # _title = article.title
 
     form = ColumnArticleForm()
     if form.validate_on_submit():
@@ -699,7 +701,7 @@ def admin_side_box():
 @login_required
 def unable_side_box(id):
     box = SideBox.query.get_or_404(id)
-    box.unable = False if box.unable else True
+    box.unable = not box.unable
 
     db.session.add(box)
     db.session.commit()
