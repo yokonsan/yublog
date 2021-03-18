@@ -9,21 +9,11 @@ do
   CODE=$?
 done
 
-echo "db init"
-if [ ! -d "migrations/" ];then
-  python manage.py db init
-fi
+echo "flask init db"
+flask init-db
 
-python manage.py clear_alembic
-
-echo "db migrate"
-python manage.py db migrate -m "v1.0"
-
-echo "db upgrade"
-python manage.py db upgrade
-
-echo "db add admin"
-python manage.py add_admin
+echo "flask deploy"
+flask deploy
 
 echo "uwsgi start"
 uwsgi config.ini

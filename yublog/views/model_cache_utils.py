@@ -1,5 +1,3 @@
-from flask import abort
-
 from yublog.models import Article, Column, Post
 from yublog.caches import cache_tool
 from yublog.exceptions import NoPostException

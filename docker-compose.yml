@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    networks:
+      - frontend
+      - backend
+#    tty: true
+    volumes:
+      - ./yublog:/myapp
+      - ./.env:/myapp
+    environment:
+      - CONFIG=docker
+    ports:
+      - "9001:9001"
+    depends_on:
+      - db
+      - cache
+    command: bash -c "./docker-entrypoint.sh db 3306 root ${MYSQL_PASSWORD} ${MYSQL_DATABASE}"
+
+  db:
+    image: mysql:8.0.19
+    restart: always
+    volumes:
+      - ~/docker/mysql/data:/var/lib/mysql
+      - ~/docker/mysql/conf:/etc/mysql/conf.d
+      - ~/docker/mysql/logs:/logs
+    networks:
+      - backnet
+    environment:
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    command: '--default-authentication-plugin=mysql_native_password'
+
+  cache:
+    image: redis:latest
+    networks:
+      - backend
+    restart: always
+    ports:
+      - '6379:6379'
+
+networks:
+  frontend:
+  backend:
+

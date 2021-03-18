@@ -17,6 +17,7 @@ class Config(object):
     UPLOAD_PATH = './yublog/static/upload/'
 
     # 数据库配置
+    MYSQL_DATABASE = os.getenv('MYSQL_DATABASE') or 'mydb'
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD') or 'password'
 
     # 博客信息
@@ -79,20 +80,20 @@ class Config(object):
 
 
 class DevelopmentConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/mydb'.format(
-        password=Config.MYSQL_PASSWORD)
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/{name}'.format(
+        password=Config.MYSQL_PASSWORD, name=Config.MYSQL_DATABASE)
     DEBUG = True
 
 
 class TestingConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/mydb'.format(
-        password=Config.MYSQL_PASSWORD)
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/{name}'.format(
+        password=Config.MYSQL_PASSWORD, name=Config.MYSQL_DATABASE)
     TESTING = True
 
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/mydb'.format(
-        password=Config.MYSQL_PASSWORD)
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/{name}'.format(
+        password=Config.MYSQL_PASSWORD, name=Config.MYSQL_DATABASE)
     DEBUG = False
 
     @classmethod
@@ -119,7 +120,8 @@ class ProductionConfig(Config):
 
 
 class DockerConfig(ProductionConfig):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@db:3306/mydb'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@db:3306/{name}'.format(
+        password=Config.MYSQL_PASSWORD, name=Config.MYSQL_DATABASE)
     DEBUG = False
     CACHE_REDIS_HOST = 'cache'
 

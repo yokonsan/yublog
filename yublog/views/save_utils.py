@@ -28,7 +28,7 @@ def save_post(form, draft=False):
     """
     category = save_category(form.category.data, is_show=not draft)
 
-    tags = [tag for tag in form.tags.data.split(',')]
+    tags = form.tags.data.split(',')
     post = Post(body=form.body.data, title=form.title.data, 
                 url_name=form.url_name.data, category=category,
                 tags=form.tags.data, timestamp=form.time.data, draft=draft)
