@@ -1,4 +1,3 @@
-from operator import pos
 import os
 import re
 
