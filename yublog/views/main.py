@@ -1,12 +1,13 @@
 from collections import OrderedDict
 from flask import redirect, request, g, jsonify, current_app, render_template, url_for
 
-from yublog.views import main_bp
-from yublog.models import Post, Comment, Page, Category, Tag, Talk, SiteLink, LoveMe
 from yublog.caches import cache_tool, global_cache_key 
-from yublog.views.model_cache_utils import get_model_cache
-from yublog.views.comment_utils import CommentUtils
 from yublog.extensions import db
+from yublog.models import Post, Comment, Page, Category, Tag, Talk, SiteLink, LoveMe
+from yublog.views import main_bp
+from yublog.views.utils.comment_utils import CommentUtils
+from yublog.views.utils.model_cache_utils import get_model_cache
+
 
 
 @main_bp.route('/')

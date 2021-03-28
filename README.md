@@ -45,4 +45,8 @@ $ flask run  # 启动
 $ docker-compose up
 ```
 
+## 安装示例
+
+[yublog-installation-example](https://github.com/yokonsan/yublog-installation-example)
+
 ## Enjoy it.
