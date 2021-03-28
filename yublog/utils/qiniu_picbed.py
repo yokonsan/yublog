@@ -30,13 +30,15 @@ class QiniuUpload(object):
         self.app = app
         self.init_qiniu()
 
-    def _get_publish_time(self, timestamp):
+    @staticmethod
+    def _get_publish_time(timestamp):
         if timestamp:
             t = float(timestamp/10000000)
             return datetime.fromtimestamp(t).strftime('%Y-%m-%d %H:%M')
         return None
 
-    def _get_file_size(self, size):
+    @staticmethod
+    def _get_file_size(size):
         if size:
             return float('%.2f' % (size / 1024))
         return 0

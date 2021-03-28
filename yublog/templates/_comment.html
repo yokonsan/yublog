@@ -35,6 +35,7 @@
                 {% if comment.replies %}
                 <ul class="comment-children">
                     {% for reply in comment.replies %}
+                    {% if reply.disabled %}
                     <li id="{{ reply.id }}" class="comment">
                         <div class="comment-body">
                             <div class="comment-author">
@@ -52,6 +53,7 @@
                             </div>
                         </div>
                     </li>
+                    {% endif %}
                     {% endfor %}
                 </ul>
                 {% endif %}

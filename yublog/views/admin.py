@@ -5,15 +5,15 @@ from flask import redirect, request, flash, render_template, current_app, url_fo
 from flask_login import login_required, login_user, logout_user, current_user
 
 from yublog.caches import cache_tool, global_cache_key
+from yublog.exceptions import DuplicateEntryException
+from yublog.extensions import qn, db, whooshee
+from yublog.forms import *
 from yublog.models import Admin, Post, Page, SiteLink, SideBox, \
     Column, Comment, Talk, Article, Category
-from yublog.extensions import qn, db, whooshee
-from yublog.views import admin_bp
-from yublog.forms import *
 from yublog.utils.tools import asyncio_send
-from yublog.views.save_utils import save_post, save_category, save_xml
-from yublog.exceptions import DuplicateEntryException
-from yublog.views.model_cache_utils import update_linked_cache
+from yublog.views import admin_bp
+from yublog.views.utils.model_cache_utils import update_linked_cache
+from yublog.views.utils.save_utils import save_post, save_category, save_xml
 
 
 @admin_bp.route('/')
@@ -253,6 +253,7 @@ def add_page():
                     body=form.body.data,
                     able_comment=form.can_comment.data,
                     show_nav=form.is_nav.data)
+        print(f'form: {form}')
         db.session.add(page)
         db.session.commit()
         flash('Posted successfully.')
@@ -775,6 +776,15 @@ def rename_img():
     flash('Rename image fail')
     return redirect(url_for('admin.qiniu_picbed'))
 # qiniu picture bed end
+
+
+# Picture bed
+@admin_bp.route('/picture-bed')
+@login_required
+def picture_bed():
+    pass
+#
+
 
 @admin_bp.route('/clean/cache/all')
 @login_required

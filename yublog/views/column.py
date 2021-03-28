@@ -2,11 +2,11 @@ from os import abort
 from flask import render_template, request, jsonify, \
     current_app, redirect, url_for, make_response
 
-from yublog.views import column_bp
-from yublog.models import Column, Comment
-from yublog.views.comment_utils import CommentUtils
 from yublog.forms import ArticlePasswordForm
-from yublog.views.model_cache_utils import get_model_cache
+from yublog.models import Column, Comment
+from yublog.views import column_bp
+from yublog.views.utils.comment_utils import CommentUtils
+from yublog.views.utils.model_cache_utils import get_model_cache
 
 
 @column_bp.route('/')
