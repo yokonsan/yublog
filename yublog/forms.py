@@ -57,6 +57,7 @@ class AdminSiteForm(FlaskForm):
 class TalkForm(FlaskForm):
     talk = TextAreaField('talk', validators=[DataRequired()])
 
+
 # 专题表单 start
 class ColumnForm(FlaskForm):
     column = StringField('column', validators=[DataRequired()])
@@ -74,6 +75,7 @@ class ColumnArticleForm(FlaskForm):
     secrecy = BooleanField('secrecy')
     submit = SubmitField('submit')
 # end
+
 
 # 侧栏插件表单
 class SideBoxForm(FlaskForm):

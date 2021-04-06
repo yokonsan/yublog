@@ -1,13 +1,12 @@
 from collections import OrderedDict
 from flask import redirect, request, g, jsonify, current_app, render_template, url_for
 
-from yublog.caches import cache_tool, global_cache_key 
+from yublog.caches import cache_tool, global_cache_key
 from yublog.extensions import db
 from yublog.models import Post, Comment, Page, Category, Tag, Talk, SiteLink, LoveMe
 from yublog.views import main_bp
 from yublog.views.utils.comment_utils import CommentUtils
 from yublog.views.utils.model_cache_utils import get_model_cache
-
 
 
 @main_bp.route('/')
@@ -40,11 +39,11 @@ def post(year, month, post_url):
         counts = _post.get('comment_count', 0)
         page_cnt = (counts - 1) / current_app.config['COMMENTS_PER_PAGE'] + 1
 
-    pagination = Comment.query.filter_by(post_id=_post['id'], disabled=True, replied_id=None)\
-        .order_by(Comment.timestamp.desc())\
+    pagination = Comment.query.filter_by(post_id=_post['id'], disabled=True, replied_id=None) \
+        .order_by(Comment.timestamp.desc()) \
         .paginate(page_cnt, per_page=current_app.config['COMMENTS_PER_PAGE'], error_out=False)
     comments = pagination.items
-    
+
     return render_template('main/post.html', post=_post, title=_post['title'],
                            pagination=pagination, comments=comments,
                            counts=len(comments), meta_tags=','.join(_post['tags']))
@@ -75,7 +74,7 @@ def tag(tag_name):
     all_posts = Post.query.filter_by(draft=False).order_by(Post.timestamp.desc()).all()
     posts = (p for p in all_posts if p.tag_in_post(tag_name))
 
-    return render_template('main/tag.html', tag=tag_name, 
+    return render_template('main/tag.html', tag=tag_name,
                            posts=posts, title='标签：{}'.format(tag_name))
 
 
@@ -93,11 +92,11 @@ def category(category_name):
 def archives():
     count = Post.query.filter_by(draft=False).count()
     page_cnt = request.args.get('page', 1, type=int)
-    pagination = Post.query.filter_by(draft=False)\
-            .order_by(Post.timestamp.desc())\
-            .paginate(page_cnt, error_out=False,
-                per_page=current_app.config['ACHIVES_POSTS_PER_PAGE'])
-    posts=pagination.items
+    pagination = Post.query.filter_by(draft=False) \
+        .order_by(Post.timestamp.desc()) \
+        .paginate(page_cnt, error_out=False,
+                  per_page=current_app.config['ARCHIVES_POSTS_PER_PAGE'])
+    posts = pagination.items
     data = OrderedDict()
     for p in posts:
         data.setdefault(p.year, []).append(p)
@@ -122,10 +121,10 @@ def search():
 def search_result():
     query = request.args.get('keywords')
     page_cnt = request.args.get('page', 1, type=int)
-    pagination = Post.query.whooshee_search(query)\
-        .order_by(Post.id.desc())\
-        .paginate(page_cnt, error_out=False, 
-            per_page=current_app.config['SEARCH_POSTS_PER_PAGE'])
+    pagination = Post.query.whooshee_search(query) \
+        .order_by(Post.id.desc()) \
+        .paginate(page_cnt, error_out=False,
+                  per_page=current_app.config['SEARCH_POSTS_PER_PAGE'])
     results = (p for p in pagination.items if p.draft is False)
 
     return render_template('main/results.html', results=results,

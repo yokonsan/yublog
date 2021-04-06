@@ -22,7 +22,8 @@ def set_model_cache(key):
     _type, *_, query_field = key.split('_')
     if _type not in ModelType.MODEL_TYPES:
         raise NoPostException('Set the post cache exception.')
-    
+
+    data = {}
     if _type == ModelType.POST:
         data = _generate_post_cache(query_field)
     elif _type == ModelType.ARTICLE:
@@ -40,8 +41,10 @@ def update_linked_cache(cur):
     idx = posts.index(cur)
     prev_post = posts[idx-1] if idx > 0 else None
     next_post = posts[idx+1] if idx < len(posts)-1 else None
-    cache_tool.clean('_'.join(map(str, ['post', prev_post.year, prev_post.month, prev_post.url_name])))
-    cache_tool.clean('_'.join(map(str, ['post', next_post.year, next_post.month, next_post.url_name])))
+    if prev_post:
+        cache_tool.clean('_'.join(map(str, ['post', prev_post.year, prev_post.month, prev_post.url_name])))
+    if next_post:
+        cache_tool.clean('_'.join(map(str, ['post', next_post.year, next_post.month, next_post.url_name])))
     return True
 
 
