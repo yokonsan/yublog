@@ -20,13 +20,12 @@
             border-bottom: 1px solid #555;
         }
     </style>
-</head>autoplay="autoplay"
+</head>
 <body>
     <div id="not-found">
-        <img src="http://qiniu.yukunweb.com/404.jpg" alt="404">
+        <img src="{{url_for('static', filename='images/404.jpg')}}" alt="404">
         <p>找不到页面，是不是天然呆打错了。</p>
         <p>回到 <a href="{{url_for('main.index')}}">首页</a></p>
-        <audio src="http://qiniu.yukunweb.com/cnhyk.mp3" autoplay="autoplay"></audio>
     </div>
 </body>
 </html>

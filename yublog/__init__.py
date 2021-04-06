@@ -31,7 +31,6 @@ def create_app(config_name=None):
 
 
 def register_blueprints(app):
-
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
@@ -151,7 +150,7 @@ async def _global_data():
         my_boxes = [box for box in boxes if box.unable is False and box.is_advertising is False]
         global_data[global_cache_key.MY_BOXES] = my_boxes
 
-    cache_tool.set(cache_tool.GLOBAL_KEY, global_data, timeout=60*60*24*30)
+    cache_tool.set(cache_tool.GLOBAL_KEY, global_data, timeout=60 * 60 * 24 * 30)
     return global_data
 
 
@@ -161,7 +160,7 @@ def app_global_data():
 
 
 @main_bp.before_request
-def before_request():
+def before_first_request():
     g.search_form = SearchForm()
     g.search_form2 = MobileSearchForm()
 
@@ -171,4 +170,3 @@ add_app_template_global is the problem of legacy slowing down the program.
 add_app_template_global is register a custom template global application.
 app_context_processor decorator is register a custom template global dict.
 """
-

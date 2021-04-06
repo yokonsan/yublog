@@ -22,36 +22,36 @@ def index():
 @column_bp.route('/<url_name>')
 def _column(url_name):
     column = get_model_cache('column_{}'.format(url_name))
-    articles = [{'num': i,'item': a} for i, a in enumerate(column['articles'])]
+    articles = [{'num': i, 'item': a} for i, a in enumerate(column['articles'])]
     
     first_id = articles[0]['item']['id'] if articles else None
     return render_template('column/column.html', column=column,
-                            title=column['title'], articles=articles, first_id=first_id)
+                           title=column['title'], articles=articles, first_id=first_id)
 
 
 @column_bp.route('/<url>/<int:id>')
 def article(url, id):
     column = get_model_cache('column_{0}'.format(url))
     # get this column all articles cache at sidebar
-    article, articles = None, []
+    _article, articles = None, []
     for i, a in enumerate(column['articles']):
         articles.append({'num': i, 'item': a})
         if a['id'] == id:
-            article = a
-    if article is None:
+            _article = a
+    if _article is None:
         abort(404)
     # judge whether secrecy
-    if article.get('secrecy'):
+    if _article.get('secrecy'):
         secrecy = request.cookies.get('secrecy')
         if not secrecy or secrecy != column.password_hash:
             return redirect(url_for('column.enter_password', url=url, id=id))
 
     page = request.args.get('page', 1, type=int)
     if page == -1:
-        counts = article.comments.count()
+        counts = _article.comments.count()
         page = (counts - 1) / current_app.config['COMMENTS_PER_PAGE'] + 1
 
-    pagination = Comment.query.filter_by(article_id=article['id'], disabled=True, replied_id=None) \
+    pagination = Comment.query.filter_by(article_id=_article['id'], disabled=True, replied_id=None) \
         .order_by(Comment.timestamp.desc()).paginate(
         page, per_page=current_app.config['COMMENTS_PER_PAGE'],
         error_out=False
@@ -59,7 +59,7 @@ def article(url, id):
     comments = pagination.items
     
     return render_template('column/article.html', column=column, articles=articles,
-                           title=article['title'], article=article,
+                           title=_article['title'], article=_article,
                            pagination=pagination, comments=comments,
                            counts=len(comments))
 
