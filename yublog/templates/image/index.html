@@ -1,0 +1,22 @@
+{% extends "column_base.html" %}
+
+{% block column_content %}
+<div class="column-main site-box">
+
+    <div class="image-item">
+        <div class="image-body">
+            {% for path in paths %}
+            <div class="path-row">
+                <i class="demo-icon icon-folder-empty"></i>
+                <a href="{{ url_for('image.get_path_images', path=path) }}">{{ path }}</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+{% endblock %}
