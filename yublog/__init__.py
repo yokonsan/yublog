@@ -10,7 +10,7 @@ from yublog.forms import SearchForm, MobileSearchForm
 from yublog.config import config
 from yublog.models import Admin, SiteLink, Tag, \
     Page, Post, Category, LoveMe, Talk, SideBox, Comment
-from yublog.views import main_bp, admin_bp, api_bp, column_bp
+from yublog.views import main_bp, admin_bp, api_bp, column_bp, image_bp
 
 
 @lm.user_loader
@@ -35,6 +35,7 @@ def register_blueprints(app):
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(column_bp, url_prefix='/column')
+    app.register_blueprint(image_bp, url_prefix='/image')
 
 
 def register_extensions(app):

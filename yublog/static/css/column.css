@@ -260,6 +260,31 @@
     border-bottom: 1px solid #eee;
 }
 
+/* image */
+.image-body {
+    border-radius: 3px;
+    border: 1px solid #ccc;
+}
+
+.image-item {
+    padding: 50px 50px;
+}
+
+.path-row {
+    padding: 10px 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 15px;
+}
+
+/* .path-row a {
+
+} */
+
+.path-row a:hover {
+    color: #888;
+    border-bottom: 1px solid;
+}
+
 @media (max-width: 992px) {
     .site-wrap {
         width: 960px;

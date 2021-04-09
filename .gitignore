@@ -7,3 +7,4 @@ __pycache__
 whooshee
 migrations
 venv
+.vscode/

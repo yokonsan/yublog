@@ -426,6 +426,19 @@ class SideBox(db.Model):
         return '<Side box title: {}>'.format(self.title)
 
 
+class Image(db.Model):
+    __tablename__ = 'image'
+    id = db.Column(db.Integer, primary_key=True)
+    path = db.Column(db.String(64), nullable=False, unique=True)
+    filename = db.Column(db.String(64), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
+
+    __table_args__ = (
+        db.UniqueConstraint('path', 'filename', name='path_filename'),
+        db.Index('path_filename', 'path', 'filename')
+    )
+
+
 class Alembic(db.Model):
     __tablename__ = 'alembic_version'
     version_num = db.Column(db.String(32), primary_key=True, nullable=False)
