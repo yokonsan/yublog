@@ -39,17 +39,15 @@ function initAjax(method, url, data) {
     request.send(data);
 }
 
-function renameImg(btn) {
-    let img = btn.parentNode.parentNode.getElementsByClassName('img-name')[0];
+function renameImg(id, filename) {
     // console.log(img)
-    let imgKey = img.innerText;
-    let name=prompt("请输入新的图片名", imgKey);
+    let name=prompt("请输入新的图片名", filename);
     if (name !== null && name !== "") {
         data = JSON.stringify({
-            key: imgKey,
-            keyTo: name
+            id: id,
+            newName: name
         });
-        initAjax('POST', '/admin/qiniu/rename', data);
+        initAjax('POST', '/image/rename', data);
         location.reload();
     } else {
         // ...
@@ -57,15 +55,13 @@ function renameImg(btn) {
 
 }
 
-function deleteImg(btn) {
-    let img = btn.parentNode.parentNode.getElementsByClassName('img-name')[0];
-    let imgKey = img.innerText;
+function deleteImg(id) {
 
     if (confirm("你确定删除吗？")) {
         data = JSON.stringify({
-            key: imgKey
+            id: id
         });
-        initAjax('POST', '/admin/qiniu/delete', data);
+        initAjax('POST', '/image/delete', data);
         location.reload();
     }
     else {
@@ -73,3 +69,6 @@ function deleteImg(btn) {
     }
 }
 
+function addImagePath(name) {
+    
+}

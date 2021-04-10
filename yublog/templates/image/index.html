@@ -1,10 +1,45 @@
 {% extends "column_base.html" %}
 
+{% block styles %}
+{{ super() }}
+<style>
+    .image-bed-title {
+        padding: 20px;
+        text-align: center;
+        font-size: 20px;
+        color: #df846c;
+    }
+
+    /* .image-body form {
+        border-bottom: 1px solid #ccc;
+    } */
+    .image-body input {
+        padding: 0 20px 0 0;
+        border: none;
+        outline: none;
+        font-size: 14px;
+        color: #df846c;
+    }
+    .add-new-path {
+        padding: 12px 10px 0px;;
+    }
+</style>
+{% endblock %}
+
+{% block logo_url %}{{ url_for('image.index') }}{% endblock %}
+
 {% block column_content %}
 <div class="column-main site-box">
 
     <div class="image-item">
+        <div class="image-bed-title">本地博客图床</div>
         <div class="image-body">
+            <div class="path-row add-new-path">
+                <form action="{{ url_for('image.index') }}" method="post">
+                    {{form.hidden_tag()}}
+                    {{form.path_name(placeholder="New path.")}}
+                </form>
+            </div>
             {% for path in paths %}
             <div class="path-row">
                 <i class="demo-icon icon-folder-empty"></i>
@@ -19,4 +54,5 @@
 
 {% block script %}
 {{ super() }}
+<script src="{{ url_for('static', filename='js/image_util.js') }}"></script>
 {% endblock %}

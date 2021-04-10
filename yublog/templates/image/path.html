@@ -33,14 +33,42 @@
     .upload-input input#name-ipt:focus {
         border-bottom: 1px solid #ec920c;
     }
+
+    .image-btn {
+        padding: 5px 0px 0px 10px;
+    }
+
+    button {
+        border: 1px solid #138ec9;
+        border-radius: 3px;
+        background: #fff;
+        color: #138ec9;
+        cursor: pointer;
+        float: right;
+        margin: 0 20px;
+    }
+    button:hover {
+        background: #138ec9;
+        color: #fff;
+    }
+    button.image-del-btn {
+        background: #fff;
+        color: #c71515;
+        border: 1px solid #c71515;
+    }
+    button.image-del-btn:hover {
+        background: #c71515;
+        color: #fff;
+    }
 </style>
 {% endblock %}
+{% block logo_url %}{{ url_for('image.index') }}{% endblock %}
 {% block column_content %}
 <div class="column-main site-box">
 
     <div class="image-item">
         <div class="image-items">
-            共 {{ images|length }} 张图片
+            共 <span style="color: red;">{{ images|length }}</span> 张图片
             <button onclick="showIpt(this)">上传</button>
         </div>
     
@@ -55,7 +83,22 @@
         <div class="image-body">
             <div class="image-main">
                 {% for image in images %}
-                <img src="{{ url_for('static', filename='upload/image/'+image.path+'/'+image.filename) }}" alt="">
+                <a href="{{ url_for('image.get_image', path=image.path, filename=image.filename) }}" target="_blank">
+                    <img src="{{ url_for('static', filename='upload/image/'+image.path+'/'+image.filename) }}" alt="">
+                </a>
+                <!-- <div class="image-desc">
+                    <p>时间：<span>{{ image.timestamp }}</span></p>
+                    <p>外链：<span class="image-link">{{ url_for('image.get_image', path=image.path, filename=image.filename) }}</span></p>
+                    <p></p>
+                </div> -->
+    
+                <div class="image-btn">
+                    <span class="{{ image.id }}">{{ image.filename }}</span>
+                    <button onclick="renameImg('{{ image.id }}', '{{ image.filename }}')">更名</button>
+                    <button onclick="deleteImg('{{ image.id }}')" class="image-del-btn">删除</button>
+                    <div class="clear"></div>
+                </div>
+                
                 <hr/>
                 {% endfor %}
             </div>

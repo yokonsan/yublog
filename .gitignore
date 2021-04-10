@@ -8,3 +8,4 @@ whooshee
 migrations
 venv
 .vscode/
+*/static/upload/image/*
