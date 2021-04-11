@@ -2,6 +2,9 @@
 {% block styles %}
 {{ super() }}
 <style>
+    .image-container {
+        padding: 20px;
+    }
     .image-body img {
         max-width: 100%;
     }
@@ -38,6 +41,28 @@
         padding: 5px 0px 0px 10px;
     }
 
+    .image-item {
+        border: 1px solid #ccc;
+        box-shadow: 0 1px 3px rgb(26 26 26 / 10%);
+        padding: 10px 0;
+        margin: 20px 0;
+    }
+
+    .image-desc {
+        font-size: 10px;
+        line-height: 0.5;
+        padding: 1px 10px;
+        border-left: 5px solid #8dd2ec;
+        background: #f6f6f6;
+        font-style: italic;
+        color: #999;
+        margin: 10px 0;
+    }
+
+    .image-desc span {
+        font-weight: bold;
+    }
+
     button {
         border: 1px solid #138ec9;
         border-radius: 3px;
@@ -66,7 +91,7 @@
 {% block column_content %}
 <div class="column-main site-box">
 
-    <div class="image-item">
+    <div class="image-container">
         <div class="image-items">
             共 <span style="color: red;">{{ images|length }}</span> 张图片
             <button onclick="showIpt(this)">上传</button>
@@ -83,23 +108,23 @@
         <div class="image-body">
             <div class="image-main">
                 {% for image in images %}
-                <a href="{{ url_for('image.get_image', path=image.path, filename=image.filename) }}" target="_blank">
-                    <img src="{{ url_for('static', filename='upload/image/'+image.path+'/'+image.filename) }}" alt="">
-                </a>
-                <!-- <div class="image-desc">
-                    <p>时间：<span>{{ image.timestamp }}</span></p>
-                    <p>外链：<span class="image-link">{{ url_for('image.get_image', path=image.path, filename=image.filename) }}</span></p>
-                    <p></p>
-                </div> -->
-    
-                <div class="image-btn">
-                    <span class="{{ image.id }}">{{ image.filename }}</span>
-                    <button onclick="renameImg('{{ image.id }}', '{{ image.filename }}')">更名</button>
-                    <button onclick="deleteImg('{{ image.id }}')" class="image-del-btn">删除</button>
-                    <div class="clear"></div>
+                <div class="image-item">
+                    <a href="{{ url_for('image.get_image', path=image.path, filename=image.filename) }}" target="_blank">
+                        <img src="{{ url_for('static', filename='upload/image/'+image.path+'/'+image.filename) }}" alt="">
+                    </a>
+                    <div class="image-desc">
+                        <p><span>上传时间：</span>{{ image.timestamp }}</p>
+                        <p><span>Markdown引用：</span>![{{ image.filename }}](/image/{{ image.path }}/{{ image.filename }})</p>
+                    </div>
+        
+                    <div class="image-btn">
+                        <span class="{{ image.id }}">{{ image.filename }}</span>
+                        <button onclick="renameImg('{{ image.id }}', '{{ image.filename }}')">更名</button>
+                        <button onclick="deleteImg('{{ image.id }}')" class="image-del-btn">删除</button>
+                        <div class="clear"></div>
+                    </div>
                 </div>
                 
-                <hr/>
                 {% endfor %}
             </div>
         </div>
