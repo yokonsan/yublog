@@ -56,7 +56,7 @@ def page(page_url):
     if p == -1:
         counts = _page.comments.count()
         p = (counts - 1) / current_app.config['COMMENTS_PER_PAGE'] + 1
-    pagination = Comment.query.filter_by(page=_page, disabled=True).order_by(
+    pagination = Comment.query.filter_by(page_id=_page.id, disabled=True, replied_id=None).order_by(
         Comment.timestamp.desc()).paginate(
         p, per_page=current_app.config['COMMENTS_PER_PAGE'],
         error_out=False)
