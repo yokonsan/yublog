@@ -166,6 +166,14 @@ def before_first_request():
     g.search_form2 = MobileSearchForm()
 
 
+def register_template_filter(app):
+    
+    @app.template_filter('local_image')
+    def local_image_filter(html):
+        # <img alt="post41_1" src="/image/post41/post41_1.png">
+        # ![post41_1](/image/post41/post41_1.png)
+        pass
+
 """
 add_app_template_global is the problem of legacy slowing down the program.
 add_app_template_global is register a custom template global application.

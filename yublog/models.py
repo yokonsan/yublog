@@ -373,6 +373,7 @@ class Column(db.Model):
             'body': self.body_to_html,
             'timestamp': self.timestamp,
             'url_name': self.url_name,
+            'password_hash': self.password_hash,
             'articles': []
         }
         return column
