@@ -61,6 +61,8 @@
                         <a href="javascript:void(0);" onclick="showChild(this)">功能</a>
                         <dl class="menu-child" style="display: none;">
                             <dd class="child-item"><a href="{{ url_for('admin.qiniu_picbed') }}">七牛图床</a></dd>
+                            <dd class="child-item"><a href="{{ url_for('image.index') }}">本地图床</a></dd>
+
                         </dl>
                     </li>
                     <li class="menu-item"><a href="{{url_for('admin.logout')}}">登出</a></li>

@@ -122,6 +122,9 @@ def gen_rss_xml(update_time, posts):
 
 def markdown_to_html(body):
     """解析markdown"""
+    if not body:
+        return ''
+        
     md = Markdown(extensions=[
         'fenced_code',
         'codehilite(css_class=highlight,linenums=None)',

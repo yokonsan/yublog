@@ -102,12 +102,14 @@ def _generate_column_cache(field):
             'id': a.id,
             'title': a.title
         }
+    
     cur = Column.query.filter_by(url_name=field).first_or_404()
     data = cur.to_dict()
 
     _articles = Article.query.filter_by(
         column_id=cur.id).order_by(Article.timestamp.asc()).all()
     articles = []
+
     for i, a in enumerate(_articles):
         article = a.to_dict()
         _prev = None if i == 0 else linked_article_data(_articles[i-1])

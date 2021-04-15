@@ -10,7 +10,7 @@ from yublog.forms import SearchForm, MobileSearchForm
 from yublog.config import config
 from yublog.models import Admin, SiteLink, Tag, \
     Page, Post, Category, LoveMe, Talk, SideBox, Comment
-from yublog.views import main_bp, admin_bp, api_bp, column_bp
+from yublog.views import main_bp, admin_bp, api_bp, column_bp, image_bp
 
 
 @lm.user_loader
@@ -35,6 +35,7 @@ def register_blueprints(app):
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')
     app.register_blueprint(column_bp, url_prefix='/column')
+    app.register_blueprint(image_bp, url_prefix='/image')
 
 
 def register_extensions(app):
@@ -164,6 +165,14 @@ def before_first_request():
     g.search_form = SearchForm()
     g.search_form2 = MobileSearchForm()
 
+
+def register_template_filter(app):
+    
+    @app.template_filter('local_image')
+    def local_image_filter(html):
+        # <img alt="post41_1" src="/image/post41/post41_1.png">
+        # ![post41_1](/image/post41/post41_1.png)
+        pass
 
 """
 add_app_template_global is the problem of legacy slowing down the program.

@@ -1,5 +1,6 @@
 import datetime
 from hashlib import md5
+from re import T
 
 from flask import url_for
 from flask_login import UserMixin
@@ -372,6 +373,7 @@ class Column(db.Model):
             'body': self.body_to_html,
             'timestamp': self.timestamp,
             'url_name': self.url_name,
+            'password_hash': self.password_hash,
             'articles': []
         }
         return column
@@ -424,6 +426,23 @@ class SideBox(db.Model):
 
     def __repr__(self):
         return '<Side box title: {}>'.format(self.title)
+
+
+class ImagePath(db.Model):
+    __tablename__ = 'image_path'
+    id = db.Column(db.Integer, primary_key=True)
+    path = db.Column(db.String(64), nullable=False, unique=True, index=True)
+
+    images = db.relationship('Image', backref='image_path', lazy='dynamic')
+
+
+class Image(db.Model):
+    __tablename__ = 'image'
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(64), nullable=False, index=True)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
+
+    path = db.Column(db.String(64), db.ForeignKey('image_path.path'))
 
 
 class Alembic(db.Model):

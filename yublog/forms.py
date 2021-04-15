@@ -110,3 +110,6 @@ class CommentForm(FlaskForm):
 class ArticlePasswordForm(FlaskForm):
     password = StringField('password', validators=[DataRequired()])
 
+
+class AddImagePathForm(FlaskForm):
+    path_name = StringField('new path', validators=[DataRequired()])

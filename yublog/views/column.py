@@ -43,7 +43,7 @@ def article(url, id):
     # judge whether secrecy
     if _article.get('secrecy'):
         secrecy = request.cookies.get('secrecy')
-        if not secrecy or secrecy != column.password_hash:
+        if not secrecy or secrecy != column.get('password_hash'):
             return redirect(url_for('column.enter_password', url=url, id=id))
 
     page = request.args.get('page', 1, type=int)

@@ -23,7 +23,7 @@
             <div class="site-wrap">
 
                 <div class="site-logo">
-                    <a href="{{ url_for('column.index') }}" class="logo">
+                    <a href="{% block logo_url %}{{ url_for('column.index') }}{% endblock %}" class="logo">
                         {% if admin %}{{ admin.site_name }}
                         {% else %}意外{% endif %}
                     </a>

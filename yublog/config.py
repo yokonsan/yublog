@@ -15,6 +15,8 @@ class Config(object):
     ADMIN_COMMENTS_PER_PAGE = 50
 
     UPLOAD_PATH = './yublog/static/upload/'
+    # 图片路径
+    IMAGE_UPLOAD_PATH = './yublog/static/upload/image/'
 
     # 数据库配置
     MYSQL_DATABASE = os.getenv('MYSQL_DATABASE') or 'mydb'

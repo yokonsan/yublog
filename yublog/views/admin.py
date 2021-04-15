@@ -720,8 +720,6 @@ def delete_side_box(id):
     # 清除缓存
     cache_tool.clean(cache_tool.GLOBAL_KEY)
     return redirect(url_for('admin.admin_side_box'))
-
-
 # 侧栏box---end
 
 
@@ -777,19 +775,7 @@ def rename_img():
         return redirect(url_for('admin.qiniu_picbed'))
     flash('Rename image fail')
     return redirect(url_for('admin.qiniu_picbed'))
-
-
 # qiniu picture bed end
-
-
-# Picture bed
-@admin_bp.route('/picture-bed')
-@login_required
-def picture_bed():
-    pass
-
-
-#
 
 
 @admin_bp.route('/clean/cache/all')
