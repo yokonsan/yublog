@@ -63,7 +63,7 @@ class Config(object):
     # cache 使用 Redis 数据库缓存配置
     CACHE_TYPE = 'redis'
     CACHE_REDIS_HOST = '127.0.0.1'
-    CACHE_REDIS_PORT = 8888
+    CACHE_REDIS_PORT = 6379
     CACHE_REDIS_DB = os.getenv('CACHE_REDIS_DB') or ''
     CHCHE_REDIS_PASSWORD = os.getenv('CHCHE_REDIS_PASSWORD') or ''
 

@@ -44,7 +44,7 @@ def get_path_images(path):
         file = request.files['file']
         filename = file.filename if not img_name else re.sub(r'[\/\\\:\*\?"<>|]', r'_', img_name)
         img_stream = file.stream.read()
-        print(f'file.mimetype : {file.mimetype }')
+        # print(f'file.mimetype : {file.mimetype }')
         if filename not in filenames and file.mimetype in IMAGE_MIMES:
             asyncio_saver(
                 os.path.join(current_app.config['IMAGE_UPLOAD_PATH'], path),
