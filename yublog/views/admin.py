@@ -253,7 +253,7 @@ def add_page():
                     body=form.body.data,
                     able_comment=form.can_comment.data,
                     show_nav=form.is_nav.data)
-        print(f'form: {form}')
+        # print(f'form: {form}')
         db.session.add(page)
         db.session.commit()
         flash('Posted successfully.')

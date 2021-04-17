@@ -14,6 +14,7 @@ from yublog.views.utils.image_utils import IMAGE_MIMES, asyncio_saver, image_rem
 
 @image_bp.route('/')
 @image_bp.route('/index', methods=['GET', 'POST'])
+@login_required
 def index():
     _paths = ImagePath.query.all()
     paths = [p.path for p in _paths]
@@ -36,6 +37,7 @@ def index():
 
 
 @image_bp.route('/<path>/', methods=['GET', 'POST'])
+@login_required
 def get_path_images(path):
     images = Image.query.filter_by(path=path).order_by(Image.id).all()
     filenames = {i.filename for i in images}
@@ -44,7 +46,7 @@ def get_path_images(path):
         file = request.files['file']
         filename = file.filename if not img_name else re.sub(r'[\/\\\:\*\?"<>|]', r'_', img_name)
         img_stream = file.stream.read()
-        print(f'file.mimetype : {file.mimetype }')
+        # print(f'file.mimetype : {file.mimetype }')
         if filename not in filenames and file.mimetype in IMAGE_MIMES:
             asyncio_saver(
                 os.path.join(current_app.config['IMAGE_UPLOAD_PATH'], path),
@@ -65,7 +67,6 @@ def get_path_images(path):
 
 
 @image_bp.route('/<path>/<filename>')
-@login_required
 def get_image(path, filename):
     return send_from_directory('static', 'upload/image/{path}/{filename}'.format(path=path, filename=filename))
 
