@@ -20,3 +20,4 @@ SQLAlchemy>=1.3.0
 Werkzeug==0.15.3
 WTForms==2.1
 uwsgi>=2.0
+python-dotenv
