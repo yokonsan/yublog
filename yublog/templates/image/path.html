@@ -110,7 +110,7 @@
                 {% for image in images %}
                 <div class="image-item">
                     <a href="{{ url_for('image.get_image', path=image.path, filename=image.filename) }}" target="_blank">
-                        <img src="{{ url_for('static', filename='upload/image/'+image.path+'/'+image.filename) }}" alt="">
+                        <img src="{{ url_for('static', filename='upload/image/'+image.path+'/'+image.filename) }}" alt="{{ image.filename }}">
                     </a>
                     <div class="image-desc">
                         <p><span>上传时间：</span>{{ image.timestamp }}</p>
