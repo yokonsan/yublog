@@ -84,6 +84,7 @@ class Config(object):
 class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/{name}'.format(
         password=Config.MYSQL_PASSWORD, name=Config.MYSQL_DATABASE)
+
     DEBUG = True
 
 

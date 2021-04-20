@@ -59,8 +59,14 @@ def register_shell_context_processor(app):
 
 def register_commands(app):
     @app.cli.command()
-    @click.option('--drop', default=True, help='Create after drop.')
+    @click.option('--drop', prompt=True, default=False, help='Create after drop.', type=bool)
     def init_db(drop):
+        """
+        exception: sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) 
+        (1045, "Access denied for user 'root'@'localhost' (using password: NO)")
+
+        Solution: 登入mysql，执行：ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '数据库密码';
+        """
         if drop:
             db.drop_all()
         db.create_all()
