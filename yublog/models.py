@@ -139,7 +139,7 @@ class Post(db.Model):
             'datetime': self.timestamp,
             'category': self.category.category,
             'tag': self.tags,
-            'comment_count': self.comments.count(),
+            'comment_count': self.comments.filter_by(disabled=True).count(),
             'comments': url_for('api.get_post_comments', id=self.id, _external=True)
         }
         return post
