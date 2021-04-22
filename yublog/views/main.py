@@ -46,7 +46,7 @@ def post(year, month, post_url):
 
     return render_template('main/post.html', post=_post, title=_post['title'],
                            pagination=pagination, comments=comments,
-                           counts=len(comments), meta_tags=','.join(_post['tags']))
+                           counts=_post.get('comment_count', 0), meta_tags=','.join(_post['tags']))
 
 
 @main_bp.route('/page/<page_url>/')
@@ -64,7 +64,7 @@ def page(page_url):
 
     return render_template('main/page.html', page=_page, title=_page.title,
                            pagination=pagination, comments=pagination.items,
-                           counts=len(comments))
+                           counts=_page.comments.filter_by(disabled=True).count())
 
 
 @main_bp.route('/tag/<tag_name>/')
