@@ -16,5 +16,4 @@ echo "flask deploy"
 flask deploy
 
 echo "uwsgi start"
-uwsgi config.ini
-
+flask run --host 0.0.0.0

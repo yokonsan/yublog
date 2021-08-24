@@ -19,9 +19,12 @@ class Config(object):
     IMAGE_UPLOAD_PATH = './yublog/static/upload/image/'
 
     # 数据库配置
+    MYSQL_HOST = os.getenv('MYSQL_HOST') or '127.0.0.1'
     MYSQL_DATABASE = os.getenv('MYSQL_DATABASE') or 'mydb'
     MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD') or 'password'
-
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@{host}:3306/{name}'.format(
+        password=MYSQL_PASSWORD, name=MYSQL_DATABASE, host=MYSQL_HOST)
+    print(SQLALCHEMY_DATABASE_URI)
     # 博客信息
     # 管理员姓名
     ADMIN_NAME = '银时'
@@ -62,9 +65,9 @@ class Config(object):
 
     # cache 使用 Redis 数据库缓存配置
     CACHE_TYPE = 'redis'
-    CACHE_REDIS_HOST = '127.0.0.1'
+    CACHE_REDIS_HOST = os.getenv('CACHE_REDIS_HOST') or '127.0.0.1'
     CACHE_REDIS_PORT = 6379
-    CACHE_REDIS_DB = os.getenv('CACHE_REDIS_DB') or ''
+    CACHE_REDIS_DB = os.getenv('CACHE_REDIS_DB') or 0
     CHCHE_REDIS_PASSWORD = os.getenv('CHCHE_REDIS_PASSWORD') or ''
 
     # 七牛云存储配置
@@ -82,21 +85,14 @@ class Config(object):
 
 
 class DevelopmentConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/{name}'.format(
-        password=Config.MYSQL_PASSWORD, name=Config.MYSQL_DATABASE)
-
     DEBUG = True
 
 
 class TestingConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/{name}'.format(
-        password=Config.MYSQL_PASSWORD, name=Config.MYSQL_DATABASE)
     TESTING = True
 
 
 class ProductionConfig(Config):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@localhost:3306/{name}'.format(
-        password=Config.MYSQL_PASSWORD, name=Config.MYSQL_DATABASE)
     DEBUG = False
 
     @classmethod
@@ -123,10 +119,7 @@ class ProductionConfig(Config):
 
 
 class DockerConfig(ProductionConfig):
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:{password}@db:3306/{name}'.format(
-        password=Config.MYSQL_PASSWORD, name=Config.MYSQL_DATABASE)
     DEBUG = False
-    CACHE_REDIS_HOST = 'cache'
 
 
 config = {

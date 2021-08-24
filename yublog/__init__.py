@@ -59,7 +59,7 @@ def register_shell_context_processor(app):
 
 def register_commands(app):
     @app.cli.command()
-    @click.option('--drop', prompt=True, default=False, help='Create after drop.', type=bool)
+    @click.option('--drop', prompt=False, default=False, help='Create after drop.', type=bool)
     def init_db(drop):
         """
         exception: sqlalchemy.exc.OperationalError: (pymysql.err.OperationalError) 
@@ -73,10 +73,10 @@ def register_commands(app):
         click.echo('Initialized database.')
 
     @app.cli.command()
-    @click.option('--username', prompt=True,
+    @click.option('--username', prompt=False,
                   default=app.config.get('ADMIN_LOGIN_NAME', ''),
                   help='The username used to login.')
-    @click.option('--password', prompt=True,
+    @click.option('--password', prompt=False,
                   default=app.config.get('ADMIN_PASSWORD', ''),
                   hide_input=True, help='The password used to login.')
     def deploy(username, password):
@@ -96,12 +96,16 @@ def register_commands(app):
                                show_nav=False, body='留言板')
         about_page = Page(title='关于', url_name='about', able_comment=False,
                           show_nav=True, body='介绍下自己吧')
+        # 说说
         talk = Talk(talk='hello world!')
+        # 专栏链接
+        social_link = SiteLink(link='/column/', name='专栏', is_friend=False)
         db.session.add(admin)
         db.session.add(love_data)
         db.session.add(guest_book_page)
         db.session.add(about_page)
         db.session.add(talk)
+        db.session.add(social_link)
         db.session.commit()
 
     @app.cli.command()

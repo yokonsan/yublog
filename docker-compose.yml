@@ -6,37 +6,60 @@ services:
     networks:
       - frontend
       - backend
-#    tty: true
     volumes:
-      - ./yublog:/myapp
-      - ./.env:/myapp
+      - ./.:/myapp
     environment:
       - CONFIG=docker
+      - MYSQL_HOST=db
+      - CACHE_REDIS_HOST=cache
+      - TZ=Asia/Shanghai
+      - MYSQL_DATABASE=mydb
+      - MYSQL_PASSWORD=password
+        # admin configuration
+      - ADMIN_LOGIN_NAME=yinshi
+      - ADMIN_PASSWORD=password
+        # email sender configuration
+      - MAIL_USERNAME=''
+      - MAIL_PASSWORD=''
+        # email receiver configuration
+      - ADMIN_MAIL=''
+        # qiniu secret configuration
+      - QN_ACCESS_KEY=''
+      - QN_SECRET_KEY=''
+        # redis configuration
+      - CACHE_REDIS_DB=0
+      - CHCHE_REDIS_PASSWORD=''
     ports:
-      - "9001:9001"
+      - "5000:5000"
     depends_on:
       - db
       - cache
-    command: bash -c "./docker-entrypoint.sh db 3306 root ${MYSQL_PASSWORD} ${MYSQL_DATABASE}"
+    command: bash -c "bash docker-entrypoint.sh db 3306 root ${MYSQL_PASSWORD} ${MYSQL_DATABASE}"
 
   db:
-    image: mysql:8.0.19
+    image: mysql:5.7
     restart: always
     volumes:
       - ~/docker/mysql/data:/var/lib/mysql
       - ~/docker/mysql/conf:/etc/mysql/conf.d
       - ~/docker/mysql/logs:/logs
     networks:
-      - backnet
+      - backend
     environment:
+      - TZ=Asia/Shanghai
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
-    command: '--default-authentication-plugin=mysql_native_password'
+    command:
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
 
   cache:
     image: redis:latest
     networks:
       - backend
+    environment:
+      - TZ=Asia/Shanghai
     restart: always
     ports:
       - '6379:6379'

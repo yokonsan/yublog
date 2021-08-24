@@ -18,5 +18,4 @@ Pygments>=2.5.1
 PyMySQL==0.8
 Werkzeug==0.15.5
 WTForms==2.1
-uwsgi>=2.0
 python-dotenv

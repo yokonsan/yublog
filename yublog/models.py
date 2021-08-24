@@ -1,6 +1,5 @@
 import datetime
 from hashlib import md5
-from re import T
 
 from flask import url_for
 from flask_login import UserMixin
@@ -84,7 +83,8 @@ class Page(db.Model):
             'api': url_for('api.get_page', id=self.id, _external=True),
             'show_nav': self.show_nav,
             'comment_count': self.comments.count() if self.able_comment else None,
-            'comments': url_for('api.get_page_comments', id=self.id, _external=True) if self.able_comment else None
+            'comments': url_for('api.get_page_comments', id=self.id, _external=True) \
+                if self.able_comment else None
         }
         return page
 
@@ -140,7 +140,7 @@ class Post(db.Model):
             'category': self.category.category,
             'tag': self.tags,
             'comment_count': self.comments.filter_by(disabled=True).count(),
-            'comments': url_for('api.get_post_comments', id=self.id, _external=True)
+            'comments': url_for('api.get_post_comments', id=self.id, _external=True)  # noqa
         }
         return post
 
@@ -194,10 +194,10 @@ class Comment(db.Model):
     email = db.Column(db.String(255))
     website = db.Column(db.String(255), nullable=True)
     disabled = db.Column(db.Boolean, default=False)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)  # noqa
 
-    replies = db.relationship('Comment', back_populates='replied', cascade='all, delete-orphan')
-    replied = db.relationship('Comment', back_populates='replies', remote_side=[id])
+    replies = db.relationship('Comment', back_populates='replied', cascade='all, delete-orphan')  # noqa
+    replied = db.relationship('Comment', back_populates='replies', remote_side=[id])  # noqa
     replied_id = db.Column(db.Integer, db.ForeignKey('comments.id'))
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
     page_id = db.Column(db.Integer, db.ForeignKey('pages.id'))
@@ -277,7 +277,7 @@ class Category(db.Model):
         category = {
             'category': self.category,
             'post_count': self.posts.count(),
-            'posts': url_for('api.get_category_posts', category=self.category, _external=True)
+            'posts': url_for('api.get_category_posts', category=self.category, _external=True)  # noqa
         }
         return category
 
@@ -304,7 +304,7 @@ class Talk(db.Model):
     __tablename__ = 'talk'
     id = db.Column(db.Integer, primary_key=True)
     talk = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)  # noqa
 
     def __init__(self, talk):
         self.talk = talk
@@ -361,7 +361,7 @@ class Column(db.Model):
 
     @password.setter
     def password(self, password):
-        self.password_hash = generate_password_hash(password) if password else None
+        self.password_hash = generate_password_hash(password) if password else None  # noqa
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
