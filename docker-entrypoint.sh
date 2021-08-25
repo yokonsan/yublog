@@ -16,4 +16,5 @@ echo "flask deploy"
 flask deploy
 
 echo "uwsgi start"
-flask run --host 0.0.0.0
+uwsgi --socket 0.0.0.0:9001 --protocol=http -p 4 -t 8 -w app:app
+#flask run --host 0.0.0.0

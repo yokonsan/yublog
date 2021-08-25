@@ -30,7 +30,7 @@ services:
       - CACHE_REDIS_DB=0
       - CHCHE_REDIS_PASSWORD=''
     ports:
-      - "5000:5000"
+      - "9001:9001"
     depends_on:
       - db
       - cache
