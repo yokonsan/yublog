@@ -22,6 +22,7 @@ def index():
     form = AddImagePathForm()
     if form.validate_on_submit():
         new_path = form.path_name.data
+        new_path = re.sub(r'[./\\\'"]', r'_', new_path)
         # print(f'new_path: {new_path}')
         if new_path and new_path not in paths:
             _path = ImagePath(path=new_path)
@@ -44,7 +45,7 @@ def get_path_images(path):
     if request.method == 'POST':
         img_name = request.form.get('key', None)
         file = request.files['file']
-        filename = file.filename if not img_name else re.sub(r'[\/\\\:\*\?"<>|]', r'_', img_name)
+        filename = file.filename if not img_name else re.sub(r'[/\\\':*?"<>|]', r'_', img_name)
         img_stream = file.stream.read()
         # print(f'file.mimetype : {file.mimetype }')
         if filename not in filenames and file.mimetype in IMAGE_MIMES:
