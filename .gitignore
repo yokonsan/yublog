@@ -1,4 +1,5 @@
 # Python:
+.env
 .idea
 .qiniu_pythonsdk_hostscache.json
 dist

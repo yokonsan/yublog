@@ -5,8 +5,8 @@ from flask import render_template, request, jsonify, \
 from yublog.forms import ArticlePasswordForm
 from yublog.models import Column, Comment
 from yublog.views import column_bp
-from yublog.views.utils.comment_utils import CommentUtils
-from yublog.views.utils.model_cache_utils import get_model_cache
+from yublog.utils.comment import CommentUtils
+from yublog.utils.cache.model import get_model_cache
 
 
 @column_bp.route('/')

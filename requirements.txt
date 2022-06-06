@@ -18,4 +18,5 @@ Pygments>=2.5.1
 PyMySQL==0.8
 Werkzeug==0.15.5
 WTForms==2.1
-python-dotenv
+python-dotenv~=0.17.0
+click~=7.1.2

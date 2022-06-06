@@ -2,7 +2,7 @@ from flask import current_app
 
 from yublog.extensions import db
 from yublog.models import Tag, Category, Post
-from yublog.caches import cache_tool
+from yublog.utils.cache import cache_operate
 from yublog.utils.tools import get_sitemap, save_file, gen_rss_xml
 
 
@@ -29,14 +29,14 @@ def save_post(form, draft=False):
     category = save_category(form.category.data, is_show=not draft)
 
     tags = form.tags.data.split(',')
-    post = Post(body=form.body.data, title=form.title.data, 
+    post = Post(body=form.body.data, title=form.title.data,
                 url_name=form.url_name.data, category=category,
-                tags=form.tags.data, timestamp=form.time.data, draft=draft)
+                tags=form.tags.data, create_time=form.time.data, draft=draft)
     if not draft:
         # 保存标签模型
         save_tags(tags)
         # 更新xml
-        save_xml(post.timestamp)
+        save_xml(post.create_time)
 
     return post
 
@@ -49,7 +49,7 @@ def save_category(old_category, new_category=None, is_show=True):
             db.session.delete(category)
             db.session.commit()
             # 更新分类缓存
-            cache_tool.clean(cache_tool.GLOBAL_KEY)
+            cache_operate.clean(cache_operate.GLOBAL_KEY)
         old_category = new_category
 
     # 是否新的分类需要添加
@@ -68,7 +68,7 @@ def save_xml(update_time):
     # 获取配置信息
     count = current_app.config['RSS_COUNTS']
 
-    posts = Post.query.filter_by(draft=False).order_by(Post.timestamp.desc()).all()
+    posts = Post.query.filter_by(draft=False).order_by(Post.create_time.desc()).all()
     # sitemap
     sitemap = get_sitemap(posts)
     save_file(sitemap, sitemap_xml)
@@ -76,5 +76,3 @@ def save_xml(update_time):
     rss_posts = posts[:count]
     rss = gen_rss_xml(update_time, rss_posts)
     save_file(rss, atom_xml)
-
-

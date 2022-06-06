@@ -4,7 +4,7 @@ from flask import current_app
 
 from yublog import create_app, db
 from yublog.models import Post, Page, Admin, Column, Article, \
-        Category, Tag, Talk, SiteLink, SideBox
+        Category, Tag, Talk, Link, SideBox
 
 
 class AdminTestCase(unittest.TestCase):
@@ -97,15 +97,15 @@ class AdminTestCase(unittest.TestCase):
 
     def test_add_link(self):
         """添加链接"""
-        test_social_link = SiteLink(link='http://www.baidu.com', name='baidu',
-                        is_friend=False)
+        test_social_link = Link(link='http://www.baidu.com', name='baidu',
+                                is_friend=False)
         db.session.add(test_social_link)
-        test_friend_link = SiteLink(link='http://www.yukunweb.com', name='yukun',
-                        info='This is a friend link.', is_friend=True)
+        test_friend_link = Link(link='http://www.yukunweb.com', name='yukun',
+                                info='This is a friend link.', is_friend=True)
         db.session.add(test_friend_link)
         db.session.commit()
-        exist_link = SiteLink.query.filter_by(link='http://www.yukunweb.com').first()
-        not_exist_link = SiteLink.query.filter_by(link='http://www.test.com').first()
+        exist_link = Link.query.filter_by(link='http://www.yukunweb.com').first()
+        not_exist_link = Link.query.filter_by(link='http://www.test.com').first()
         self.assertIsNotNone(exist_link)
         self.assertIsNone(not_exist_link)
 
@@ -190,27 +190,27 @@ class AdminTestCase(unittest.TestCase):
 
     def test_admin_link(self):
         """管理链接"""
-        test_social_link = SiteLink.query.filter_by(is_friend=False).first()
-        test_friend_link = SiteLink.query.filter_by(is_friend=True).first()
+        test_social_link = Link.query.filter_by(is_friend=False).first()
+        test_friend_link = Link.query.filter_by(is_friend=True).first()
         test_social_link.name = 'google'
         test_friend_link.name ='kyu'
         db.session.add(test_social_link)
         db.session.add(test_friend_link)
         db.session.commit()
-        social_link = SiteLink.query.filter_by(is_friend=False).first()
-        friend_link = SiteLink.query.filter_by(is_friend=True).first()
+        social_link = Link.query.filter_by(is_friend=False).first()
+        friend_link = Link.query.filter_by(is_friend=True).first()
         self.assertEqual(social_link.name, 'google')
         self.assertNotEqual(friend_link.name, 'yukun')
 
     def test_delete_link(self):
         """删除链接"""
-        test_social_link = SiteLink.query.filter_by(name='google').first()
-        test_friend_link = SiteLink.query.filter_by(name='kyu').first()
+        test_social_link = Link.query.filter_by(name='google').first()
+        test_friend_link = Link.query.filter_by(name='kyu').first()
         db.session.delete(test_social_link)
         db.session.delete(test_friend_link)
         db.session.commit()
-        social_link = SiteLink.query.filter_by(name='google').first()
-        friend_link = SiteLink.query.filter_by(name='kyu').first()
+        social_link = Link.query.filter_by(name='google').first()
+        friend_link = Link.query.filter_by(name='kyu').first()
         self.assertIsNone(social_link)
         self.assertIsNone(friend_link)
 

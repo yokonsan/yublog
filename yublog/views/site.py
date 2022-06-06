@@ -28,3 +28,8 @@ def get_file(filename):
 def get_dir_file(path, filename):
     # print(f'{path}/{filename}')
     return send_from_directory('static', 'upload/{path}/{filename}'.format(path=path, filename=filename))
+
+
+@main_bp.route("/init")
+def init():
+    pass

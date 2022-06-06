@@ -9,7 +9,7 @@ from yublog.extensions import db
 from yublog.forms import AddImagePathForm
 from yublog.models import Image, ImagePath
 from yublog.views import image_bp
-from yublog.views.utils.image_utils import IMAGE_MIMES, asyncio_saver, image_remove, image_rename, mkdir
+from yublog.utils.image import IMAGE_MIMES, asyncio_saver, image_remove, image_rename, mkdir
 
 
 @image_bp.route('/')

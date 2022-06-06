@@ -28,8 +28,8 @@ def get_sitemap(posts):
     for post in posts:
         content = """
             <url>
-                <loc>http://www.yukunweb.com/{post.timestamp_int}/{post.url_name}/</loc>
-                <lastmod>{post.timestamp}</lastmod>
+                <loc>http://www.yukunweb.com/{post.year}{post.month}/{post.url_name}/</loc>
+                <lastmod>{post.create_time}</lastmod>
             </url>
         """.format(post=post)
         body += '\n{0}'.format(content)
@@ -103,7 +103,7 @@ def gen_rss_xml(update_time, posts):
                 <title>{p.title}</title>
                 <link rel="alternate" type="text/html" href="{protocol}://{url}/{p.year}/{p.month}/{p.url_name}"/>
                 <id>tag:{url},{p.year}://1.{p.id}</id>
-                <published>{p.timestamp}T00:00:00Z</published>
+                <published>{p.create_time}T00:00:00Z</published>
                 <updated>{update_time}T00:00:00Z</updated>
                 <summary>{p.title}</summary>
                 <author>
