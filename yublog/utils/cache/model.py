@@ -1,50 +1,39 @@
 from yublog.models import Article, Column, Post
-from yublog.utils.cache import cache_operate
-from yublog.exceptions import NoCacheTypeException
+from yublog.utils.cache import cache_operate, CacheType
 
 
-class ModelType:
-    MODEL_TYPES = ["post", "article", "column", "page"]
-    POST = "post"
-    ARTICLE = "article"
-    COLUMN = "column"
-    PAGE = "page"
-
-
-def get_model_cache(key):
+def get_model_cache(typ, key):
     """获取博客文章缓存"""
-    data = cache_operate.get(key)
-    return data if data else set_model_cache(key)
+    data = cache_operate.get(typ, key)
+    return data if data else set_model_cache(typ, key)
 
 
-def set_model_cache(key):
+def set_model_cache(typ, key):
     """设置博客文章缓存"""
-    _type, *_, query_field = key.split("_")
-    if _type not in ModelType.MODEL_TYPES:
-        raise NoCacheTypeException(f"post must in {ModelType.MODEL_TYPES}")
+    *_, query_field = key.split("_")
 
     data = {}
-    if _type == ModelType.POST:
+    if typ == CacheType.POST.name:
         data = _generate_post_cache(query_field)
-    elif _type == ModelType.ARTICLE:
+    elif typ == CacheType.ARTICLE.name:
         data = _generate_article_cache(query_field)
-    elif _type == ModelType.COLUMN:
+    elif typ == CacheType.COLUMN.name:
         data = _generate_column_cache(query_field)
 
-    cache_operate.set(key, data, timeout=60 * 60 * 24 * 30)
+    cache_operate.set(typ, key, data)
     return data
 
 
-def update_linked_cache(cur):
+def update_linked_cache(typ, cur):
     """在新文章更新后，清掉最近一篇文章的缓存"""
     posts = Post.query.filter_by(draft=False).order_by(Post.create_time.desc()).all()
     idx = posts.index(cur)
     prev_post = posts[idx-1] if idx > 0 else None
     next_post = posts[idx+1] if idx < len(posts)-1 else None
     if prev_post:
-        cache_operate.clean("_".join(map(str, ["post", prev_post.year, prev_post.month, prev_post.url_name])))
+        cache_operate.clean(typ, "_".join(map(str, [prev_post.year, prev_post.month, prev_post.url_name])))
     if next_post:
-        cache_operate.clean("_".join(map(str, ["post", next_post.year, next_post.month, next_post.url_name])))
+        cache_operate.clean(typ, "_".join(map(str, [next_post.year, next_post.month, next_post.url_name])))
     return True
 
 
@@ -82,7 +71,7 @@ def _generate_article_cache(field):
     
     cur = Article.query.get_or_404(field)
     cur_column = Column.query.get_or_404(cur.column_id)
-    column_cache = get_model_cache("column_{}".format(cur_column.url_name))
+    column_cache = get_model_cache(CacheType.COLUMN.name, cur_column.url_name)
 
     articles = column_cache["articles"]
     data = cur.to_dict()

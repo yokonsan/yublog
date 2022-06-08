@@ -4,8 +4,9 @@ import asyncio
 import click
 from flask import Flask, g
 
+from yublog.exceptions import AppInitException
 from yublog.extensions import migrate, db, whooshee, cache, qn, lm
-from yublog.utils.cache import cache_operate, GlobalCacheKey
+from yublog.utils.cache import cache_operate, GlobalCacheKey, CacheType
 from yublog.forms import SearchForm, MobileSearchForm
 from yublog.config import config
 from yublog.models import (
@@ -36,6 +37,8 @@ def create_app(config_name=None):
     register_extensions(app)
     register_blueprints(app)
     register_commands(app)
+
+    cache_operate.clean()
 
     return app
 
@@ -152,59 +155,148 @@ def register_commands(app):
 
 
 async def _global_data():
-    """
-    所有页面共有的，比如侧栏的标签集合，社交链接，博主信息，
-    和导航栏的所有分类。
-    :return: global_data = {
-        "admin": admin, // model object
-        "social_links": socaial_links, // object list
-        "friend_links": friend_links, // ...
-        "tags": tags, // ...
-        "categories": categories, // ...
-        "pages": pages, // ...
-    }
-    """
+    """全局缓存"""
     global_data = {}
-    administrator = Admin.query.first()
-    links = Link.query.order_by(Link.id.desc()).all()
-    categories = Category.query.filter_by(is_show=True).all()
-    tags = Tag.query.all()
-    pages = Page.query.filter_by(show_nav=True).all()
-    love_me_counts = LoveMe.query.first()
-    posts = Post.query.filter_by(draft=False).count()
-    talk = Talk.query.order_by(Talk.timestamp.desc()).first()
-    guest_book = Page.query.filter_by(url_name="guest-book").first()
-    boxes = SideBox.query.order_by(SideBox.id.desc()).all()
+    typ = CacheType.GLOBAL.name
+
+    caches = cache_operate.get_many(typ, *[
+        GlobalCacheKey.ADMIN,
+        GlobalCacheKey.SOCIAL_LINKS,
+        GlobalCacheKey.FRIEND_COUNT,
+        GlobalCacheKey.TAGS,
+        GlobalCacheKey.CATEGORIES,
+        GlobalCacheKey.PAGES,
+        GlobalCacheKey.LOVE_COUNT,
+        GlobalCacheKey.POST_COUNT,
+        GlobalCacheKey.TALK,
+        GlobalCacheKey.GUEST_BOOK_COUNT,
+        GlobalCacheKey.ADS_BOXES,
+        GlobalCacheKey.SITE_BOXES,
+    ])
+    print(caches)
+    (
+        c_admin,
+        c_social,
+        c_friend_count,
+        c_tags,
+        c_categories,
+        c_pages,
+        c_love_me_counts,
+        c_posts,
+        c_talk,
+        c_guest_book_count,
+        c_adv_boxes,
+        c_site_boxes
+    ) = caches
+
+    async def _admin():
+        admin = Admin.query.first()
+        assert admin is not None, AppInitException("no Admin")
+        # data = admin.to_dict()
+
+        cache_operate.set(typ, GlobalCacheKey.ADMIN, admin)
+        return admin
+
+    def _links():
+        if c_social and c_friend_count:
+            return c_social, c_friend_count
+
+        ls = Link.query.order_by(Link.id.desc()).all()
+        social = [link for link in ls if link.is_friend is False]
+        friend_count = len(ls) - len(social)
+
+        cache_operate.set(typ, GlobalCacheKey.SOCIAL_LINKS, social)
+        cache_operate.set(typ, GlobalCacheKey.FRIEND_COUNT, friend_count)
+        return social, friend_count
+
+    async def _tags():
+        ts = Tag.query.all()
+        cache_operate.set(typ, GlobalCacheKey.TAGS, ts)
+        return ts
+
+    async def _categories():
+        cs = Category.query.filter_by(is_show=True).all()
+        cache_operate.set(typ, GlobalCacheKey.CATEGORIES, cs)
+        return cs
+
+    async def _pages():
+        ps = Page.query.filter_by(show_nav=True).all()
+        cache_operate.set(typ, GlobalCacheKey.PAGES, ps)
+        return ps
+
+    async def _love_me_counts():
+        lc = LoveMe.query.first()
+        assert lc is not None, AppInitException("no LoveMe")
+        count = lc.count
+        cache_operate.set(typ, GlobalCacheKey.LOVE_COUNT, count)
+        return count
+
+    async def _posts():
+        ps = Post.query.filter_by(draft=False).count()
+        cache_operate.set(typ, GlobalCacheKey.POST_COUNT, ps)
+        return ps
+
+    async def _talk():
+        t = Talk.query.order_by(Talk.timestamp.desc()).first()
+        body = t.body_to_html if t else ""
+        cache_operate.set(typ, GlobalCacheKey.TALK, body)
+        return body
+
+    async def _guest_book():
+        p = Page.query.filter_by(url_name="guest-book").first()
+        count = p.comments.filter_by(disabled=True).count() if p and p.comments else 0
+        cache_operate.set(typ, GlobalCacheKey.GUEST_BOOK_COUNT, count)
+        return count
+
+    def _boxes():
+        if c_adv_boxes and c_site_boxes:
+            return c_adv_boxes, c_site_boxes
+
+        bs = SideBox.query.order_by(SideBox.id.desc()).all()
+        adv = [box for box in bs if not box.unable and box.is_advertising]
+        site = [box for box in bs if not (box.unable or box.is_advertising)]
+
+        cache_operate.set(typ, GlobalCacheKey.ADS_BOXES, adv)
+        cache_operate.set(typ, GlobalCacheKey.SITE_BOXES, site)
+        return adv, site
+
+    administrator = c_admin or await _admin()
+    social_links, friend_links_counts = _links()
+    tags = c_tags or await _tags()
+    categories = c_categories or await _categories()
+    pages = c_pages or await _pages()
+    love_me_counts = c_love_me_counts or await _love_me_counts()
+    posts = c_posts or await _posts()
+    talk = c_talk or await _talk()
+    guest_book = c_guest_book_count or await _guest_book()
+    adv_boxes, site_boxes = _boxes()
 
     global_data[GlobalCacheKey.ADMIN] = administrator
     global_data[GlobalCacheKey.TAGS] = tags
     global_data[GlobalCacheKey.CATEGORIES] = categories
     global_data[GlobalCacheKey.PAGES] = pages
-    global_data[GlobalCacheKey.LOVE_COUNT] = love_me_counts.count
+    global_data[GlobalCacheKey.LOVE_COUNT] = love_me_counts
     global_data[GlobalCacheKey.POST_COUNT] = posts
-    global_data[GlobalCacheKey.TALK] = talk.body_to_html
-    guest_book_counts = guest_book.comments.count() if guest_book and guest_book.comments else 0
-    global_data[GlobalCacheKey.GUEST_BOOK_COUNT] = guest_book_counts
+    global_data[GlobalCacheKey.TALK] = talk
+    global_data[GlobalCacheKey.GUEST_BOOK_COUNT] = guest_book
+    global_data[GlobalCacheKey.SOCIAL_LINKS] = social_links
+    global_data[GlobalCacheKey.FRIEND_COUNT] = friend_links_counts
+    global_data[GlobalCacheKey.ADS_BOXES] = adv_boxes
+    global_data[GlobalCacheKey.SITE_BOXES] = site_boxes
 
-    if links:
-        social_links = [link for link in links if link.is_friend is False]
-        friend_links_counts = len(links) - len(social_links)
-        global_data[GlobalCacheKey.SOCIAL_LINKS] = social_links
-        global_data[GlobalCacheKey.FRIEND_COUNT] = friend_links_counts
-    if boxes:
-        adv_boxes = [box for box in boxes if box.unable is False and box.is_advertising is True]
-        global_data[GlobalCacheKey.ADS_BOXES] = adv_boxes
-        my_boxes = [box for box in boxes if box.unable is False and box.is_advertising is False]
-        global_data[GlobalCacheKey.MY_BOXES] = my_boxes
-
-    cache_operate.set(cache_operate.GLOBAL_KEY, global_data, timeout=60 * 60 * 24 * 30)
     return global_data
 
 
 @main_bp.app_context_processor
 def app_global_data():
-    print("app_context_processor")
-    return asyncio.run(_global_data())
+    typ = CacheType.GLOBAL.name
+    data = cache_operate.get(typ, GlobalCacheKey.GLOBAL)
+
+    if not data:
+        data = asyncio.run(_global_data())
+        cache_operate.set(typ, GlobalCacheKey.GLOBAL, data, timeout=1)
+
+    return data
 
 
 @main_bp.before_request

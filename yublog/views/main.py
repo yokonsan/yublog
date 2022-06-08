@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from flask import redirect, request, g, jsonify, current_app, render_template, url_for
 
-from yublog.utils.cache import cache_operate, GlobalCacheKey
+from yublog.utils.cache import cache_operate, GlobalCacheKey, CacheType
 from yublog.extensions import db
 from yublog.models import Post, Comment, Page, Category, Tag, Talk, Link, LoveMe
 from yublog.views import main_bp
@@ -21,9 +21,7 @@ def index():
     post_list = _posts.limit(per_page).offset((_page - 1) * per_page).all()
     posts = []
     for p in post_list:
-        cache_key = "_".join(map(str, ["post", p.year, p.month, p.url_name]))
-        # print(f"key: {cache_key}")
-        posts.append(get_model_cache(cache_key))
+        posts.append(get_model_cache(CacheType.POST.name, f"{p.year}_{p.month}_{p.url_name}"))
     return render_template("main/index.html", title="首页",
                            posts=posts, page=_page, max_page=max_page,
                            pagination=range(1, max_page + 1))
@@ -31,8 +29,7 @@ def index():
 
 @main_bp.route("/<int:year>/<int:month>/<post_url>/")
 def post(year, month, post_url):
-    cache_key = "_".join(map(str, ["post", year, month, post_url]))
-    _post = get_model_cache(cache_key)
+    _post = get_model_cache(CacheType.POST.name, f"{year}_{month}_{post_url}")
 
     page_cnt = request.args.get("page", 1, type=int)
     if page_cnt == -1:
@@ -138,9 +135,7 @@ def love_me():
     data = request.get_json()
     if data.get("i_am_handsome", "") == "yes":
         # 更新缓存
-        global_cache = cache_operate.get(cache_operate.GLOBAL_KEY)
-        global_cache[GlobalCacheKey.LOVE_COUNT] += 1
-        cache_operate.set(cache_operate.GLOBAL_KEY, global_cache)
+        cache_operate.incr(CacheType.GLOBAL, GlobalCacheKey.LOVE_COUNT)
         love_me_counts = LoveMe.query.first()
         love_me_counts.count += 1
 

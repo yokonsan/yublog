@@ -1,32 +1,35 @@
+from enum import Enum
+
 from yublog import cache
 from yublog.exceptions import NoCacheTypeException
 
 
 class GlobalCacheKey:
-    ADMIN = 'admin'
-    TAGS = 'tags'
-    CATEGORIES = 'categories'
-    PAGES = 'pages'
-    LOVE_COUNT = 'love_count'
-    POST_COUNT = 'post_count'
-    TALK = 'talk'
-    GUEST_BOOK_COUNT = 'guest_book_count'
-    SOCIAL_LINKS = 'social_links'
-    FRIEND_COUNT = 'friend_count'
-    ADS_BOXES = 'ads_boxes'
-    MY_BOXES = 'my_boxes'
+    GLOBAL = "global"
+    ADMIN = "admin"
+    TAGS = "tags"
+    CATEGORIES = "categories"
+    PAGES = "pages"
+    LOVE_COUNT = "love_count"
+    POST_COUNT = "post_count"
+    TALK = "talk"
+    GUEST_BOOK_COUNT = "guest_book_count"
+    SOCIAL_LINKS = "social_links"
+    FRIEND_COUNT = "friend_count"
+    ADS_BOXES = "ads_boxes"
+    SITE_BOXES = "site_boxes"
 
 
 class Operate:
-    PREFIX = "yublog"
+    PREFIX = "_cache"
     TYPES = set()
 
     def _join_key(self, typ, key):
         """拼接缓存key"""
         assert typ in self.TYPES, \
-            NoCacheTypeException(f"type must in {self.TYPES}")
+            NoCacheTypeException(f"type must in {self.TYPES}, current type[{typ}]")
 
-        return f"{self.PREFIX}:{typ}:{key}"
+        return f"{self.PREFIX}:{typ}:{key}".lower()
 
     def get(self, typ, key):
         """查询"""
@@ -36,20 +39,20 @@ class Operate:
         """设置"""
         return cache.set(self._join_key(typ, key), value, **kwargs)
 
-    def clean(self, typ, key=None):
+    def clean(self, typ=None, key="*"):
         """删除"""
-        if key:
+        if typ:
             return cache.delete(self._join_key(typ, key))
 
         return cache.clear()
 
     def incr(self, typ, key, delta=1):
         """数字类型自增"""
-        cache.inc(self._join_key(typ, key), delta)
+        cache.cache.inc(self._join_key(typ, key), delta)
 
     def decr(self, typ, key, delta=1):
         """数字类型自减"""
-        cache.dec(self._join_key(typ, key), delta)
+        cache.cache.dec(self._join_key(typ, key), delta)
 
     def add(self, typ, key, item):
         """保留当前数据，增加缓存数据"""
@@ -62,34 +65,21 @@ class Operate:
 
         return cache.set(key, current)
 
+    def get_many(self, typ, *keys):
+        keys = [self._join_key(typ, key) for key in keys]
+        return cache.get_many(*keys)
+
+
+class CacheType(Enum):
+    GLOBAL = "global"
+    POST = "post"
+    ARTICLE = "article"
+    COLUMN = "column"
+    PAGE = "page"
+
 
 class CacheOperate(Operate):
-    ALL_KEY = 'all'
-    GLOBAL_KEY = 'global'
-    ADD = '+'
-    REMOVE = '-'
-    TYPES = {"global", "post", "article", "column", "page"}
-
-    def update_global(self, key, value, method=None):
-        """
-        update sidebar global cache
-        : param key: dict key
-        : param kwargs: key, value, method
-        """
-        global_cache = cache.get(self.GLOBAL_KEY)
-        if global_cache is None:
-            return False
-        if method == self.ADD:
-            value = value if isinstance(value, int) else 1
-            global_cache[key] += value
-        elif method == self.REMOVE:
-            value = value if isinstance(value, int) else 1
-            global_cache[key] -= value
-        else:
-            global_cache[key] = value
-        cache.set(self.GLOBAL_KEY, global_cache)
-
-        return True
+    TYPES = CacheType.__members__.keys()
 
 
 cache_operate = CacheOperate()

@@ -64,6 +64,7 @@ class Config(object):
 
     # cache 使用 Redis 数据库缓存配置
     CACHE_TYPE = "redis"
+    CACHE_KEY_PREFIX = "yublog"
     CACHE_REDIS_HOST = getenv("CACHE_REDIS_HOST") or "127.0.0.1"
     CACHE_REDIS_PORT = 6379
     CACHE_REDIS_DB = getenv("CACHE_REDIS_DB") or 0

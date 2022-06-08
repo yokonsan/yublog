@@ -2,6 +2,7 @@ from os import abort
 from flask import render_template, request, jsonify, \
     current_app, redirect, url_for, make_response
 
+from yublog import CacheType
 from yublog.forms import ArticlePasswordForm
 from yublog.models import Column, Comment
 from yublog.views import column_bp
@@ -13,15 +14,14 @@ from yublog.utils.cache.model import get_model_cache
 def index():
     columns = []
     for c in Column.query.order_by(Column.id.desc()).all():
-        cache_key = 'column_{}'.format(c.url_name)
-        columns.append(get_model_cache(cache_key))
+        columns.append(get_model_cache(CacheType.COLUMN.name, c.url_name))
 
     return render_template('column/index.html', title='专栏目录', columns=columns)
 
 
 @column_bp.route('/<url_name>')
 def _column(url_name):
-    column = get_model_cache('column_{}'.format(url_name))
+    column = get_model_cache(CacheType.COLUMN.name, url_name)
     articles = [{'num': i, 'item': a} for i, a in enumerate(column['articles'])]
     
     first_id = articles[0]['item']['id'] if articles else None
@@ -31,7 +31,7 @@ def _column(url_name):
 
 @column_bp.route('/<url>/<int:id>')
 def article(url, id):
-    column = get_model_cache('column_{0}'.format(url))
+    column = get_model_cache(CacheType.COLUMN.name, url)
     # get this column all articles cache at sidebar
     _article, articles = None, []
     for i, a in enumerate(column['articles']):

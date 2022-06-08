@@ -2,7 +2,7 @@ from flask import current_app
 
 from yublog.extensions import db
 from yublog.models import Tag, Category, Post
-from yublog.utils.cache import cache_operate
+from yublog.utils.cache import cache_operate, CacheType, GlobalCacheKey
 from yublog.utils.tools import get_sitemap, save_file, gen_rss_xml
 
 
@@ -49,7 +49,7 @@ def save_category(old_category, new_category=None, is_show=True):
             db.session.delete(category)
             db.session.commit()
             # 更新分类缓存
-            cache_operate.clean(cache_operate.GLOBAL_KEY)
+            cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.CATEGORIES)
         old_category = new_category
 
     # 是否新的分类需要添加
