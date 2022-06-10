@@ -23,7 +23,7 @@
         </a>
     </h1>
     <div class="post-meta">
-        <span class="post-time"><i class="demo-icon icon-calendar"></i> 发表于{{ post.datetime }}</span>
+        <span class="post-time"><i class="demo-icon icon-calendar"></i> 发表于 {{ post.create_time }}</span>
         <span class="post-category">
             <i class="demo-icon icon-folder-empty"></i> 分类：
             <a href="{{ url_for('main.category', category_name=post.category_name) }}">{{ post.category_name }}</a>

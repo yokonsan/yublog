@@ -1,6 +1,8 @@
+from flask import current_app
+
 from yublog import cache
 from yublog.exceptions import NoCacheTypeException
-from yublog.utils.log import log_param, log_time
+from yublog.utils.log import log_time
 
 
 class CacheKey:
@@ -56,7 +58,15 @@ class Operate:
     def clean(self, typ=None, key="*"):
         """删除"""
         if typ:
-            return cache.delete(self._join_key(typ, key))
+            if key != "*":
+                return cache.delete(self._join_key(typ, key))
+            # 模糊取所有key
+
+            plugin_prefix = current_app.config["CACHE_KEY_PREFIX"]
+            keys = cache.cache._read_clients.keys(  # noqa
+                plugin_prefix + self._join_key(typ, key)
+            )
+            return cache.delete_many(*[k.decode().lstrip(plugin_prefix) for k in keys])
 
         return cache.clear()
 

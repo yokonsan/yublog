@@ -364,8 +364,12 @@ def admin_posts():
         error_out=False
     )
     posts = [post for post in pagination.items]
-    return render_template("admin/post.html", title="管理文章",
-                           posts=posts, pagination=pagination)
+    return render_template(
+        "admin/post.html",
+        title="管理文章",
+        posts=posts,
+        pagination=pagination
+    )
 
 
 @admin_bp.route("/delete/<int:id>")
@@ -459,9 +463,13 @@ def allow_comment(id):
 
     page = comment.page
     post = comment.post
-    if page and page.url_name == "guest-book":
+
+    if page:
         # 清除缓存
-        cache_operate.incr(CacheType.GLOBAL, CacheKey.GUEST_BOOK_COUNT)
+        cache_operate.clean(CacheType.PAGE, page.url_name)
+        cache_operate.clean(CacheType.COMMENT, f"page:{page.id}")
+        if page.url_name == "guest-book":
+            cache_operate.incr(CacheType.GLOBAL, CacheKey.GUEST_BOOK_COUNT)
     elif post and isinstance(post, Post):
         # 更新文章缓存
         cache_operate.clean(CacheType.POST, f"{post.year}_{post.month}_{post.url_name}")

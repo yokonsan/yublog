@@ -12,8 +12,7 @@ def get_posts():
                      .filter_by(draft=False)\
                      .order_by(Post.create_time.desc())\
                      .all():
-            comments = comment_cache(p)
-            p.comment_count = len(comments)
+            p.comment_count = len(comment_cache(p))
             posts.append(p)
 
         return posts
@@ -62,6 +61,7 @@ def _generate_post_cache(field):
 
     cur.next_post = linked_post(posts[cur_idx+1]) if posts[-1] != cur else None
     cur.prev_post = linked_post(posts[cur_idx-1]) if posts[0] != cur else None
+    cur.comment_count = len(comment_cache(cur))
     return cur
 
 
