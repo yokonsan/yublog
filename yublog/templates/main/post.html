@@ -2,7 +2,7 @@
 {% block styles %}
     {{super()}}
     <link rel="stylesheet" href="{{ url_for('static',filename='lib/default.css') }}"/>
-    <meta name="keywords" content="{{ meta_tags }}">
+    <meta name="keywords" content="{{ post.tags }}">
     <meta name="description" content="{{ post.title }}">
 <style>
     .post-title {
@@ -30,7 +30,7 @@
             <span class="post-time"><i class="demo-icon icon-calendar"></i> 发表于{{ post.datetime }}</span>
             <span class="post-category">
                 <i class="demo-icon icon-folder-empty"></i> 分类：
-                <a href="{{ url_for('main.category', category_name=post.category) }}">{{ post.category }}</a>
+                <a href="{{ url_for('main.category', category_name=post.category_name) }}">{{ post.category_name }}</a>
             </span>
             <span class="post-comments-count">
                 <i class="demo-icon icon-comment-empty"></i> 评论： {{ counts }}
@@ -43,7 +43,7 @@
             {% endif %}
         </div>
         <div class="post-tags">
-            {% for tag in post.tags %}
+            {% for tag in post.tags.split(",") %}
             <a href="{{ url_for('main.tag', tag_name=tag) }}"><i class="demo-icon icon-tags"></i> {{ tag }}</a>
             {% endfor %}
         </div>

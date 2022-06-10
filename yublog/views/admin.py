@@ -16,7 +16,7 @@ from flask_login import (
     current_user
 )
 
-from yublog.utils.cache import cache_operate, GlobalCacheKey, CacheType
+from yublog.utils.cache import cache_operate, CacheKey, CacheType
 from yublog.exceptions import DuplicateEntryException
 from yublog.extensions import qn, db, whooshee
 from yublog.forms import *
@@ -32,9 +32,8 @@ from yublog.models import (
     Article,
     Category
 )
-from yublog.utils.tools import asyncio_send
+from yublog.utils.emails import send_mail
 from yublog.views import admin_bp
-from yublog.utils.cache.model import update_linked_cache
 from yublog.utils.save import save_post, save_category, save_xml
 
 
@@ -81,7 +80,7 @@ def set_site():
         db.session.commit()
         flash("Set successfully.")
 
-        cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.ADMIN)
+        cache_operate.clean(CacheType.GLOBAL, CacheKey.ADMIN)
         return redirect(url_for("admin.index"))
 
     form.username.data = user.name
@@ -131,7 +130,7 @@ def add_link():
         db.session.commit()
         flash("Added successfully.")
 
-        cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.SOCIAL_LINKS)
+        cache_operate.clean(CacheType.GLOBAL, CacheKey.SOCIAL_LINKS)
         return redirect(url_for("admin.add_link"))
 
     # 友链
@@ -151,7 +150,7 @@ def add_link():
         db.session.commit()
         flash("Added successfully.")
 
-        cache_operate.incr(CacheType.GLOBAL.name, GlobalCacheKey.FRIEND_COUNT)
+        cache_operate.incr(CacheType.GLOBAL, CacheKey.FRIEND_COUNT)
         return redirect(url_for("admin.add_link"))
 
     return render_template(
@@ -183,9 +182,9 @@ def delete_link(id):
     db.session.commit()
     # update cache
     if link.is_friend:
-        cache_operate.decr(CacheType.GLOBAL.name, GlobalCacheKey.FRIEND_COUNT)
+        cache_operate.decr(CacheType.GLOBAL, CacheKey.FRIEND_COUNT)
     else:
-        cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.SOCIAL_LINKS)
+        cache_operate.clean(CacheType.GLOBAL, CacheKey.SOCIAL_LINKS)
 
     return redirect(url_for("admin.admin_links"))
 
@@ -199,8 +198,8 @@ def great_link(id):
     db.session.add(link)
     db.session.commit()
 
-    cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.SOCIAL_LINKS)
-    cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.FRIEND_COUNT)
+    cache_operate.clean(CacheType.GLOBAL, CacheKey.SOCIAL_LINKS)
+    cache_operate.clean(CacheType.GLOBAL, CacheKey.FRIEND_COUNT)
     return redirect(url_for("admin.admin_links"))
 
 
@@ -227,9 +226,8 @@ def write():
             db.session.commit()
             flash("Posted successfully.")
             # updata cache
-            cache_operate.incr(CacheType.GLOBAL.name, GlobalCacheKey.POST_COUNT)
-            cache_operate.clean(CacheType.POST.name)
-            update_linked_cache(CacheType.POST.name, post)
+            cache_operate.incr(CacheType.GLOBAL, CacheKey.POST_COUNT)
+            cache_operate.clean(CacheType.POST)
         return redirect(url_for("admin.write"))
     return render_template("admin/edit_post.html", form=form, title="写文章")
 
@@ -264,15 +262,14 @@ def admin_edit(id):
                 db.session.commit()
                 flash("Posted successfully.")
                 # 清除缓存
-                cache_operate.clean(CacheType.POST.name)
-                update_linked_cache(CacheType.POST.name, post)
+                cache_operate.clean(CacheType.POST)
                 save_xml(post.create_time)
         else:
             db.session.add(post)
             db.session.commit()
             flash("Update successfully.")
             # 清除对应文章缓存
-            cache_operate.clean(CacheType.POST.name, f"{post.year}_{post.month}_{post.url_name}")
+            cache_operate.clean(CacheType.POST, f"{post.year}_{post.month}_{post.url_name}")
             save_xml(post.create_time)
         return redirect(url_for("admin.admin_edit", id=post.id))
     form.category.data = post.category.category
@@ -300,7 +297,7 @@ def add_page():
         flash("Posted successfully.")
         if page.show_nav is True:
             # 清除缓存
-            cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.PAGES)
+            cache_operate.clean(CacheType.GLOBAL, CacheKey.PAGES)
         return redirect(url_for("admin.add_page"))
     return render_template("admin/edit_page.html", form=form, title="添加页面")
 
@@ -321,7 +318,7 @@ def edit_page(name):
         db.session.commit()
         flash("Update successfully.")
         # 清除缓存
-        cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.PAGES)
+        cache_operate.clean(CacheType.GLOBAL, CacheKey.PAGES)
         return redirect(url_for("admin.edit_page", name=page.url_name))
     form.title.data = start_title
     form.body.data = page.body
@@ -340,7 +337,7 @@ def delete_page(name):
     flash("Deleted successfully.")
     if page.show_nav:
         # 清除缓存
-        cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.PAGES)
+        cache_operate.clean(CacheType.GLOBAL, CacheKey.PAGES)
     return redirect(url_for("admin.admin_pages"))
 
 
@@ -375,7 +372,7 @@ def admin_posts():
 @login_required
 def delete_post(id):
     post = Post.query.get_or_404(id)
-    _category = Category.query.get_or_404(post.category_id)
+    _category = post.category
     if _category.posts.count() == 1:
         db.session.delete(_category)
 
@@ -385,7 +382,7 @@ def delete_post(id):
     # update cache
     if post.draft is False:
         print(post)
-        cache_operate.decr(CacheType.GLOBAL.name, GlobalCacheKey.POST_COUNT)
+        cache_operate.decr(CacheType.GLOBAL, CacheKey.POST_COUNT)
     return redirect(url_for("admin.admin_posts"))
 
 
@@ -415,13 +412,11 @@ def delete_comment(id):
     if comment.disabled is True:
         if page and page.url_name == "guest-book":
             # 清除缓存
-            cache_operate.decr(CacheType.GLOBAL.name, GlobalCacheKey.GUEST_BOOK_COUNT)
+            cache_operate.decr(CacheType.GLOBAL, CacheKey.GUEST_BOOK_COUNT)
         elif post and isinstance(post, Post):
             # 删除文章缓存
-            cache_key = f"{post.year}_{post.month}_{post.url_name}"
-            post_cache = cache_operate.get(CacheType.POST.name, cache_key)
-            post_cache["comment_count"] -= 1
-            cache_operate.set(CacheType.POST.name, cache_key, post_cache)
+            cache_operate.clean(CacheType.POST, f"{post.year}_{post.month}_{post.url_name}")
+            cache_operate.clean(CacheType.COMMENT, f"post:{post.id}")
     return redirect(url_for("admin.admin_comments"))
 
 
@@ -460,20 +455,18 @@ def allow_comment(id):
                     base_url, comment.article.column.url_name, str(comment.article.id))
             # 发送邮件
             msg = render_template("user_mail.html", nickname=nickname, comment=com, url=post_url)
-            asyncio_send(to_addr, msg)
+            send_mail(to_addr, msg)
 
     page = comment.page
     post = comment.post
     if page and page.url_name == "guest-book":
         # 清除缓存
-        cache_operate.incr(CacheType.GLOBAL.name, GlobalCacheKey.GUEST_BOOK_COUNT)
+        cache_operate.incr(CacheType.GLOBAL, CacheKey.GUEST_BOOK_COUNT)
     elif post and isinstance(post, Post):
         # 更新文章缓存
-        cache_key = f"{post.year}_{post.month}_{post.url_name}"
-        post_cache = cache_operate.get(CacheType.POST.name, cache_key)
-        if post_cache:
-            post_cache["comment_count"] += 1
-            cache_operate.set(CacheType.POST.name, cache_key, post_cache)
+        cache_operate.clean(CacheType.POST, f"{post.year}_{post.month}_{post.url_name}")
+        cache_operate.clean(CacheType.COMMENT, f"post:{post.id}")
+
     return redirect(url_for("admin.admin_comments"))
 
 
@@ -490,14 +483,11 @@ def unable_comment(id):
     post = comment.post
     if page and page.url_name == "guest-book":
         # 清除缓存
-        cache_operate.decr(CacheType.GLOBAL.name, GlobalCacheKey.GUEST_BOOK_COUNT)
+        cache_operate.decr(CacheType.GLOBAL, CacheKey.GUEST_BOOK_COUNT)
     elif post and isinstance(post, Post):
         # 更新文章缓存
-        cache_key = f"{post.year}_{post.month}_{post.url_name}"
-        post_cache = cache_operate.get(CacheType.POST.name, cache_key)
-        if post_cache:
-            post_cache["comment_count"] -= 1
-            cache_operate.set(CacheType.POST.name, cache_key, post_cache)
+        cache_operate.clean(CacheType.POST, f"{post.year}_{post.month}_{post.url_name}")
+        cache_operate.clean(CacheType.COMMENT, f"post:{post.id}")
     return redirect(url_for("admin.admin_comments"))
 
 
@@ -511,7 +501,7 @@ def write_talk():
         db.session.commit()
         flash("Posted successfully.")
         # 清除缓存
-        cache_operate.set(CacheType.GLOBAL.name, GlobalCacheKey.TALK, talk.body_to_html)
+        cache_operate.set(CacheType.GLOBAL, CacheKey.LAST_TALK, talk.body_to_html)
         return redirect(url_for("admin.write_talk"))
     return render_template("admin/edit_talk.html", title="写说说", form=form)
 
@@ -538,7 +528,7 @@ def delete_talk(id):
     # update cache
     new_talk = Talk.query.order_by(Talk.timestamp.desc()).first()
     value = new_talk.body_to_html if new_talk else "这家伙啥都不想说..."
-    cache_operate.set(CacheType.GLOBAL.name, GlobalCacheKey.TALK, value)
+    cache_operate.set(CacheType.GLOBAL, CacheKey.LAST_TALK, value)
     return redirect(url_for("admin.admin_talk"))
 
 
@@ -575,7 +565,7 @@ def edit_column(id):
         db.session.add(column)
         db.session.commit()
         flash("Update successfully.")
-        cache_operate.clean(CacheType.COLUMN.name, column.url_name)
+        cache_operate.clean(CacheType.COLUMN, column.url_name)
         return redirect(url_for("admin.admin_column", id=column.id))
 
     form.column.data = column.title
@@ -613,7 +603,7 @@ def delete_column(id):
     db.session.commit()
     flash("Deleted successfully.")
     # clean all of this column cache
-    cache_operate.clean(CacheType.COLUMN.name, column.url_name)
+    cache_operate.clean(CacheType.COLUMN, column.url_name)
     return redirect(url_for("admin.admin_columns"))
 
 
@@ -629,7 +619,7 @@ def write_column_article(url):
         db.session.commit()
         flash("Added successfully.")
         # clean cache
-        cache_operate.clean(CacheType.COLUMN.name, url)
+        cache_operate.clean(CacheType.COLUMN, url)
         return redirect(url_for("admin.admin_column", id=column.id))
     return render_template("admin_column/edit_article.html", form=form,
                            title="编辑文章", column=column)
@@ -652,7 +642,7 @@ def edit_column_article(url, id):
         db.session.commit()
         flash("Update successfully.")
         # clear cache
-        cache_operate.clean(CacheType.COLUMN.name, url)
+        cache_operate.clean(CacheType.COLUMN, url)
         return redirect(url_for("admin.admin_column", id=column.id))
 
     form.title.data = article.title
@@ -672,7 +662,7 @@ def delete_column_article(url, id):
     db.session.commit()
     flash("Deleted successfully.")
     # 清除对于缓存
-    cache_operate.clean(CacheType.COLUMN.name, url)
+    cache_operate.clean(CacheType.COLUMN, url)
     return redirect(url_for("admin.admin_column", id=column.id))
 
 
@@ -703,8 +693,8 @@ def add_side_box():
         db.session.commit()
         flash("Added successfully.")
         # update cache
-        cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.SITE_BOXES)
-        cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.ADS_BOXES)
+        cache_operate.clean(CacheType.GLOBAL, CacheKey.SITE_BOXES)
+        cache_operate.clean(CacheType.GLOBAL, CacheKey.ADS_BOXES)
         return redirect(url_for("admin.admin_side_box"))
     return render_template("admin/edit_sidebox.html", form=form,
                            title="添加插件")
@@ -723,8 +713,8 @@ def edit_side_box(id):
         db.session.commit()
         flash("Update successfully.")
         # update cache
-        cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.SITE_BOXES)
-        cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.ADS_BOXES)
+        cache_operate.clean(CacheType.GLOBAL, CacheKey.SITE_BOXES)
+        cache_operate.clean(CacheType.GLOBAL, CacheKey.ADS_BOXES)
         return redirect(url_for("admin.admin_side_box"))
 
     form.title.data = box.title
@@ -750,8 +740,8 @@ def unable_side_box(id):
     db.session.add(box)
     db.session.commit()
     # 清除缓存
-    cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.SITE_BOXES)
-    cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.ADS_BOXES)
+    cache_operate.clean(CacheType.GLOBAL, CacheKey.SITE_BOXES)
+    cache_operate.clean(CacheType.GLOBAL, CacheKey.ADS_BOXES)
     return redirect(url_for("admin.admin_side_box"))
 
 
@@ -763,8 +753,8 @@ def delete_side_box(id):
     db.session.commit()
     flash("Deleted successfully.")
     # 清除缓存
-    cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.SITE_BOXES)
-    cache_operate.clean(CacheType.GLOBAL.name, GlobalCacheKey.ADS_BOXES)
+    cache_operate.clean(CacheType.GLOBAL, CacheKey.SITE_BOXES)
+    cache_operate.clean(CacheType.GLOBAL, CacheKey.ADS_BOXES)
     return redirect(url_for("admin.admin_side_box"))
 
 

@@ -1,11 +1,37 @@
+from functools import partial
+
 from yublog.models import Article, Column, Post
-from yublog.utils.cache import cache_operate, CacheType
+from yublog.utils.cache import cache_operate, CacheType, CacheKey
+from yublog.utils.functools import get_pagination
+
+
+def get_posts():
+    def filter_by():
+        posts = []
+        for p in Post.query\
+                     .filter_by(draft=False)\
+                     .order_by(Post.create_time.desc())\
+                     .all():
+            comments = comment_cache(p)
+            p.comment_count = len(comments)
+            posts.append(p)
+
+        return posts
+
+    return cache_operate.getset(
+        CacheType.POST,
+        CacheKey.POSTS,
+        callback=filter_by
+    )
 
 
 def get_model_cache(typ, key):
     """获取博客文章缓存"""
-    data = cache_operate.get(typ, key)
-    return data if data else set_model_cache(typ, key)
+    return cache_operate.getset(
+        typ,
+        key,
+        callback=partial(set_model_cache, typ=typ, key=key)
+    )
 
 
 def set_model_cache(typ, key):
@@ -13,57 +39,34 @@ def set_model_cache(typ, key):
     *_, query_field = key.split("_")
 
     data = {}
-    if typ == CacheType.POST.name:
+    if typ == CacheType.POST:
         data = _generate_post_cache(query_field)
-    elif typ == CacheType.ARTICLE.name:
+    elif typ == CacheType.ARTICLE:
         data = _generate_article_cache(query_field)
-    elif typ == CacheType.COLUMN.name:
-        data = _generate_column_cache(query_field)
 
-    cache_operate.set(typ, key, data)
     return data
 
 
-def update_linked_cache(typ, cur):
-    """在新文章更新后，清掉最近一篇文章的缓存"""
-    posts = Post.query.filter_by(draft=False).order_by(Post.create_time.desc()).all()
-    idx = posts.index(cur)
-    prev_post = posts[idx-1] if idx > 0 else None
-    next_post = posts[idx+1] if idx < len(posts)-1 else None
-    if prev_post:
-        cache_operate.clean(typ, "_".join(map(str, [prev_post.year, prev_post.month, prev_post.url_name])))
-    if next_post:
-        cache_operate.clean(typ, "_".join(map(str, [next_post.year, next_post.month, next_post.url_name])))
-    return True
-
-
 def _generate_post_cache(field):
-    def linked_post_data(p):
+    def linked_post(p):
         return {
             "year": p.year,
             "month": p.month,
             "url": p.url_name,
             "title": p.title
         }
-    
+
     cur = Post.query.filter_by(url_name=field).first_or_404()
+    posts = get_posts()
+    cur_idx = posts.index(cur)
 
-    posts = Post.query.filter_by(draft=False).order_by(Post.create_time.desc()).all()
-    tags = cur.tags.split(",")
-    data = cur.to_dict()
-
-    _next = linked_post_data(posts[posts.index(cur)+1]) if posts[-1] != cur else None
-    _prev = linked_post_data(posts[posts.index(cur)-1]) if posts[0] != cur else None
-    data.update({
-        "tags": tags,
-        "next_post": _next,
-        "prev_post": _prev
-    })
-    return data
+    cur.next_post = linked_post(posts[cur_idx+1]) if posts[-1] != cur else None
+    cur.prev_post = linked_post(posts[cur_idx-1]) if posts[0] != cur else None
+    return cur
 
 
 def _generate_article_cache(field):
-    def linked_article_data(a):
+    def linked_article(a):
         return {
             "id": a.id,
             "title": a.title
@@ -71,42 +74,63 @@ def _generate_article_cache(field):
     
     cur = Article.query.get_or_404(field)
     cur_column = Column.query.get_or_404(cur.column_id)
-    column_cache = get_model_cache(CacheType.COLUMN.name, cur_column.url_name)
+    column_cache = get_model_cache(CacheType.COLUMN, cur_column.url_name)
 
-    articles = column_cache["articles"]
-    data = cur.to_dict()
+    articles = column_cache.articles
+    cur_idx = articles.index(cur)
 
-    _next = linked_article_data(articles[articles.index(cur)+1]) if articles[-1] != cur else None
-    _prev = linked_article_data(articles[articles.index(cur)-1]) if articles[0] != cur else None
-    data.update({
-        "next_article": _next,
-        "prev_article": _prev
-    })
-    return data
+    cur.next_article = linked_article(articles[cur_idx+1]) if articles[-1] != cur else None
+    cur.prev_article = linked_article(articles[cur_idx-1]) if articles[0] != cur else None
+    return cur
 
 
-def _generate_column_cache(field):
-    def linked_article_data(a):
-        return {
-            "id": a.id,
-            "title": a.title
-        }
-    
-    cur = Column.query.filter_by(url_name=field).first_or_404()
-    data = cur.to_dict()
+def comment_cache(model):
+    def filter_by():
+        comments = getattr(model, "comments")  # 直接抛异常
+        if comments:
+            comments = [{c: c.replies} for c in comments if c.disabled and c.replied_id is None]
+            comments.sort(key=lambda item: list(item.keys())[0], reverse=True)
+        return comments or []
 
-    _articles = Article.query.filter_by(
-        column_id=cur.id).order_by(Article.timestamp.asc()).all()
-    articles = []
+    return cache_operate.getset(
+        CacheType.COMMENT,
+        f"{model.__tablename__}:{model.id}",
+        callback=filter_by
+    )
 
-    for i, a in enumerate(_articles):
-        article = a.to_dict()
-        _prev = None if i == 0 else linked_article_data(_articles[i-1])
-        _next = None if i == len(_articles)-1 else linked_article_data(_articles[i+1])
-        article.update({
-            "next_article": _next,
-            "prev_article": _prev
-        })
-        articles.append(article)
-    data["articles"] = articles
-    return data
+
+def comment_pagination_kwargs(model, cur_page, per):
+    comments = comment_cache(model)
+
+    counts = len(comments)
+    max_page, cur_page = get_pagination(counts, per, cur_page)
+    start_idx = per * (cur_page - 1)
+    comments = comments[start_idx:start_idx + per]
+
+    return dict(
+        comments=comments,
+        counts=counts,
+        max_page=max_page,
+        cur_page=cur_page,
+        pagination=range(1, max_page + 1)
+    )
+
+
+def post_pagination_kwargs(cur_page, per):
+    posts = get_posts()
+
+    counts = len(posts)
+    max_page, cur_page = get_pagination(counts, per, cur_page)
+    start_idx = per * (cur_page - 1)
+    posts = [
+        get_model_cache(CacheType.POST, f"{p.year}_{p.month}_{p.url_name}")
+        for p in posts[start_idx:start_idx + per]
+    ]
+
+    return dict(
+        posts=posts,
+        counts=counts,
+        max_page=max_page,
+        cur_page=cur_page,
+        pagination=range(1, max_page + 1)
+    )

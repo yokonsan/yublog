@@ -1,10 +1,9 @@
-from enum import Enum
-
 from yublog import cache
 from yublog.exceptions import NoCacheTypeException
+from yublog.utils.log import log_param, log_time
 
 
-class GlobalCacheKey:
+class CacheKey:
     GLOBAL = "global"
     ADMIN = "admin"
     TAGS = "tags"
@@ -12,12 +11,27 @@ class GlobalCacheKey:
     PAGES = "pages"
     LOVE_COUNT = "love_count"
     POST_COUNT = "post_count"
-    TALK = "talk"
+    LAST_TALK = "last_talk"
     GUEST_BOOK_COUNT = "guest_book_count"
     SOCIAL_LINKS = "social_links"
     FRIEND_COUNT = "friend_count"
+    FRIEND_LINKS = "friend_links"
     ADS_BOXES = "ads_boxes"
     SITE_BOXES = "site_boxes"
+    POSTS = "posts"
+    COLUMNS = "columns"
+    TALKS = "talks"
+
+
+class CacheType:
+    GLOBAL = "global"
+    POST = "post"
+    ARTICLE = "article"
+    COLUMN = "column"
+    PAGE = "page"
+    COMMENT = "comment"
+    TALK = "talk"
+    LINK = "link"
 
 
 class Operate:
@@ -35,9 +49,9 @@ class Operate:
         """查询"""
         return cache.get(self._join_key(typ, key))
 
-    def set(self, typ, key, value, **kwargs):
+    def set(self, typ, key, value, timeout=60*60*24*30, **kwargs):
         """设置"""
-        return cache.set(self._join_key(typ, key), value, **kwargs)
+        return cache.set(self._join_key(typ, key), value, timeout=timeout, **kwargs)
 
     def clean(self, typ=None, key="*"):
         """删除"""
@@ -70,16 +84,18 @@ class Operate:
         return cache.get_many(*keys)
 
 
-class CacheType(Enum):
-    GLOBAL = "global"
-    POST = "post"
-    ARTICLE = "article"
-    COLUMN = "column"
-    PAGE = "page"
-
-
 class CacheOperate(Operate):
-    TYPES = CacheType.__members__.keys()
+    TYPES = [attr.lower() for attr in dir(CacheType) if not attr.startswith("__")]
+
+    @log_time
+    def getset(self, typ, key, callback=None, **kwargs):
+        """缓存存在则返回，不存在则设置并返回"""
+        val = self.get(typ, key)
+        if not val and callable(callback):
+            val = callback()
+            self.set(typ, key, val, **kwargs)
+
+        return val
 
 
 cache_operate = CacheOperate()

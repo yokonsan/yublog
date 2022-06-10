@@ -6,7 +6,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from yublog import db, whooshee
-from yublog.utils.tools import markdown_to_html
+from yublog.utils.html import md2html
 from yublog.utils.pxfilter import XssHtml
 
 
@@ -65,7 +65,7 @@ class Page(db.Model):
 
     @property
     def body_to_html(self):
-        html = markdown_to_html(self.body)
+        html = md2html(self.body)
         return html
 
     def to_json(self):
@@ -90,14 +90,14 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(64))
     url_name = db.Column(db.String(64), unique=True)
-    create_time = db.Column(db.String(64), index=True)
+    create_time = db.Column(db.String(64))
     body = db.Column(db.Text)
     draft = db.Column(db.Boolean, default=False, index=True)
     disable = db.Column(db.Boolean, default=False, index=True)
 
     tags = db.Column(db.String(64))
-    category_id = db.Column(db.Integer, db.ForeignKey("category.id"))
-    comments = db.relationship("Comment", backref="post", lazy="dynamic")
+    category_name = db.Column(db.String(6), db.ForeignKey("category.category"))
+    comments = db.relationship("Comment", backref="post", lazy="subquery")
 
     @property
     def year(self):
@@ -109,7 +109,7 @@ class Post(db.Model):
 
     @property
     def body_to_html(self):
-        html = markdown_to_html(self.body)
+        html = md2html(self.body)
         return html
 
     def tag_in_post(self, tag):
@@ -127,25 +127,12 @@ class Post(db.Model):
             "category": self.category.category,
             "tag": self.tags,
             "comment_count": self.comments.filter_by(disabled=True).count(),
-            "comments": url_for("api.get_post_comments", id=self.id, _external=True)  # noqa
+            "comments": url_for("api.get_post_comments", id=self.id, _external=True)
         }
         return post
 
-    def to_dict(self):
-        """缓存"""
-        post = {
-            "id": self.id,
-            "url": self.url_name,
-            "title": self.title,
-            "body": self.body_to_html,
-            "year": self.year,
-            "month": self.month,
-            "datetime": self.create_time,
-            "category": self.category.category,
-            "tag": self.tags,
-            "comment_count": self.comments.filter_by(disabled=True).count()
-        }
-        return post
+    def __eq__(self, other):
+        return self.id == other.id
 
     def __repr__(self):
         return f"<Post title: {self.title}>"
@@ -183,8 +170,8 @@ class Comment(db.Model):
     disabled = db.Column(db.Boolean, default=False)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)  # noqa
 
-    replies = db.relationship("Comment", back_populates="replied", cascade="all, delete-orphan")  # noqa
-    replied = db.relationship("Comment", back_populates="replies", remote_side=[id])  # noqa
+    replies = db.relationship("Comment", back_populates="replied", cascade="all, delete-orphan", lazy="subquery")  # noqa
+    replied = db.relationship("Comment", back_populates="replies", remote_side=[id], lazy="subquery")  # noqa
     replied_id = db.Column(db.Integer, db.ForeignKey("comment.id"))
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"))
     page_id = db.Column(db.Integer, db.ForeignKey("page.id"))
@@ -197,7 +184,7 @@ class Comment(db.Model):
     @property
     def body_to_html(self):
         # xss过滤
-        html = markdown_to_html(self.comment)
+        html = md2html(self.comment)
 
         parser = XssHtml()
         parser.feed(html)
@@ -222,6 +209,9 @@ class Comment(db.Model):
             comment["avatar"] = self.gravatar(26)
             comment["reply_to"] = self.replied_id
         return comment
+
+    def __gt__(self, other):
+        return 1 if self.id > other.id else 0
 
     def __repr__(self):
         return f"<Comment body: {self.comment}>"
@@ -304,7 +294,7 @@ class Talk(db.Model):
 
     @property
     def body_to_html(self):
-        html = markdown_to_html(self.talk)
+        html = md2html(self.talk)
         return html
 
     def to_json(self):
@@ -332,7 +322,7 @@ class Column(db.Model):
 
     @property
     def body_to_html(self):
-        html = markdown_to_html(self.body)
+        html = md2html(self.body)
         return html
 
     # 对密码进行加密保存
@@ -377,20 +367,8 @@ class Article(db.Model):
 
     @property
     def body_to_html(self):
-        html = markdown_to_html(self.body)
+        html = md2html(self.body)
         return html
-
-    def to_dict(self):
-        article = {
-            "id": self.id,
-            "title": self.title,
-            "body": self.body_to_html,
-            "secrecy": self.secrecy,
-            "timestamp": self.timestamp,
-            "column": self.column.title,
-            "comment_count": self.comments.count()
-        }
-        return article
 
     def __repr__(self):
         return f"<Article title: {self.title}>"

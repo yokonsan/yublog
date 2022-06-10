@@ -30,11 +30,11 @@
     <div class="column-articles">
         <div class="column-menu">主题目录</div>
         {% if articles %}
-        {% for i in articles %}
+        {% for num, item in enumerate(articles, 1) %}
         <div class="article-item">
-            <span class="article-num">{{ i.num }}</span>
-            <a href="{{ url_for('column.article',url=column.url_name,id=i.item.id) }}">{{ i.item.title }}</a>
-            {% if i.item.secrecy == True %}
+            <span class="article-num">{{ num }}</span>
+            <a href="{{ url_for('column.article',url=column.url_name,id=item.id) }}">{{ item.title }}</a>
+            {% if item.secrecy == True %}
             <span style="float: right;color: #df846c;">保密</span>
             {% endif %}
         </div>

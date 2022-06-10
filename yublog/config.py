@@ -1,3 +1,4 @@
+import logging
 from os import getenv
 
 
@@ -86,6 +87,19 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     DEBUG = True
+
+    @classmethod
+    def init_app(cls, app):
+        from loguru import logger
+
+        class InterceptHandler(logging.Handler):
+            def emit(self, record):
+                logger_opt = logger.opt(depth=6, exception=record.exc_info)
+                logger_opt.log(record.levelno, record.getMessage())
+
+        Config.init_app(app)
+        app.logger.addHandler(InterceptHandler())
+        logging.basicConfig(handlers=[InterceptHandler()], level="INFO")
 
 
 class TestingConfig(Config):

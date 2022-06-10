@@ -1,15 +1,15 @@
-{% macro pages(pagination, endpoint, fragment='') %}
+{% macro pages(pagination, cur_page, max_page, endpoint, fragment='') %}
 <ul class="pagination">
-    <li {% if not pagination.has_prev %}style="display:none;"{% endif %}>
-        <a href="{% if pagination.has_prev %}{{ url_for(endpoint, page=pagination.prev_num, **kwargs) }}{{ fragment }}{% else %}#{% endif %}">
+    <li {% if cur_page==1 %}style="display:none;"{% endif %}>
+        <a href="{% if cur_page != 1 %}{{ url_for(endpoint, page=cur_page-1, **kwargs) }}{{ fragment }}{% else %}#{% endif %}">
             &laquo;
         </a>
     </li>
-    {% for p in pagination.iter_pages() %}
+    {% for p in pagination %}
         {% if p %}
-            {% if p == pagination.page %}
+            {% if p == cur_page %}
             <li>
-                <a  class="active" href="{{ url_for(endpoint, page = p, **kwargs) }}{{ fragment }}">{{ p }}</a>
+                <a  class="active" href="#">{{ p }}</a>
             </li>
             {% else %}
             <li>
@@ -20,8 +20,8 @@
         <li class="disabled"><a href="#">&hellip;</a></li>
         {% endif %}
     {% endfor %}
-    <li {% if not pagination.has_next %}style="display:none;"{% endif %}>
-        <a href="{% if pagination.has_next %}{{ url_for(endpoint, page=pagination.next_num, **kwargs) }}{{ fragment }}{% else %}#{% endif %}">
+    <li {% if cur_page == max_page %}style="display:none;"{% endif %}>
+        <a href="{% if cur_page != max_page %}{{ url_for(endpoint, page=cur_page+1, **kwargs) }}{{ fragment }}{% else %}#{% endif %}">
             &raquo;
         </a>
     </li>
