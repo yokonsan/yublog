@@ -105,6 +105,9 @@ class Post(db.Model):
     def __eq__(self, other):
         return self.id == other.id
 
+    def __hash__(self):
+        return hash(self.id)
+
     def __repr__(self):
         return f"<Post title: {self.title}>"
 
@@ -159,6 +162,9 @@ class Comment(db.Model):
 
     def __gt__(self, other):
         return 1 if self.id > other.id else 0
+
+    def __hash__(self):
+        return hash(self.id)
 
     def __repr__(self):
         return f"<Comment body: {self.comment}>"
@@ -282,6 +288,9 @@ class Article(db.Model):
 
     def __eq__(self, other):
         return self.id == other.id
+
+    def __hash__(self):
+        return hash(self.id)
 
     def __repr__(self):
         return f"<Article title: {self.title}>"

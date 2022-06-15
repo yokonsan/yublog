@@ -18,7 +18,7 @@ from flask_login import (
 
 from yublog.utils.cache import cache_operate, CacheKey, CacheType
 from yublog.exceptions import DuplicateEntryException
-from yublog.extensions import qn, db, whooshee
+from yublog.extensions import qn, whooshee
 from yublog.forms import *
 from yublog.models import (
     Admin,
@@ -559,6 +559,7 @@ def column(id):
 @login_required
 def delete_column(id):
     _column = Column.query.get_or_404(id)
+
     commit.delete(_column)
     flash("Deleted successfully.")
 

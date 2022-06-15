@@ -34,20 +34,29 @@ class CommentUtils(object):
         nickname = self._data["nickname"]
         body = self._data["body"]
         email = self._data["email"]
-        comment = Comment(comment=body, author=nickname, email=email, website=website)
+        comment = Comment(
+            comment=body,
+            author=nickname,
+            email=email,
+            website=website
+        )
         if self._data["reply_to"]:
             reply_author = self._data["reply_author"]
             if website and regular_url(website):
-                nickname_p_tag = "<a class='comment-user' href='{website}' target='_blank'>{nickname}</a>".format(
-                    website=website, nickname=nickname)
-                comment_html = "<p class='reply-header'>{nickname_p_tag}<span>回复</span> {reply_author}：</p>\n\n" \
-                               "{body}".format(website=website, nickname_p_tag=nickname_p_tag,
-                                               reply_author=reply_author, body=body)
+                nickname_p_tag = f"<a class='comment-user' " \
+                                 f"href='{website}' target='_blank'>{nickname}</a>"
+                comment_html = f"<p class='reply-header'>{nickname_p_tag}" \
+                               f"<span>回复</span> {reply_author}：</p>\n\n {body}"
             else:
-                comment_html = "<p class='reply-header'>{nickname}<span>回复</span>  {reply_author}：" \
-                               "</p>\n\n{body}".format(nickname=nickname, reply_author=reply_author, body=body)
+                comment_html = f"<p class='reply-header'>{nickname}<span>回复</span>" \
+                               f"  {reply_author}：</p>\n\n{body}"
 
-            comment = Comment(comment=comment_html, author=nickname, email=email, website=website)
+            comment = Comment(
+                comment=comment_html,
+                author=nickname,
+                email=email,
+                website=website
+            )
             comment.comment = comment_html
             comment.replied_id = int(self._data["reply_to"])
             self._data["body"] = comment_html
@@ -59,7 +68,7 @@ class CommentUtils(object):
             current_app.logger.warning("评论保存失败：未获取到目标类型")
             return None
 
-        target = self.COMMENT_TARGET_TYPE.get(self._target_type).query.get_or_404(target_id)
+        target = self.COMMENT_TARGET_TYPE[self._target_type].query.get_or_404(target_id)
         url = self._get_comment_post(target)
         if not url:
             current_app.logger.warning("评论保存失败：未获取到目标url")
@@ -69,8 +78,6 @@ class CommentUtils(object):
         comment = self._generate_comment()
         setattr(comment, self._target_type, target)
 
-        # 发送邮件
-        # self._send_mail(target.title, url)
         db.session.add(comment)
         db.session.commit()
         return self._data
@@ -91,9 +98,15 @@ class CommentUtils(object):
     def _send_mail(self, title, url):
         to_mail_address = current_app.config.get("ADMIN_MAIL", "")
         if self._data["email"] != to_mail_address:
-            msg = render_template("admin_mail.html", nickname=self._data["nickname"],
-                                  title=title, comment=self._data["body"],
-                                  email=self._data["email"], website=self._data["website"], url=url)
+            msg = render_template(
+                "admin_mail.html",
+                nickname=self._data["nickname"],
+                title=title,
+                comment=self._data["body"],
+                email=self._data["email"],
+                website=self._data["website"],
+                url=url
+            )
             send_mail(to_mail_address, msg)
 
 
