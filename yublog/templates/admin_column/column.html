@@ -3,7 +3,7 @@
 {% block content %}
 <div class="admin-post">
     <p>
-        <a href="{{ url_for('admin.write_column_article',url=column.url_name) }}">
+        <a href="{{ url_for('admin.write_column_article',id=column.id) }}">
             <button>添加文章</button>
         </a>
     </p>
@@ -11,15 +11,15 @@
         {% for article in articles %}
         <li>
             {{ article.timestamp }}
-            <a class="article-title" href="{{url_for('admin.edit_column_article',url=column.url_name,id=article.id)}}">
+            <a class="article-title" href="{{url_for('admin.edit_column_article',cid=column.id,aid=article.id)}}">
                 {{ article.title }}
             </a>
 
-            <button class="delete-btn" onclick="firm('{{url_for('admin.delete_column_article',url=column.url_name,id=article.id)}}')">
+            <button class="delete-btn" onclick="firm('{{url_for('admin.delete_column_article',cid=column.id,aid=article.id)}}')">
                 删除
             </button>
 
-            <a href="{{url_for('admin.edit_column_article',url=column.url_name,id=article.id)}}">
+            <a href="{{url_for('admin.edit_column_article',cid=column.id,aid=article.id)}}">
                 <button class="edit-btn">编辑</button>
             </a>
         </li>

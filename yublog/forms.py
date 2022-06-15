@@ -4,20 +4,82 @@ from wtforms import (
     PasswordField,
     SubmitField,
     BooleanField,
-    TextAreaField
+    TextAreaField,
+    Field,
 )
 from wtforms.validators import DataRequired
 
+from yublog.utils.times import nowstr
 
-class AdminLogin(FlaskForm):
+
+class FormMixin:
+    """mixin some method"""
+
+    @property
+    def filter_fields(self):
+        return {
+            "csrf_token",
+            "submit",
+            "save_draft",
+        }
+
+    @property
+    def ins_fields(self):
+        return set()
+
+    def __fields(self):
+        try:
+            fields = getattr(self, "data").keys()
+        except AttributeError:
+            fields = (k for k, v in self.__dict__.items() if isinstance(v, Field))
+
+        return fields
+
+    def to_form(self, item, **kwargs):
+        for field in filter(
+                lambda x: x not in (self.filter_fields | self.ins_fields),
+                self.__fields()
+        ):
+            f = getattr(self, field)
+
+            if field in kwargs:
+                f.data = kwargs[field]
+            else:
+                f.data = getattr(item, field)
+
+    def to_model(self, item, **kwargs):
+        for field in filter(
+                lambda x: x not in (self.filter_fields | self.ins_fields),
+                self.__fields()
+        ):
+            if field in kwargs:
+                setattr(item, field, kwargs[field])
+            else:
+                form = getattr(self, field)
+                setattr(item, field, form.data)
+
+    def new_model(self, model, **kwargs):
+        kws = {}
+        for field in filter(
+                lambda x: x not in (self.filter_fields | self.ins_fields),
+                self.__fields()
+        ):
+            kws[field] = getattr(self, field).data
+
+        if kwargs:
+            kws.update(kwargs)
+        return model(**kws)
+
+
+class AdminLogin(FlaskForm, FormMixin):
     username = StringField("username", validators=[DataRequired()])
     password = PasswordField("password", validators=[DataRequired()])
     remember_me = BooleanField("remember", default=False)
 
 
-class AdminWrite(FlaskForm):
+class AdminWrite(FlaskForm, FormMixin):
     title = StringField("title", validators=[DataRequired()])
-    time = StringField("datetime", validators=[DataRequired()])
+    create_time = StringField("datetime", validators=[DataRequired()], default=nowstr(fmt="%Y-%m-%d"))
     tags = StringField("tag", validators=[DataRequired()])
     category = StringField("category", validators=[DataRequired()])
     url_name = StringField("urlName", validators=[DataRequired()])
@@ -27,29 +89,33 @@ class AdminWrite(FlaskForm):
     submit = SubmitField("submit")
 
 
-class AddPageForm(FlaskForm):
+class AddPageForm(FlaskForm, FormMixin):
     title = StringField("title", validators=[DataRequired()])
     url_name = StringField("url_name", validators=[DataRequired()])
     body = TextAreaField("body", validators=[DataRequired()])
-    can_comment = BooleanField("can_comment")
-    is_nav = BooleanField("is_nav")
+    enable_comment = BooleanField("can_comment")
+    show_nav = BooleanField("is_nav")
     submit = SubmitField("submit")
 
 
-class SocialLinkForm(FlaskForm):
+class SocialLinkForm(FlaskForm, FormMixin):
     link = StringField("url", validators=[DataRequired()])
     name = StringField("name", validators=[DataRequired()])
     submit = SubmitField("submit")
 
 
-class FriendLinkForm(FlaskForm):
+class FriendLinkForm(FlaskForm, FormMixin):
     link = StringField("url", validators=[DataRequired()])
     name = StringField("name", validators=[DataRequired()])
     info = StringField("info", validators=[DataRequired()])
     submit2 = SubmitField("submit2")
 
+    @property
+    def ins_fields(self):
+        return {"submit2"}
 
-class AdminSiteForm(FlaskForm):
+
+class AdminSiteForm(FlaskForm, FormMixin):
     site_name = StringField("name", validators=[DataRequired()])
     site_title = StringField("title", validators=[DataRequired()])
 
@@ -63,33 +129,34 @@ class TalkForm(FlaskForm):
     talk = TextAreaField("talk", validators=[DataRequired()])
 
 
-# 专题表单
-class ColumnForm(FlaskForm):
-    column = StringField("column", validators=[DataRequired()])
-    date = StringField("datetime", validators=[DataRequired()])
+class ColumnForm(FlaskForm, FormMixin):
+    title = StringField("column", validators=[DataRequired()])
+    create_time = StringField("datetime", validators=[DataRequired()], default=nowstr(fmt="%Y-%m-%d"))
     url_name = StringField("urlName", validators=[DataRequired()])
     password = StringField("password")
     body = TextAreaField("body", validators=[DataRequired()])
     submit = SubmitField("submit")
 
+    @property
+    def ins_fields(self):
+        return {"password"}
 
-class ColumnArticleForm(FlaskForm):
+
+class ColumnArticleForm(FlaskForm, FormMixin):
     title = StringField("title", validators=[DataRequired()])
-    date = StringField("datetime", validators=[DataRequired()])
+    create_time = StringField("datetime", validators=[DataRequired()], default=nowstr(fmt="%Y-%m-%d"))
     body = TextAreaField("body", validators=[DataRequired()])
     secrecy = BooleanField("secrecy")
     submit = SubmitField("submit")
 
 
-# 侧栏插件表单
-class SideBoxForm(FlaskForm):
+class SideBoxForm(FlaskForm, FormMixin):
     title = StringField("title")
     body = TextAreaField("body", validators=[DataRequired()])
     is_advertising = BooleanField("is_advertising")
     submit = SubmitField("submit")
 
 
-# 更改密码
 class ChangePasswordForm(FlaskForm):
     old_password = PasswordField("Old password", validators=[DataRequired()])
     password = PasswordField("New password", validators=[DataRequired()])
@@ -104,7 +171,7 @@ class MobileSearchForm(FlaskForm):
     search = StringField("Search", validators=[DataRequired()])
 
 
-class CommentForm(FlaskForm):
+class CommentForm(FlaskForm, FormMixin):
     nickname = StringField("nickname", validators=[DataRequired()])
     email = StringField("email", validators=[DataRequired()])
     website = StringField("website")

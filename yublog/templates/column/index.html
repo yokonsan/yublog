@@ -7,7 +7,7 @@
         <div class="column-box">
             <a class="column" href="{{ url_for('column._column',url_name=column.url_name) }}">{{ column.title }}</a>
             <div class="article-meta" style="padding: 0;">
-                <span class="post-time"><i class="demo-icon icon-calendar"></i>{{ column.timestamp }}</span>
+                <span class="post-time"><i class="demo-icon icon-calendar"></i>{{ column.create_time }}</span>
                 <!-- <span><i class="demo-icon icon-heart-empty">喜欢：{{ column.love_num }}</i></span> -->
             </div>
             <div class="column-profile">

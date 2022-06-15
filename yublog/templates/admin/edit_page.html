@@ -2,12 +2,12 @@
 {% block tab %}添加页面{% endblock %}
 {% block content %}
 <div class="admin-write">
-    <form action="{%if title=='添加页面'%}{{url_for('admin.add_page')}}{%else%}{{url_for('admin.edit_page',name=page.url_name)}}{%endif%}" method="post">
+    <form action="{%if title=='添加页面'%}{{url_for('admin.add_page')}}{%else%}{{url_for('admin.edit_page',id=page.id)}}{%endif%}" method="post">
         {{form.hidden_tag()}}
         <div class="aticle-data">
             <div class="data-ipt">
-                <p>允许评论：{{form.can_comment()}}</p>
-                <p>导航显示：{{form.is_nav()}}</p>
+                <p>允许评论：{{form.enable_comment()}}</p>
+                <p>导航显示：{{form.show_nav()}}</p>
                 <p>链接：{{form.url_name(placeholder="url")}}</p>
                 <p>使用<a href="{{ url_for('image.index') }}" target="_blank">【本地图床】</a></p>
             </div>

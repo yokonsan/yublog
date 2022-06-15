@@ -30,11 +30,13 @@ from yublog.models import (
     Comment,
     Talk,
     Article,
-    Category
 )
+from yublog.utils.cache.model import clean_post_relative_cache
+from yublog.utils.comment import get_comment_url, update_comment_cache
+from yublog.utils import commit
 from yublog.utils.emails import send_mail
 from yublog.views import admin_bp
-from yublog.utils.save import save_post, save_category, save_xml
+from yublog.utils.save import save_post, save_category, save_xml, save_tags
 
 
 @admin_bp.route("/")
@@ -71,24 +73,17 @@ def set_site():
     form = AdminSiteForm()
     user = Admin.query.all()[0]
     if form.validate_on_submit():
-        user.name = form.username.data
-        user.profile = form.profile.data
-        user.site_name = form.site_name.data
-        user.site_title = form.site_title.data
-        user.record_info = form.record_info.data or None
-        db.session.add(user)
-        db.session.commit()
+        form.to_model(user)
+        commit.add(user)
         flash("Set successfully.")
 
         cache_operate.clean(CacheType.GLOBAL, CacheKey.ADMIN)
         return redirect(url_for("admin.index"))
 
-    form.username.data = user.name
-    form.profile.data = user.profile
-    form.site_name.data = user.site_name
-    form.site_title.data = user.site_title
-    form.record_info.data = user.record_info or None
-    return render_template("admin/profile.html", title="设置网站信息", form=form)
+    form.to_form(user)
+    return render_template(
+        "admin/profile.html", title="设置网站信息", form=form
+    )
 
 
 @admin_bp.route("/change-password", methods=["GET", "POST"])
@@ -96,76 +91,71 @@ def set_site():
 def change_password():
     form = ChangePasswordForm()
     if form.validate_on_submit():
-        if current_user.verify_password(form.old_password.data):
-            if form.password.data == form.password2.data:
-                current_user.password = form.password.data
-                db.session.add(current_user)
-                flash("Password changed successfully.")
-                return redirect(url_for("admin.index"))
+        if not current_user.verify_password(form.old_password.data):
+            flash("Please enter the correct password.")
+            return redirect(url_for("admin.change_password"))
 
+        if form.password.data != form.password2.data:
             flash("Please confirm whether the passwords are consistent.")
             return redirect(url_for("admin.change_password"))
 
-        flash("Please enter the correct password.")
-        return redirect(url_for("admin.change_password"))
-    return render_template("admin/change_password.html", form=form, title="更改密码")
+        current_user.password = form.password.data
+        commit.add(current_user)
+        flash("Password changed successfully.")
+        return redirect(url_for("admin.index"))
+    return render_template(
+        "admin/change_password.html", title="更改密码", form=form
+    )
 
 
-@admin_bp.route("/links", methods=["GET", "POST"])
+@admin_bp.route("/link/add", methods=["GET", "POST"])
 @login_required
 def add_link():
-    form = SocialLinkForm()
-    fr_form = FriendLinkForm()
-    # 社交链接
-    if form.submit.data and form.validate_on_submit():
-        exist_link = Link.query.filter_by(link=form.link.data).first()
+    def judge_exist(address):
+        exist_link = Link.query.filter_by(link=address).first()
         if exist_link:
-            flash("Link already exists...")
+            flash(f"Link[{address!r}] already exists...")
             return redirect(url_for("admin.add_link"))
+        return
 
-        url = form.link.data
-        name = form.name.data
-        link = Link(link=url, name=name, is_friend=False)
-        db.session.add(link)
-        db.session.commit()
+    def _commit(item):
+        commit.add(item)
         flash("Added successfully.")
+        return redirect(url_for("admin.add_link"))
 
+    social_form, friend_form = SocialLinkForm(), FriendLinkForm()
+    # social link
+    if social_form.submit.data and social_form.validate_on_submit():
+        judge_exist(social_form.link.data)
+
+        link = social_form.new_model(Link, is_friend=False)
         cache_operate.clean(CacheType.GLOBAL, CacheKey.SOCIAL_LINKS)
-        return redirect(url_for("admin.add_link"))
+        _commit(link)
 
-    # 友链
-    if fr_form.submit2.data and fr_form.validate_on_submit():
-        exist_link = Link.query.filter_by(link=fr_form.link.data).first()
-        if exist_link:
-            flash("Link already exists...")
-            return redirect(url_for("admin.add_link"))
+    # friend link
+    if friend_form.submit2.data and friend_form.validate_on_submit():
+        judge_exist(friend_form.link.data)
 
-        link = Link(
-            link=fr_form.link.data,
-            name=fr_form.name.data,
-            info=fr_form.info.data,
-            is_friend=True
-        )
-        db.session.add(link)
-        db.session.commit()
-        flash("Added successfully.")
-
+        link = friend_form.new_model(Link, is_friend=True)
         cache_operate.incr(CacheType.GLOBAL, CacheKey.FRIEND_COUNT)
-        return redirect(url_for("admin.add_link"))
+        cache_operate.clean(CacheType.LINK, CacheKey.FRIEND_LINKS)
+        _commit(link)
 
     return render_template(
         "admin/edit_link.html",
         title="站点链接",
-        form=form,
-        fr_form=fr_form
+        form=social_form,
+        fr_form=friend_form
     )
 
 
-@admin_bp.route("/admin-links")
+@admin_bp.route("/links")
 @login_required
-def admin_links():
-    social_links = Link.query.filter_by(is_friend=False).order_by(Link.id.desc()).all()
-    friend_links = Link.query.filter_by(is_friend=True).order_by(Link.id.desc()).all()
+def links():
+    social_links, friend_links = [], []
+    for link in Link.query.filter_by().order_by(Link.id.desc()).all():
+        (friend_links if link.is_friend else social_links).append(link)
+
     return render_template(
         "admin/link.html",
         title="管理链接",
@@ -174,68 +164,59 @@ def admin_links():
     )
 
 
-@admin_bp.route("/delete/link/<int:id>")
+@admin_bp.route("/link/delete/<int:id>")
 @login_required
 def delete_link(id):
     link = Link.query.get_or_404(id)
-    db.session.delete(link)
-    db.session.commit()
+    commit.delete(link)
     # update cache
     if link.is_friend:
         cache_operate.decr(CacheType.GLOBAL, CacheKey.FRIEND_COUNT)
+        cache_operate.clean(CacheType.LINK, CacheKey.FRIEND_LINKS)
     else:
         cache_operate.clean(CacheType.GLOBAL, CacheKey.SOCIAL_LINKS)
 
-    return redirect(url_for("admin.admin_links"))
+    return redirect(url_for("admin.links"))
 
 
-@admin_bp.route("/great/link/<int:id>")
+@admin_bp.route("/link/great/<int:id>")
 @login_required
 def great_link(id):
     link = Link.query.get_or_404(id)
     link.is_great = not link.is_great
+    commit.add(link)
 
-    db.session.add(link)
-    db.session.commit()
-
-    cache_operate.clean(CacheType.GLOBAL, CacheKey.SOCIAL_LINKS)
-    cache_operate.clean(CacheType.GLOBAL, CacheKey.FRIEND_COUNT)
-    return redirect(url_for("admin.admin_links"))
+    cache_operate.clean(CacheType.LINK, CacheKey.FRIEND_LINKS)
+    return redirect(url_for("admin.links"))
 
 
-@admin_bp.route("/write", methods=["GET", "POST"])
+@admin_bp.route("/post/write", methods=["GET", "POST"])
 @login_required
-def write():
+def write_post():
     form = AdminWrite()
     if form.validate_on_submit():
-        exist = Post.query.filter_by(url_name=form.url_name.data).first()
-        if exist:
+        if Post.query.filter_by(url_name=form.url_name.data).first():
             flash("Duplicate articles.")
             raise DuplicateEntryException("Duplicate articles.")
 
-        # 保存草稿
-        if "save_draft" in request.form and form.validate():
-            post = save_post(form, True)
-            db.session.add(post)
-            db.session.commit()
-            flash("Saved successfully.")
-        # 发布文章
-        elif "submit" in request.form and form.validate():
+        if "submit" in request.form:
             post = save_post(form)
-            db.session.add(post)
-            db.session.commit()
+            commit.add(post)
             flash("Posted successfully.")
-            # updata cache
-            cache_operate.incr(CacheType.GLOBAL, CacheKey.POST_COUNT)
-            cache_operate.clean(CacheType.POST)
-        return redirect(url_for("admin.write"))
+
+            clean_post_relative_cache()
+        else:
+            post = save_post(form, True)
+            commit.add(post)
+            flash("Saved successfully.")
+
+        return redirect(url_for("admin.write_post"))
     return render_template("admin/edit_post.html", form=form, title="写文章")
 
 
-# 编辑文章或草稿
-@admin_bp.route("/edit/<int:id>", methods=["GET", "POST"])
+@admin_bp.route("/post/edit/<int:id>", methods=["GET", "POST"])
 @login_required
-def admin_edit(id):
+def edit_post(id):
     post = Post.query.get_or_404(id)
     form = AdminWrite()
     if form.validate_on_submit():
@@ -245,183 +226,184 @@ def admin_edit(id):
         if not category.is_show:
             category.is_show = True
 
-        post.category = category
-        post.tags = form.tags.data
-        post.url_name = form.url_name.data
-        post.create_time = form.time.data
-        post.title = form.title.data
-        post.body = form.body.data
-        # 编辑草稿
+        form.to_model(post, category=category)
+
         if post.draft:
-            if "save_draft" in request.form and form.validate():
-                db.session.add(post)
-                flash("Saved successfully.")
-            elif "submit" in request.form and form.validate():
+            if "submit" in request.form:
                 post.draft = False
-                db.session.add(post)
-                db.session.commit()
-                flash("Posted successfully.")
-                # 清除缓存
-                cache_operate.clean(CacheType.POST)
+                msg = "Posted successfully."
+
+                clean_post_relative_cache()
                 save_xml(post.create_time)
+                save_tags(post.tags.split(","))
+            else:
+                msg = "Saved successfully."
         else:
-            db.session.add(post)
-            db.session.commit()
-            flash("Update successfully.")
-            # 清除对应文章缓存
-            cache_operate.clean(CacheType.POST, f"{post.year}_{post.month}_{post.url_name}")
+            msg = "Update successfully."
+            cache_operate.clean(
+                CacheType.POST, f"{post.year}_{post.month}_{post.url_name}"
+            )
             save_xml(post.create_time)
-        return redirect(url_for("admin.admin_edit", id=post.id))
-    form.category.data = post.category.category
-    form.tags.data = post.tags
-    form.url_name.data = post.url_name
-    form.time.data = post.create_time
-    form.title.data = post.title
-    form.body.data = post.body
-    return render_template("admin/edit_post.html", form=form, post=post, title="编辑文章")
+
+        flash(msg)
+        commit.add(post)
+        return redirect(url_for("admin.edit_post", id=id))
+
+    form.to_form(post, category=post.category_name)
+    return render_template(
+        "admin/edit_post.html", form=form, post=post, title="编辑文章"
+    )
 
 
-@admin_bp.route("/add-page", methods=["GET", "POST"])
+@admin_bp.route("/page/write", methods=["GET", "POST"])
 @login_required
 def add_page():
     form = AddPageForm()
     if form.validate_on_submit():
-        page = Page(title=form.title.data,
-                    url_name=form.url_name.data,
-                    body=form.body.data,
-                    able_comment=form.can_comment.data,
-                    show_nav=form.is_nav.data)
-        # print(f"form: {form}")
-        db.session.add(page)
-        db.session.commit()
+        page = form.new_model(Page)
+
+        commit.add(page)
         flash("Posted successfully.")
-        if page.show_nav is True:
-            # 清除缓存
+
+        if page.show_nav:
             cache_operate.clean(CacheType.GLOBAL, CacheKey.PAGES)
         return redirect(url_for("admin.add_page"))
-    return render_template("admin/edit_page.html", form=form, title="添加页面")
+    return render_template(
+        "admin/edit_page.html", form=form, title="添加页面"
+    )
 
 
-@admin_bp.route("/edit-page/<name>", methods=["GET", "POST"])
+@admin_bp.route("/page/edit/<int:id>", methods=["GET", "POST"])
 @login_required
-def edit_page(name):
-    page = Page.query.filter_by(url_name=name).first()
-    start_title = page.title
+def edit_page(id):
+    page = Page.query.get_or_404(id)
     form = AddPageForm()
+    prev = page.show_nav
+
     if form.validate_on_submit():
-        page.title = form.title.data
-        page.body = form.body.data
-        page.enable_comment = form.can_comment.data
-        page.show_nav = form.is_nav.data
-        page.url_name = form.url_name.data
-        db.session.add(page)
-        db.session.commit()
+        form.to_model(page)
+        commit.add(page)
         flash("Update successfully.")
-        # 清除缓存
-        cache_operate.clean(CacheType.GLOBAL, CacheKey.PAGES)
-        return redirect(url_for("admin.edit_page", name=page.url_name))
-    form.title.data = start_title
-    form.body.data = page.body
-    form.can_comment.data = page.enable_comment
-    form.is_nav.data = page.show_nav
-    form.url_name.data = page.url_name
-    return render_template("admin/edit_page.html", title="编辑页面", form=form, page=page)
+
+        cache_operate.clean(CacheType.PAGE, page.url_name)
+        if prev != page.show_nav:
+            cache_operate.clean(CacheType.GLOBAL, CacheKey.PAGES)
+        return redirect(url_for("admin.edit_page", id=page.id))
+
+    form.to_form(page)
+    return render_template(
+        "admin/edit_page.html", title="编辑页面", form=form, page=page
+    )
 
 
-@admin_bp.route("/page/delete/<name>")
+@admin_bp.route("/page/delete/<int:id>")
 @login_required
-def delete_page(name):
-    page = Page.query.filter_by(title=name).first()
-    db.session.delete(page)
-    db.session.commit()
+def delete_page(id):
+    page = Page.query.get_or_404(id)
+    commit.delete(page)
     flash("Deleted successfully.")
+
+    cache_operate.clean(CacheType.PAGE, page.url_name)
     if page.show_nav:
-        # 清除缓存
         cache_operate.clean(CacheType.GLOBAL, CacheKey.PAGES)
-    return redirect(url_for("admin.admin_pages"))
+
+    return redirect(url_for("admin.pages"))
 
 
-@admin_bp.route("/draft")
+@admin_bp.route("/post/draft")
 @login_required
-def admin_drafts():
-    drafts = Post.query.filter_by(draft=True).order_by(Post.id.desc()).all()
-    return render_template("admin/draft.html", drafts=drafts, title="管理草稿")
+def post_draft():
+    return render_template(
+        "admin/draft.html",
+        drafts=Post.query
+                   .filter_by(draft=True)
+                   .order_by(Post.id.desc())
+                   .all(),
+        title="管理草稿"
+    )
 
 
 @admin_bp.route("/pages")
 @login_required
-def admin_pages():
-    pages = Page.query.order_by(Page.id.desc()).all()
-    return render_template("admin/page.html", pages=pages, title="管理页面")
+def pages():
+    return render_template(
+        "admin/page.html",
+        pages=Page.query.order_by(Page.id.desc()).all(),
+        title="管理页面"
+    )
 
 
 @admin_bp.route("/posts")
 @login_required
-def admin_posts():
+def posts():
     page = request.args.get("page", 1, type=int)
-    pagination = Post.query.filter_by(draft=False).order_by(Post.id.desc()).paginate(
-        page, per_page=current_app.config["ADMIN_POSTS_PER_PAGE"],
-        error_out=False
-    )
-    posts = [post for post in pagination.items]
+    pagination = Post.query \
+                     .filter_by(draft=False) \
+                     .order_by(Post.id.desc()) \
+                     .paginate(
+                        page,
+                        per_page=current_app.config["ADMIN_POSTS_PER_PAGE"],
+                        error_out=False
+                     )
+
     return render_template(
         "admin/post.html",
         title="管理文章",
-        posts=posts,
+        posts=pagination.items,
         pagination=pagination
     )
 
 
-@admin_bp.route("/delete/<int:id>")
+@admin_bp.route("/post/delete/<int:id>")
 @login_required
 def delete_post(id):
     post = Post.query.get_or_404(id)
     _category = post.category
     if _category.posts.count() == 1:
-        db.session.delete(_category)
+        commit.delete(_category)
 
-    db.session.delete(post)
-    db.session.commit()
+    commit.delete(post)
     flash("Deleted successfully.")
+
     # update cache
     if post.draft is False:
         print(post)
         cache_operate.decr(CacheType.GLOBAL, CacheKey.POST_COUNT)
-    return redirect(url_for("admin.admin_posts"))
+
+    return redirect(url_for("admin.posts"))
 
 
 @admin_bp.route("/comments")
 @login_required
-def admin_comments():
+def comments():
     page = request.args.get("page", 1, type=int)
-    pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
-        page, per_page=current_app.config["ADMIN_COMMENTS_PER_PAGE"],
-        error_out=False
+    pagination = Comment.query \
+                        .order_by(Comment.timestamp.desc()) \
+                        .paginate(
+                            page,
+                            per_page=current_app.config["ADMIN_COMMENTS_PER_PAGE"],
+                            error_out=False
+                        )
+
+    return render_template(
+        "admin/comment.html",
+        title="管理评论",
+        comments=pagination.items,
+        pagination=pagination
     )
-    comments = pagination.items
-    return render_template("admin/comment.html", title="管理评论",
-                           comments=comments, pagination=pagination)
 
 
-@admin_bp.route("/delete/comment/<int:id>")
+@admin_bp.route("/comment/delete/<int:id>")
 @login_required
 def delete_comment(id):
     comment = Comment.query.get_or_404(id)
-    page = comment.page
-    post = comment.post
-    db.session.delete(comment)
-    db.session.commit()
+    commit.delete(comment)
     flash("Deleted successfully.")
 
-    if comment.disabled is True:
-        if page and page.url_name == "guest-book":
-            # 清除缓存
-            cache_operate.decr(CacheType.GLOBAL, CacheKey.GUEST_BOOK_COUNT)
-        elif post and isinstance(post, Post):
-            # 删除文章缓存
-            cache_operate.clean(CacheType.POST, f"{post.year}_{post.month}_{post.url_name}")
-            cache_operate.clean(CacheType.COMMENT, f"post:{post.id}")
-    return redirect(url_for("admin.admin_comments"))
+    if not comment.disabled:
+        update_comment_cache(comment, is_incr=False)
+
+    return redirect(url_for("admin.comments"))
 
 
 @admin_bp.route("/allow/comment/<int:id>")
@@ -429,53 +411,25 @@ def delete_comment(id):
 def allow_comment(id):
     comment = Comment.query.get_or_404(id)
     comment.disabled = True
-    db.session.add(comment)
-    db.session.commit()
-    flash("允许通过")
+    commit.add(comment)
+    flash("Allow comment.")
 
-    # 发送邮件
-    admin_mail = current_app.config["ADMIN_MAIL"]
-
+    # send mail
     if comment.replied_id:
         reply_to_comment = Comment.query.get_or_404(comment.replied_id)
         reply_email = reply_to_comment.email
-        if reply_email != admin_mail:
-            # 邮件配置
-            to_addr = reply_email
-            # 站点链接
-            base_url = current_app.config["WEB_URL"]
-            # 收件人就是被回复的人
-            nickname = reply_to_comment.author
-            com = comment.comment
+        if reply_email != current_app.config["ADMIN_MAIL"]:
+            msg = render_template(
+                "user_mail.html",
+                nickname=reply_to_comment.author,
+                comment=comment.comment,
+                url=get_comment_url(comment)
+            )
+            send_mail(reply_email, msg)
 
-            post_url = ""
-            if comment.post:
-                post_url = "http://{}".format("/".join(
-                    map(str, [base_url, comment.post.year, comment.post.month, comment.post.url_name])))
-            elif comment.page:
-                post_url = "http://{0}/page/{1}".format(base_url, comment.page.url_name)
-            elif comment.article:
-                post_url = "http://{0}/column/{1}/{2}".format(
-                    base_url, comment.article.column.url_name, str(comment.article.id))
-            # 发送邮件
-            msg = render_template("user_mail.html", nickname=nickname, comment=com, url=post_url)
-            send_mail(to_addr, msg)
+    update_comment_cache(comment)
 
-    page = comment.page
-    post = comment.post
-
-    if page:
-        # 清除缓存
-        cache_operate.clean(CacheType.PAGE, page.url_name)
-        cache_operate.clean(CacheType.COMMENT, f"page:{page.id}")
-        if page.url_name == "guest-book":
-            cache_operate.incr(CacheType.GLOBAL, CacheKey.GUEST_BOOK_COUNT)
-    elif post and isinstance(post, Post):
-        # 更新文章缓存
-        cache_operate.clean(CacheType.POST, f"{post.year}_{post.month}_{post.url_name}")
-        cache_operate.clean(CacheType.COMMENT, f"post:{post.id}")
-
-    return redirect(url_for("admin.admin_comments"))
+    return redirect(url_for("admin.comments"))
 
 
 @admin_bp.route("/unable/comment/<int:id>")
@@ -483,321 +437,319 @@ def allow_comment(id):
 def unable_comment(id):
     comment = Comment.query.get_or_404(id)
     comment.disabled = False
-    db.session.add(comment)
-    db.session.commit()
+    commit.add(comment)
     flash("Hide successfully.")
 
-    page = comment.page
-    post = comment.post
-    if page and page.url_name == "guest-book":
-        # 清除缓存
-        cache_operate.decr(CacheType.GLOBAL, CacheKey.GUEST_BOOK_COUNT)
-    elif post and isinstance(post, Post):
-        # 更新文章缓存
-        cache_operate.clean(CacheType.POST, f"{post.year}_{post.month}_{post.url_name}")
-        cache_operate.clean(CacheType.COMMENT, f"post:{post.id}")
-    return redirect(url_for("admin.admin_comments"))
+    update_comment_cache(comment, is_incr=False)
+
+    return redirect(url_for("admin.comments"))
 
 
-@admin_bp.route("/write/talk", methods=["GET", "POST"])
+@admin_bp.route("/talk/write", methods=["GET", "POST"])
 @login_required
 def write_talk():
     form = TalkForm()
     if form.validate_on_submit():
-        talk = Talk(talk=form.talk.data)
-        db.session.add(talk)
-        db.session.commit()
+        _talk = Talk(talk=form.talk.data)
+        commit.add(_talk)
         flash("Posted successfully.")
-        # 清除缓存
-        cache_operate.set(CacheType.GLOBAL, CacheKey.LAST_TALK, talk.body_to_html)
+
+        cache_operate.set(
+            CacheType.GLOBAL, CacheKey.LAST_TALK, _talk.body_to_html
+        )
+        cache_operate.clean(CacheType.TALK)
         return redirect(url_for("admin.write_talk"))
-    return render_template("admin/edit_talk.html", title="写说说", form=form)
+    return render_template(
+        "admin/edit_talk.html", title="写说说", form=form
+    )
 
 
 @admin_bp.route("/talk")
 @login_required
-def admin_talk():
-    talks = Talk.query.order_by(Talk.timestamp.desc()).all()
-    return render_template("admin/talk.html", title="管理说说", talks=talks)
+def talk():
+    return render_template(
+        "admin/talk.html",
+        title="管理说说",
+        talks=Talk.query.order_by(Talk.timestamp.desc()).all()
+    )
 
 
-@admin_bp.route("/delete/talk/<int:id>")
+@admin_bp.route("/talk/delete/<int:id>")
 @login_required
 def delete_talk(id):
-    count = Talk.query.count()
-    if count == 1:
+    if Talk.query.count() == 1:
         flash("There must be one talk.")
-        return redirect(url_for("admin.admin_talk"))
-    talk = Talk.query.get_or_404(id)
-    db.session.delete(talk)
-    db.session.commit()
+        return redirect(url_for("admin.talk"))
+
+    commit.delete(Talk.query.get_or_404(id))
     flash("Deleted successfully.")
 
     # update cache
-    new_talk = Talk.query.order_by(Talk.timestamp.desc()).first()
-    value = new_talk.body_to_html if new_talk else "这家伙啥都不想说..."
-    cache_operate.set(CacheType.GLOBAL, CacheKey.LAST_TALK, value)
-    return redirect(url_for("admin.admin_talk"))
+    cache_operate.clean(CacheType.GLOBAL, CacheKey.LAST_TALK)
+    return redirect(url_for("admin.talk"))
 
 
 # 管理主题
-@admin_bp.route("/write/column", methods=["GET", "POST"])
+@admin_bp.route("/column/write", methods=["GET", "POST"])
 @login_required
 def write_column():
     form = ColumnForm()
     if form.validate_on_submit():
-        column = Column(title=form.column.data, timestamp=form.date.data,
-                        url_name=form.url_name.data, body=form.body.data,
-                        password=form.password.data)
-        db.session.add(column)
-        db.session.commit()
+        _column = form.new_model(Column)
+        if form.password.data:
+            _column.password = form.password.data
+        commit.add(_column)
         flash("Posted successfully.")
-        return redirect(url_for("admin.admin_column", id=column.id))
-    return render_template("admin_column/edit_column.html",
-                           form=form, title="编辑专题")
+        return redirect(url_for("admin.column", id=_column.id))
+
+    return render_template(
+        "admin_column/edit_column.html", form=form, title="编辑专题"
+    )
 
 
-@admin_bp.route("/edit/column/<int:id>", methods=["GET", "POST"])
+@admin_bp.route("/column/edit/<int:id>", methods=["GET", "POST"])
 @login_required
 def edit_column(id):
-    column = Column.query.get_or_404(id)
+    _column = Column.query.get_or_404(id)
     form = ColumnForm()
     if form.validate_on_submit():
-        column.title = form.column.data
-        column.create_time = form.date.data
-        column.url_name = form.url_name.data
-        column.body = form.body.data
-        password = form.password.data
-        if password:
-            column.password = password
-        db.session.add(column)
-        db.session.commit()
+        form.to_model(_column)
+        if password := form.password.data:
+            _column.password = password
+
+        commit.add(_column)
         flash("Update successfully.")
-        cache_operate.clean(CacheType.COLUMN, column.url_name)
-        return redirect(url_for("admin.admin_column", id=column.id))
+        cache_operate.clean(CacheType.COLUMN, _column.url_name)
+        return redirect(url_for("admin.column", id=id))
 
-    form.column.data = column.title
-    form.date.data = column.create_time
-    form.url_name.data = column.url_name
-    form.body.data = column.body
-    return render_template("admin_column/edit_column.html",
-                           form=form, title="更新专题", column=column)
+    form.to_form(_column)
+    return render_template(
+        "admin_column/edit_column.html",
+        title="更新专题",
+        form=form,
+        column=_column
+    )
 
 
-@admin_bp.route("/admin/columns")
+@admin_bp.route("/columns")
 @login_required
-def admin_columns():
-    columns = Column.query.all()
-    # print(f"columns: {columns}")
-    return render_template("admin_column/columns.html",
-                           columns=columns, title="管理专题")
+def columns():
+    return render_template(
+        "admin_column/columns.html",
+        columns=Column.query.all(),
+        title="管理专题"
+    )
 
 
-@admin_bp.route("/admin/column/<int:id>")
+@admin_bp.route("/column/<int:id>")
 @login_required
-def admin_column(id):
-    column = Column.query.get_or_404(id)
-    articles = column.articles.order_by(Article.timestamp.desc()).all()
-    return render_template("admin_column/column.html", column=column,
-                           articles=articles, title=column.title)
+def column(id):
+    _column = Column.query.get_or_404(id)
+    return render_template(
+        "admin_column/column.html",
+        column=_column,
+        articles=_column.articles
+                        .order_by(Article.id.desc())
+                        .all(),
+        title=_column.title
+    )
 
 
-@admin_bp.route("/delete/column/<int:id>")
+@admin_bp.route("/column/delete/<int:id>")
 @login_required
 def delete_column(id):
-    column = Column.query.get_or_404(id)
-    articles = column.articles.order_by(Article.timestamp.desc()).all()
-    db.session.delete(column)
-    db.session.commit()
+    _column = Column.query.get_or_404(id)
+    commit.delete(_column)
     flash("Deleted successfully.")
-    # clean all of this column cache
-    cache_operate.clean(CacheType.COLUMN, column.url_name)
-    return redirect(url_for("admin.admin_columns"))
+
+    cache_operate.clean(CacheType.COLUMN, _column.url_name)
+    return redirect(url_for("admin.columns"))
 
 
-@admin_bp.route("/<url>/write/article", methods=["GET", "POST"])
+@admin_bp.route("/column/<int:id>/write/article", methods=["GET", "POST"])
 @login_required
-def write_column_article(url):
-    column = Column.query.filter_by(url_name=url).first()
+def write_column_article(id):
+    _column = Column.query.get_or_404(id)
     form = ColumnArticleForm()
     if form.validate_on_submit():
-        article = Article(title=form.title.data, timestamp=form.date.data,
-                          body=form.body.data, secrecy=form.secrecy.data, column=column)
-        db.session.add(article)
-        db.session.commit()
+        article = form.new_model(Article, column=_column)
+        commit.add(article)
         flash("Added successfully.")
-        # clean cache
-        cache_operate.clean(CacheType.COLUMN, url)
-        return redirect(url_for("admin.admin_column", id=column.id))
-    return render_template("admin_column/edit_article.html", form=form,
-                           title="编辑文章", column=column)
+
+        cache_operate.clean(CacheType.COLUMN, _column.url_name)
+        return redirect(url_for("admin.column", id=id))
+
+    return render_template(
+        "admin_column/edit_article.html",
+        title="编辑文章",
+        form=form,
+        column=_column
+    )
 
 
-@admin_bp.route("/<url>/edit/article/<int:id>", methods=["GET", "POST"])
+@admin_bp.route(
+    "/column/<int:cid>/edit/article/<int:aid>",
+    methods=["GET", "POST"]
+)
 @login_required
-def edit_column_article(url, id):
-    column = Column.query.filter_by(url_name=url).first()
-    article = Article.query.filter_by(id=id).first()
-    # _title = article.title
+def edit_column_article(cid, aid):
+    _column = Column.query.get_or_404(cid)
+    article = Article.query.get_or_404(aid)
 
     form = ColumnArticleForm()
     if form.validate_on_submit():
-        article.title = form.title.data
-        article.create_time = form.date.data
-        article.secrecy = form.secrecy.data
-        article.body = form.body.data
-        db.session.add(article)
-        db.session.commit()
+        form.to_model(article)
+        commit.add(article)
         flash("Update successfully.")
-        # clear cache
-        cache_operate.clean(CacheType.COLUMN, url)
-        return redirect(url_for("admin.admin_column", id=column.id))
 
-    form.title.data = article.title
-    form.date.data = article.create_time
-    form.body.data = article.body
-    form.secrecy.data = article.secrecy
-    return render_template("admin_column/edit_article.html", form=form,
-                           title="更新文章", column=column, article=article)
+        cache_operate.clean(CacheType.COLUMN, _column.url_name)
+        return redirect(url_for("admin.column", id=cid))
+
+    form.to_form(article)
+    return render_template(
+        "admin_column/edit_article.html",
+        title="更新文章",
+        form=form,
+        column=_column,
+        article=article
+    )
 
 
-@admin_bp.route("/<url>/delete/article/<int:id>")
+@admin_bp.route("/column/<int:cid>/delete/article/<int:aid>")
 @login_required
-def delete_column_article(url, id):
-    column = Column.query.filter_by(url_name=url).first()
-    article = Article.query.filter_by(id=id).first()
-    db.session.delete(article)
-    db.session.commit()
+def delete_column_article(cid, aid):
+    _column = Column.query.get_or_404(cid)
+    article = Article.query.get_or_404(aid)
+    commit.delete(article)
     flash("Deleted successfully.")
-    # 清除对于缓存
-    cache_operate.clean(CacheType.COLUMN, url)
-    return redirect(url_for("admin.admin_column", id=column.id))
+
+    cache_operate.clean(CacheType.COLUMN, _column.url_name)
+    return redirect(url_for("admin.column", id=cid))
 
 
-# 上传文件到静态目录
 @admin_bp.route("/upload/file", methods=["GET", "POST"])
 @login_required
 def upload_file():
-    source_folder = current_app.config["UPLOAD_PATH"]
     if request.method == "POST":
         file = request.files["file"]
-        filename = file.filename
-        path = os.path.join(source_folder, filename)
-        file.save(path)
+        file.save(os.path.join(
+            current_app.config["UPLOAD_PATH"],
+            file.filename
+        ))
+
+        flash("Upload successfully.")
         return redirect(url_for("admin.index"))
     return render_template("admin/upload_file.html", title="上传文件")
 
 
-# 侧栏box---begin
-@admin_bp.route("/add/sidebox", methods=["GET", "POST"])
+@admin_bp.route("/box/add", methods=["GET", "POST"])
 @login_required
 def add_side_box():
     form = SideBoxForm()
     if form.validate_on_submit():
-        is_advertising = form.is_advertising.data
-        box = SideBox(title=form.title.data, body=form.body.data,
-                      is_advertising=is_advertising)
-        db.session.add(box)
-        db.session.commit()
+        box = form.new_model(SideBox)
+        commit.add(box)
         flash("Added successfully.")
-        # update cache
-        cache_operate.clean(CacheType.GLOBAL, CacheKey.SITE_BOXES)
-        cache_operate.clean(CacheType.GLOBAL, CacheKey.ADS_BOXES)
-        return redirect(url_for("admin.admin_side_box"))
-    return render_template("admin/edit_sidebox.html", form=form,
-                           title="添加插件")
+
+        cache_operate.clean(
+            CacheType.GLOBAL,
+            (CacheKey.ADS_BOXES if box.is_advertising else CacheKey.SITE_BOXES)
+        )
+        return redirect(url_for("admin.side_box"))
+    return render_template(
+        "admin/edit_sidebox.html", title="添加插件", form=form
+    )
 
 
-@admin_bp.route("/edit/sidebox/<int:id>", methods=["GET", "POST"])
+@admin_bp.route("/box/<int:id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_side_box(id):
     box = SideBox.query.get_or_404(id)
     form = SideBoxForm()
     if form.validate_on_submit():
-        box.title = form.title.data
-        box.body = form.body.data
-        box.is_advertising = form.is_advertising.data
-        db.session.add(box)
-        db.session.commit()
+        form.to_form(box)
+        commit.add(box)
         flash("Update successfully.")
-        # update cache
-        cache_operate.clean(CacheType.GLOBAL, CacheKey.SITE_BOXES)
-        cache_operate.clean(CacheType.GLOBAL, CacheKey.ADS_BOXES)
-        return redirect(url_for("admin.admin_side_box"))
 
-    form.title.data = box.title
-    form.body.data = box.body
-    form.is_advertising.data = box.is_advertising
-    return render_template("admin/edit_sidebox.html", form=form,
-                           title="更新插件", box=box)
+        cache_operate.clean(
+            CacheType.GLOBAL,
+            (CacheKey.ADS_BOXES if box.is_advertising else CacheKey.SITE_BOXES)
+        )
+        return redirect(url_for("admin.side_box"))
+
+    form.to_form(box)
+    return render_template(
+        "admin/edit_sidebox.html", title="更新插件", form=form, box=box
+    )
 
 
-@admin_bp.route("/sideboxs")
+@admin_bp.route("/boxes")
 @login_required
-def admin_side_box():
-    boxes = SideBox.query.order_by(SideBox.id.desc()).all()
-    return render_template("admin/sidebox.html", boxes=boxes, title="管理插件")
+def side_box():
+    return render_template(
+        "admin/sidebox.html",
+        title="管理插件",
+        boxes=SideBox.query.order_by(SideBox.id.desc()).all(),
+    )
 
 
-@admin_bp.route("/unable/box/<int:id>")
+@admin_bp.route("/box/<int:id>/unable")
 @login_required
 def unable_side_box(id):
     box = SideBox.query.get_or_404(id)
     box.unable = not box.unable
 
-    db.session.add(box)
-    db.session.commit()
-    # 清除缓存
-    cache_operate.clean(CacheType.GLOBAL, CacheKey.SITE_BOXES)
-    cache_operate.clean(CacheType.GLOBAL, CacheKey.ADS_BOXES)
-    return redirect(url_for("admin.admin_side_box"))
+    commit.add(box)
+
+    cache_operate.clean(
+        CacheType.GLOBAL,
+        (CacheKey.ADS_BOXES if box.is_advertising else CacheKey.SITE_BOXES)
+    )
+    return redirect(url_for("admin.side_box"))
 
 
-@admin_bp.route("/delete/box/<int:id>")
+@admin_bp.route("/box/<int:id>/delete")
 @login_required
 def delete_side_box(id):
     box = SideBox.query.get_or_404(id)
-    db.session.delete(box)
-    db.session.commit()
+    commit.delete(box)
     flash("Deleted successfully.")
-    # 清除缓存
-    cache_operate.clean(CacheType.GLOBAL, CacheKey.SITE_BOXES)
-    cache_operate.clean(CacheType.GLOBAL, CacheKey.ADS_BOXES)
-    return redirect(url_for("admin.admin_side_box"))
+
+    cache_operate.clean(
+        CacheType.GLOBAL,
+        (CacheKey.ADS_BOXES if box.is_advertising else CacheKey.SITE_BOXES)
+    )
+    return redirect(url_for("admin.side_box"))
 
 
-# 侧栏box---end
-
-
-# qiniu picture bed begin
 @admin_bp.route("/qiniu/picbed", methods=["GET", "POST"])
 @login_required
 def qiniu_picbed():
-    # 判断是否需要七牛图床
-    need_qiniu_picbed = current_app.config["NEED_PIC_BED"]
-    if not need_qiniu_picbed:
-        flash("你没有设置七牛配置...")
+    if not current_app.config["NEED_PIC_BED"]:
+        flash("You did not set the configuration of QiNiu.")
         return redirect(url_for("admin.index"))
-    if request.method == "POST":
 
-        img_name = request.form.get("key", None)
+    if request.method == "POST":
         file = request.files["file"]
         filename = file.filename
         img_stream = file.stream.read()
-        if img_name:
+
+        if img_name := request.form.get("key"):
             filename = re.sub(r'[\/\\\:\*\?"<>|]', r"_", img_name)
         if file.mimetype.startswith("image") and qn.upload_qn(filename, img_stream):
-            flash("Upload image {0} successful".format(filename))
+            flash(f"Upload image {filename} successful")
             return redirect(url_for("admin.qiniu_picbed"))
 
         flash("Upload image fail")
         return redirect(url_for("admin.qiniu_picbed"))
-    # get all images
-    images = qn.get_all_images()
-    counts = len(images)
 
-    return render_template("plugin/picbed.html",
-                           title="七牛图床", images=images, counts=counts)
+    images = qn.get_all_images()
+    return render_template(
+        "plugin/picbed.html",
+        title="七牛图床",
+        images=images,
+        counts=len(images)
+    )
 
 
 @admin_bp.route("/qiniu/delete", methods=["GET", "POST"])
@@ -805,8 +757,9 @@ def qiniu_picbed():
 def delete_img():
     key = request.get_json()["key"]
     if qn.del_file(key):
-        flash("Delete image {0} successful".format(key))
+        flash(f"Delete image {key} successful")
         return redirect(url_for("admin.qiniu_picbed"))
+
     flash("Delete image fail")
     return redirect(url_for("admin.qiniu_picbed"))
 
@@ -817,16 +770,14 @@ def rename_img():
     key = request.get_json()["key"]
     key_to = request.get_json()["keyTo"]
     if qn.rename_file(key, key_to):
-        flash("Rename image {0} successful".format(key))
+        flash("Rename image successful")
         return redirect(url_for("admin.qiniu_picbed"))
+
     flash("Rename image fail")
     return redirect(url_for("admin.qiniu_picbed"))
 
 
-# qiniu picture bed end
-
-
-@admin_bp.route("/clean/cache/all")
+@admin_bp.route("/cache/clean")
 @login_required
 def clean_all_cache():
     cache_operate.clean()
@@ -834,7 +785,7 @@ def clean_all_cache():
     return redirect(url_for("admin.index"))
 
 
-@admin_bp.route("/reindex")
+@admin_bp.route("/whooshee/reindex")
 @login_required
 def whooshee_reindex():
     whooshee.reindex()

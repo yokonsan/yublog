@@ -1,6 +1,6 @@
 import os
-from threading import Thread
 
+from yublog.utils.as_sync import as_sync
 
 IMAGE_MIMES = [
     'image/x-icon',
@@ -12,25 +12,23 @@ IMAGE_MIMES = [
 ]
 
 
+@as_sync
 def mkdir(path):
     os.mkdir(path)
 
 
-def image_saver(filename, img_stream):
-    with open(filename, 'wb') as w:
+@as_sync
+def saver(path, name, img_stream):
+    with open(os.path.join(path, name), 'wb') as w:
         w.write(img_stream)
     return True
 
 
-def image_remove(path, filename):
+@as_sync
+def remove(path, filename):
     os.remove(os.path.join(path, filename))
 
 
-def image_rename(path, old_name, new_name):
+@as_sync
+def rename(path, old_name, new_name):
     os.rename(os.path.join(path, old_name), os.path.join(path, new_name))
-
-
-def asyncio_saver(path, name, img_stream):
-    t = Thread(target=image_saver, args=(os.path.join(path, name), img_stream))
-    t.start()
-    return t

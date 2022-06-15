@@ -4,14 +4,14 @@
 {% block content %}
 <div class="admin-write">
 
-    <form action="{%if title== '写文章'%}{{url_for('admin.write')}}{%else%}{{url_for('admin.admin_edit',id=post.id)}}{%endif%}" method="post">
+    <form action="{%if title== '写文章'%}{{url_for('admin.write_post')}}{%else%}{{url_for('admin.edit_post',id=post.id)}}{%endif%}" method="post">
         {{form.hidden_tag()}}
         <div class="aticle-data">
             <div class="data-ipt">
                 <p>分类：{{form.category(placeholder="只能写一个")}}</p>
                 <p>标签：{{form.tags(placeholder="用英文逗号隔开")}}</p>
                 <p>链接：{{form.url_name(placeholder="url文章名")}}</p>
-                <p>日期：{{form.time(placeholder="使用-连接年月日")}}</p>
+                <p>日期：{{form.create_time(placeholder="使用-连接年月日")}}</p>
                 <p>使用<a href="{{ url_for('image.index') }}" target="_blank">【本地图床】</a></p>
             </div>
         </div>
@@ -25,7 +25,7 @@
                 <p>{{ form.save_draft(class="write-btn first-btn",value="保存草稿") }}</p>
                 <p>{{ form.submit(class="write-btn",value="发布") }}</p>
                 {% else %}
-                <p>{{ form.save_draft(class="write-btn first-btn",value="保存草稿",style="display:none;") }}</p>
+                <p>{{ form.save_draft(class="write-btn first-btn",value="保存草稿") }}</p>
                 <p>{{ form.submit(class="write-btn",value="更新") }}</p>
                 {% endif %}
             </div>

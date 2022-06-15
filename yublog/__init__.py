@@ -108,11 +108,11 @@ def register_commands(app):
     def deploy(username, password):
         # 创建管理员
         name = app.config.get("ADMIN_NAME", "")
-        if not Admin.query.filter_by(name=name).first():
+        if not Admin.query.filter_by(username=name).first():
             admin = Admin(
                 site_name=app.config.get("SITE_NAME", ""),
                 site_title=app.config.get("SITE_TITLE", ""),
-                name=name,
+                username=name,
                 profile=app.config.get("ADMIN_PROFILE", ""),
                 login_name=username,
                 password=password

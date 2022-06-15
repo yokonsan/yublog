@@ -33,7 +33,7 @@
         </span>
     </div>
     <div class="post-body">
-        {{ post.body | striptags | truncate(250)}}
+        {{ post.body_to_html | striptags | truncate(250)}}
 {#        <div class="read-more-btn">#}
 {#            <a href="{{ url_for('main.post',year=post.year,month=post.month,article_name=post.url_name) }}">阅读全文</a>#}
 {#        </div>#}

@@ -17,13 +17,13 @@
         <a href="{{ url_for('column._column',url_name=column.url_name) }}">{{ column.title }}</a>
     </div>
     <ul>
-        {% for i in articles %}
+        {% for num, item in articles %}
         <li>
-            <span>{{ i.num }}</span>
-            <a href="{{ url_for('column.article',url=column.url_name,id=i.item.id) }}" class="{% if i.item==article %}current{% else %}{% endif %}">
-                {{ i.item.title }}
+            <span>{{ num }}</span>
+            <a href="{{ url_for('column.article',url_name=column.url_name,id=item.id) }}" class="{% if item==article %}current{% else %}{% endif %}">
+                {{ item.title }}
             </a>
-            {% if i.item.secrecy == True %}
+            {% if item.secrecy == True %}
             <span style="color: red;float: right;"> ! </span>
             {% endif %}
         </li>
@@ -48,16 +48,16 @@
 
         <div class="article-body">
             <div class="article-desc">
-                {{ article.body | safe }}
+                {{ article.body_to_html | safe }}
             </div>
         </div>
 
         <div class="article-btn">
             {% if article.prev_article %}
-            <a href="{{ url_for('column.article',url=column.url_name,id=article.prev_article.id) }}" class="prev-btn">上一章</a>
+            <a href="{{ url_for('column.article',url_name=column.url_name,id=article.prev_article.id) }}" class="prev-btn">上一章</a>
             {% endif %}
             {% if article.next_article %}
-            <a href="{{ url_for('column.article',url=column.url_name,id=article.next_article.id) }}" class="next-btn">下一章</a>
+            <a href="{{ url_for('column.article',url_name=column.url_name,id=article.next_article.id) }}" class="next-btn">下一章</a>
             {% endif %}
         <div class="clear"></div>
         </div>

@@ -1,11 +1,10 @@
 from flask import render_template, current_app, url_for
-from loguru import logger
 
-from yublog import db
+from yublog import db, cache_operate, CacheType, CacheKey
 from yublog.models import Comment, Post, Page, Article
-from yublog.utils.as_sync import sync_copy_app_context, sync_push_app_context, sync_request_context
+from yublog.utils.as_sync import sync_request_context
 from yublog.utils.emails import send_mail
-from yublog.utils.validators import regular_url
+from yublog.utils.validators import regular_url, format_url
 
 
 class CommentUtils(object):
@@ -31,7 +30,7 @@ class CommentUtils(object):
         }
 
     def _generate_comment(self):
-        website = self._data["website"]
+        website = format_url(self._data["website"])
         nickname = self._data["nickname"]
         body = self._data["body"]
         email = self._data["email"]
@@ -85,7 +84,7 @@ class CommentUtils(object):
             return url_for("main.page", page_url=target.url_name)
 
         if isinstance(target, Article):
-            return url_for("column.article", url=target.column.url_name, id=target.id)
+            return url_for("column.article", url_name=target.column.url_name, id=target.id)
 
         return None
 
@@ -98,6 +97,39 @@ class CommentUtils(object):
             send_mail(to_mail_address, msg)
 
 
-@sync_request_context
+def get_comment_url(comment):
+    base_url = current_app.config["WEB_URL"]
+    url = ""
+    if post := comment.post:
+        path = [base_url, post.year, post.month, post.url_name]
+        url = f"https://{'/'.join(str(i) for i in path)}"
+    elif page := comment.page:
+        url = f"https://{base_url}/page/{page.url_name}"
+    elif article := comment.article:
+        url = f"https://{base_url}/column/{article.column.url_name}/{article.id}"
+
+    return url
+
+
+def update_comment_cache(comment, is_incr=True):
+    if page := comment.page:
+        cache_operate.clean(CacheType.PAGE, page.url_name)
+        cache_operate.clean(CacheType.COMMENT, f"page:{page.id}")
+        if page.url_name == "guest-book":
+            (cache_operate.incr if is_incr else cache_operate.decr)(
+                CacheType.GLOBAL, CacheKey.GUEST_BOOK_COUNT
+            )
+
+    elif (post := comment.post) and isinstance(post, Post):
+        cache_operate.clean(
+            CacheType.POST, f"{post.year}_{post.month}_{post.url_name}"
+        )
+        cache_operate.clean(CacheType.COMMENT, f"post:{post.id}")
+
+
 def commit_comment(typ, form, tid):
-    CommentUtils(typ, form).save_comment(tid)
+    @sync_request_context
+    def _commit_comment():
+        CommentUtils(typ, form).save_comment(tid)
+
+    return _commit_comment()

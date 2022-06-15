@@ -41,7 +41,11 @@ def index():
 
 @main_bp.route("/<int:year>/<int:month>/<post_url>/")
 def post(year, month, post_url):
-    _post = get_model_cache(CacheType.POST, f"{year}_{month}_{post_url}")
+    _post = get_model_cache(
+        CacheType.POST,
+        f"{year}_{month}_{post_url}"
+    )
+
     per = current_app.config["COMMENTS_PER_PAGE"]
     cur_page = max(request.args.get("page", 1, type=int), 1)
 
@@ -60,8 +64,9 @@ def page(page_url):
     _page = cache_operate.getset(
         CacheType.PAGE,
         f"{page_url}",
-        callback=lambda: Page.query.filter_by(url_name=page_url).first()
+        callback=lambda: Page.query.filter_by(url_name=page_url).first_or_404()
     )
+
     per = current_app.config["COMMENTS_PER_PAGE"]
     cur_page = max(request.args.get("page", 1, type=int), 1)
 
@@ -85,12 +90,15 @@ def page(page_url):
 
 @main_bp.route("/tag/<tag_name>/")
 def tag(tag_name):
-    _tag = Tag.query.filter_by(tag=tag_name).first()
-    if not _tag:
-        abort(404)
+    _tag = cache_operate.getset(
+        CacheType.POST,
+        f"tag:{tag_name}",
+        callback=lambda: Tag.query
+                   .filter_by(tag=tag_name)
+                   .first_or_404()
+    )
 
     posts = (p for p in get_posts() if p.tag_in_post(tag_name))
-
     return render_template(
         "main/tag.html",
         tag=tag_name,
@@ -101,9 +109,13 @@ def tag(tag_name):
 
 @main_bp.route("/category/<category_name>/")
 def category(category_name):
-    _category = Category.query.filter_by(category=category_name, is_show=True).first()
-    if not _category:
-        abort(404)
+    _category = cache_operate.getset(
+        CacheType.POST,
+        f"category:{category_name}",
+        callback=lambda: Category.query
+                        .filter_by(category=category_name, is_show=True)
+                        .first_or_404()
+    )
 
     posts = (p for p in get_posts() if p.category_name == category_name)
     return render_template(
@@ -149,16 +161,14 @@ def search_result():
     query = request.args.get("keywords")
     cur_page = request.args.get("page", 1, type=int)
     per = current_app.config["SEARCH_POSTS_PER_PAGE"]
-    query_session = Post.query\
-                        .whooshee_search(query)\
-                        .filter_by(draft=False)\
+    query_session = Post.query \
+                        .whooshee_search(query) \
+                        .filter_by(draft=False) \
                         .order_by(Post.id.desc())
 
     counts = query_session.count()
     max_page, cur_page = get_pagination(counts, per, cur_page)
-    pagination = query_session.paginate(cur_page, error_out=False, per_page=per)
-    # results = (p for p in pagination.items if p.draft is False)
-    results = pagination.items
+    results = query_session.paginate(cur_page, error_out=False, per_page=per).items
 
     return render_template(
         "main/results.html",
@@ -222,7 +232,6 @@ def talk():
     )
 
 
-# friend link page
 @main_bp.route("/friends")
 def friends():
     friend_links = cache_operate.getset(

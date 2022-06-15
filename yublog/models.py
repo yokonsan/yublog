@@ -1,7 +1,6 @@
 import datetime
 from hashlib import md5
 
-from flask import url_for
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -11,12 +10,11 @@ from yublog.utils.pxfilter import XssHtml
 
 
 class Admin(UserMixin, db.Model):
-    """管理员数据模型"""
     __tablename__ = "admin"
     id = db.Column(db.Integer, primary_key=True)
     site_name = db.Column(db.String(10))
     site_title = db.Column(db.String(255))
-    name = db.Column(db.String(10), unique=True)
+    username = db.Column(db.String(10), unique=True)
     profile = db.Column(db.String(255))
     login_name = db.Column(db.String(500))
     password_hash = db.Column(db.String(500))
@@ -38,11 +36,10 @@ class Admin(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return f"<Admin name: {self.name}>"
+        return f"<Admin name: {self.username}>"
 
 
 class LoveMe(db.Model):
-    """站点喜欢按钮次数数据模型"""
     __tablename__ = "loveme"
     id = db.Column(db.Integer, primary_key=True)
     count = db.Column(db.Integer, default=0)
@@ -52,7 +49,6 @@ class LoveMe(db.Model):
 
 
 class Page(db.Model):
-    """站点页面数据模型"""
     __tablename__ = "page"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(10))
@@ -67,18 +63,6 @@ class Page(db.Model):
     def body_to_html(self):
         html = md2html(self.body)
         return html
-
-    def to_json(self):
-        page = {
-            "id": self.id,
-            "title": self.title,
-            "url": self.url_name,
-            "api": url_for("api.get_page", id=self.id, _external=True),
-            "show_nav": self.show_nav,
-            "comment_count": self.comments.count() if self.enable_comment else None,
-            "comments": url_for("api.get_page_comments", id=self.id, _external=True) if self.enable_comment else None
-        }
-        return page
 
     def __repr__(self):
         return f"<Page name: {self.title}>"
@@ -118,19 +102,6 @@ class Post(db.Model):
 
         return tag == self.tags
 
-    def to_json(self):
-        post = {
-            "id": self.id,
-            "title": self.title,
-            "api": url_for("api.get_post", id=self.id, _external=True),
-            "datetime": self.create_time,
-            "category": self.category.category,
-            "tag": self.tags,
-            "comment_count": self.comments.filter_by(disabled=True).count(),
-            "comments": url_for("api.get_post_comments", id=self.id, _external=True)
-        }
-        return post
-
     def __eq__(self, other):
         return self.id == other.id
 
@@ -152,15 +123,6 @@ class View(db.Model):
 
 
 class Comment(db.Model):
-    """
-    评论数据模型
-    增加 type 键｛
-        "post": 博客文章评论
-        "page": 博客页面评论
-        "article": 专栏文章评论
-    ｝
-    以type和id来获取对于评论
-    """
     __tablename__ = "comment"
     id = db.Column(db.Integer, primary_key=True)
     comment = db.Column(db.Text)
@@ -195,21 +157,6 @@ class Comment(db.Model):
     def gravatar(self, size):
         return f"http://www.gravatar.com/avatar/{md5(self.email.encode('utf-8')).hexdigest()}?d=mm&s={size}"
 
-    def to_json(self):
-        comment = {
-            "id": self.id,
-            "author": self.author,
-            "avatar": self.gravatar(38),
-            "mail": self.email,
-            "site": self.website,
-            "datetime": self.strptime,
-            "comment": self.body_to_html
-        }
-        if self.replied_id:
-            comment["avatar"] = self.gravatar(26)
-            comment["reply_to"] = self.replied_id
-        return comment
-
     def __gt__(self, other):
         return 1 if self.id > other.id else 0
 
@@ -224,13 +171,6 @@ class Tag(db.Model):
     tag = db.Column(db.String(25), index=True, unique=True)
     is_show = db.Column(db.Boolean, default=True, index=True)
 
-    def to_json(self):
-        tag = {
-            "tag": self.tag,
-            "posts": url_for("api.get_tag_posts", tag=self.tag, _external=True)
-        }
-        return tag
-
     def __repr__(self):
         return f"<Tag name: {self.tag}>"
 
@@ -243,14 +183,6 @@ class Category(db.Model):
     is_show = db.Column(db.Boolean, default=True, index=True)
 
     posts = db.relationship("Post", backref="category", lazy="dynamic")
-
-    def to_json(self):
-        category = {
-            "category": self.category,
-            "post_count": self.posts.count(),
-            "posts": url_for("api.get_category_posts", category=self.category, _external=True)  # noqa
-        }
-        return category
 
     def __repr__(self):
         return f"<Category name: {self.category}>"
@@ -277,9 +209,6 @@ class Talk(db.Model):
     talk = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now)  # noqa
 
-    # def __init__(self, talk):
-    #     self.talk = talk
-
     @property
     def strptime(self):
         return datetime.datetime.strftime(self.timestamp, "%Y-%m-%d")
@@ -297,13 +226,6 @@ class Talk(db.Model):
         html = md2html(self.talk)
         return html
 
-    def to_json(self):
-        shuo = {
-            "talk": self.talk,
-            "datetime": self.strptime
-        }
-        return shuo
-
     def __repr__(self):
         return f"<Talk body: {self.talk}>"
 
@@ -315,7 +237,7 @@ class Column(db.Model):
     title = db.Column(db.String(64))
     url_name = db.Column(db.String(64), unique=True, index=True)
     body = db.Column(db.Text)
-    timestamp = db.Column(db.String(64))
+    create_time = db.Column(db.String(64))
     password_hash = db.Column(db.String(500))
 
     articles = db.relationship("Article", backref="column", lazy="dynamic")
@@ -336,18 +258,6 @@ class Column(db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
-    
-    def to_dict(self):
-        column = {
-            "id": self.id,
-            "title": self.title,
-            "body": self.body_to_html,
-            "timestamp": self.timestamp,
-            "url_name": self.url_name,
-            "password_hash": self.password_hash,
-            "articles": []
-        }
-        return column
 
     def __repr__(self):
         return f"<Column name: {self.title}>"
@@ -360,7 +270,7 @@ class Article(db.Model):
     title = db.Column(db.String(64))
     body = db.Column(db.Text)
     secrecy = db.Column(db.Boolean, default=False)
-    timestamp = db.Column(db.String(64))
+    create_time = db.Column(db.String(64))
 
     column_id = db.Column(db.Integer, db.ForeignKey("column.id"))
     comments = db.relationship("Comment", backref="article", lazy="dynamic")
@@ -369,6 +279,9 @@ class Article(db.Model):
     def body_to_html(self):
         html = md2html(self.body)
         return html
+
+    def __eq__(self, other):
+        return self.id == other.id
 
     def __repr__(self):
         return f"<Article title: {self.title}>"

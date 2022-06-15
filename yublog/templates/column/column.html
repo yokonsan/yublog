@@ -9,7 +9,7 @@
         </div>
 
         <div class="column-meta">
-            <span class="post-time"><i class="demo-icon icon-calendar"></i> {{ column.timestamp }}</span>
+            <span class="post-time"><i class="demo-icon icon-calendar"></i> {{ column.create_time }} </span>
              <!-- | <span class="love-count"><i class="demo-icon icon-heart-empty"></i> {{ column.love_num }}</span> -->
              | <span class="post-view-count" postid="{{ column.id }}"><i class="demo-icon icon-eye"></i> </span>
         </div>
@@ -19,7 +19,7 @@
                 {{ column.body | safe }}
                 <div class="column-btn">
                     <a class="read-column"
-                       href="{% if first_id %}{{ url_for('column.article',url=column.url_name,id=first_id) }}{% else %}#{% endif %}">
+                       href="{% if first_id %}{{ url_for('column.article',url_name=column.url_name,id=first_id) }}{% else %}#{% endif %}">
                         阅读主题
                     </a>
                 </div>
@@ -30,10 +30,10 @@
     <div class="column-articles">
         <div class="column-menu">主题目录</div>
         {% if articles %}
-        {% for num, item in enumerate(articles, 1) %}
+        {% for num, item in articles %}
         <div class="article-item">
             <span class="article-num">{{ num }}</span>
-            <a href="{{ url_for('column.article',url=column.url_name,id=item.id) }}">{{ item.title }}</a>
+            <a href="{{ url_for('column.article',url_name=column.url_name,id=item.id) }}">{{ item.title }}</a>
             {% if item.secrecy == True %}
             <span style="float: right;color: #df846c;">保密</span>
             {% endif %}

@@ -1,6 +1,7 @@
 from functools import partial
 
 from yublog.models import Article, Column, Post
+from yublog.utils.as_sync import sync_request_context
 from yublog.utils.cache import cache_operate, CacheType, CacheKey
 from yublog.utils.functools import get_pagination
 
@@ -35,13 +36,11 @@ def get_model_cache(typ, key):
 
 def set_model_cache(typ, key):
     """设置博客文章缓存"""
-    *_, query_field = key.split("_")
-
     data = {}
     if typ == CacheType.POST:
-        data = _generate_post_cache(query_field)
+        data = _generate_post_cache(key)
     elif typ == CacheType.ARTICLE:
-        data = _generate_article_cache(query_field)
+        data = _generate_article_cache(key)
 
     return data
 
@@ -55,6 +54,7 @@ def _generate_post_cache(field):
             "title": p.title
         }
 
+    *_, field = field.split("_")
     cur = Post.query.filter_by(url_name=field).first_or_404()
     posts = get_posts()
     cur_idx = posts.index(cur)
@@ -74,9 +74,8 @@ def _generate_article_cache(field):
     
     cur = Article.query.get_or_404(field)
     cur_column = Column.query.get_or_404(cur.column_id)
-    column_cache = get_model_cache(CacheType.COLUMN, cur_column.url_name)
 
-    articles = column_cache.articles
+    articles = cur_column.articles.all()
     cur_idx = articles.index(cur)
 
     cur.next_article = linked_article(articles[cur_idx+1]) if articles[-1] != cur else None
@@ -96,6 +95,27 @@ def comment_cache(model):
         CacheType.COMMENT,
         f"{model.__tablename__}:{model.id}",
         callback=filter_by
+    )
+
+
+def column_cache(url_name):
+    return cache_operate.getset(
+        CacheType.COLUMN,
+        url_name,
+        callback=lambda: Column.query
+                               .filter_by(url_name=url_name)
+                               .first_or_404()
+    )
+
+
+def articles_cache(column_id):
+    return cache_operate.getset(
+        CacheType.COLUMN,
+        f"{column_id}:articles",
+        callback=lambda: Article.query
+                                .filter_by(column_id=column_id)
+                                .order_by(Article.id.desc())
+                                .all()
     )
 
 
@@ -134,3 +154,14 @@ def post_pagination_kwargs(cur_page, per):
         cur_page=cur_page,
         pagination=range(1, max_page + 1)
     )
+
+
+def clean_post_relative_cache():
+    @sync_request_context
+    def _clean_post_relative_cache():
+        cache_operate.clean(CacheType.POST)
+        cache_operate.clean(CacheType.GLOBAL, CacheKey.TAGS)
+        cache_operate.clean(CacheType.GLOBAL, CacheKey.CATEGORIES)
+        cache_operate.incr(CacheType.GLOBAL, CacheKey.POST_COUNT)
+
+    return _clean_post_relative_cache()

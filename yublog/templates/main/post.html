@@ -39,7 +39,7 @@
         </div>
         <div id="content" class="post-body">
             {% if post.body %}
-            {{ post.body | safe }}
+            {{ post.body_to_html | safe }}
             {% endif %}
         </div>
         <div class="post-tags">
