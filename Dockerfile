@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.8.7
 LABEL creator="yokon" email="15152347277@163.com"
 ENV CONFIG=docker
 

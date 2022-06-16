@@ -367,7 +367,6 @@ def delete_post(id):
 
     # update cache
     if post.draft is False:
-        print(post)
         cache_operate.decr(CacheType.GLOBAL, CacheKey.POST_COUNT)
 
     return redirect(url_for("admin.posts"))
@@ -397,12 +396,12 @@ def comments():
 @login_required
 def delete_comment(id):
     comment = Comment.query.get_or_404(id)
-    commit.delete(comment)
-    flash("Deleted successfully.")
 
-    if not comment.disabled:
+    if comment.disabled:
         update_comment_cache(comment, is_incr=False)
 
+    commit.delete(comment)
+    flash("Deleted successfully.")
     return redirect(url_for("admin.comments"))
 
 

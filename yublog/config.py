@@ -68,7 +68,7 @@ class Config(object):
     CACHE_KEY_PREFIX = "yublog"
     CACHE_REDIS_HOST = getenv("CACHE_REDIS_HOST") or "127.0.0.1"
     CACHE_REDIS_PORT = 6379
-    CACHE_REDIS_DB = getenv("CACHE_REDIS_DB") or 0
+    CACHE_REDIS_DB = 0
     CHCHE_REDIS_PASSWORD = getenv("CHCHE_REDIS_PASSWORD") or ""
 
     # 七牛云存储配置
@@ -113,7 +113,6 @@ class ProductionConfig(Config):
     def init_app(cls, app):
         Config.init_app(app)
         # 把错误发给管理
-        import logging
         from logging.handlers import SMTPHandler
         credentials = None
         secure = None

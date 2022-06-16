@@ -7,7 +7,6 @@ from flask import (
     current_app,
     render_template,
     url_for,
-    abort,
 )
 
 from yublog.utils.as_sync import sync_copy_app_context
@@ -64,7 +63,9 @@ def page(page_url):
     _page = cache_operate.getset(
         CacheType.PAGE,
         f"{page_url}",
-        callback=lambda: Page.query.filter_by(url_name=page_url).first_or_404()
+        callback=lambda: Page.query
+                             .filter_by(url_name=page_url)
+                             .first_or_404()
     )
 
     per = current_app.config["COMMENTS_PER_PAGE"]
@@ -94,8 +95,8 @@ def tag(tag_name):
         CacheType.POST,
         f"tag:{tag_name}",
         callback=lambda: Tag.query
-                   .filter_by(tag=tag_name)
-                   .first_or_404()
+                            .filter_by(tag=tag_name)
+                            .first_or_404()
     )
 
     posts = (p for p in get_posts() if p.tag_in_post(tag_name))
@@ -113,8 +114,8 @@ def category(category_name):
         CacheType.POST,
         f"category:{category_name}",
         callback=lambda: Category.query
-                        .filter_by(category=category_name, is_show=True)
-                        .first_or_404()
+                                 .filter_by(category=category_name)
+                                 .first_or_404()
     )
 
     posts = (p for p in get_posts() if p.category_name == category_name)
@@ -168,7 +169,9 @@ def search_result():
 
     counts = query_session.count()
     max_page, cur_page = get_pagination(counts, per, cur_page)
-    results = query_session.paginate(cur_page, error_out=False, per_page=per).items
+    results = query_session.paginate(
+        cur_page, error_out=False, per_page=per
+    ).items
 
     return render_template(
         "main/results.html",
@@ -197,7 +200,9 @@ def love_me():
         cache_operate.incr(CacheType.GLOBAL, CacheKey.LOVE_COUNT)
         db_commit()
 
-        return jsonify(counts=cache_operate.get(CacheType.GLOBAL, CacheKey.LOVE_COUNT))
+        return jsonify(
+            counts=cache_operate.get(CacheType.GLOBAL, CacheKey.LOVE_COUNT)
+        )
     return jsonify(faker="yes")
 
 

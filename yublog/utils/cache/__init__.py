@@ -1,3 +1,4 @@
+from redis import exceptions
 from flask import current_app
 
 from yublog import cache
@@ -77,11 +78,19 @@ class Operate:
 
     def incr(self, typ, key, delta=1):
         """数字类型自增"""
-        cache.cache.inc(self.join_key(typ, key), delta)
+        try:
+            cache.cache.inc(self.join_key(typ, key), delta)
+        except exceptions.ResponseError:
+            value = int(self.get(typ, key) or 0) + delta
+            self.set(typ, key, value)
 
     def decr(self, typ, key, delta=1):
         """数字类型自减"""
-        cache.cache.dec(self.join_key(typ, key), delta)
+        try:
+            cache.cache.dec(self.join_key(typ, key), delta)
+        except exceptions.ResponseError:
+            value = int(self.get(typ, key) or 0) - delta
+            self.set(typ, key, value)
 
     def add(self, typ, key, item):
         """保留当前数据，增加缓存数据"""

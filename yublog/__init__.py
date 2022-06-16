@@ -1,8 +1,7 @@
 import os
-import asyncio
 
 import click
-from flask import Flask, g
+from flask import Flask, g, abort
 
 from yublog.exceptions import AppInitException
 from yublog.extensions import migrate, db, whooshee, cache, qn, lm
@@ -111,7 +110,7 @@ def register_commands(app):
     def deploy(username, password):
         # 创建管理员
         name = app.config.get("ADMIN_NAME", "")
-        if not Admin.query.filter_by(username=name).first():
+        if not Admin.query.first():
             admin = Admin(
                 site_name=app.config.get("SITE_NAME", ""),
                 site_title=app.config.get("SITE_TITLE", ""),
@@ -123,9 +122,11 @@ def register_commands(app):
             db.session.add(admin)
 
         # 创建部门数据模型
-        love_data = LoveMe(count=0)
+        if not LoveMe.query.first():
+            love_data = LoveMe(count=1)
+            db.session.add(love_data)
         # 创建留言板、关于
-        if not Page.query.filter_by(url_name="guest-book").first():
+        if not Page.query.first():
             guest_book_page = Page(
                 title="GuestBook",
                 url_name="guest-book",
@@ -134,7 +135,7 @@ def register_commands(app):
                 body="Guest Book"
             )
             db.session.add(guest_book_page)
-        if not Page.query.filter_by(url_name="about").first():
+        if not Page.query.first():
             about_page = Page(
                 title="关于",
                 url_name="about",
@@ -144,34 +145,38 @@ def register_commands(app):
             )
             db.session.add(about_page)
         # 说说
-        talk = Talk(talk="hello world!")
+        if not Talk.query.first():
+            talk = Talk(talk="hello world!")
+            db.session.add(talk)
         # 专栏链接
-        social_link = Link(link="/column/", name="专栏", is_friend=False)
-        db.session.add(love_data)
-        db.session.add(talk)
-        db.session.add(social_link)
+        if not Page.query.first():
+            social_link = Link(link="/column/", name="专栏", is_friend=False)
+            db.session.add(social_link)
 
         # hello world 文章
-        path = ImagePath(path="post0")
-        for name in os.listdir(
-                os.path.join(app.config["IMAGE_UPLOAD_PATH"], "post0")
-        ):
-            db.session.add(Image(path="post0", filename=name, image_path=path))
+        if not Page.query.first():
+            path = ImagePath(path="post0")
+            for name in os.listdir(
+                    os.path.join(app.config["IMAGE_UPLOAD_PATH"], "post0")
+            ):
+                db.session.add(Image(path="post0", filename=name, image_path=path))
 
-        with open(os.path.join(app.config["UPLOAD_PATH"], "hello-world.md"), "r") as r:
-            body = r.read()
-
-        category = Category(category="demo", is_show=False)
-        post = Post(
-            title="hello world",
-            url_name="helloworld",
-            create_time=nowstr(fmt="%Y-%m-%d"),
-            body=body,
-            tags="demo",
-            category=category
-        )
-        db.session.add(category)
-        db.session.add(post)
+        if not Post.query.first():
+            with open(os.path.join(app.config["UPLOAD_PATH"], "hello-world.md"), "r") as r:
+                body = r.read()
+            category = Category(category="demo", is_show=False)
+            tag = Tag(tag="demo")
+            post = Post(
+                title="hello world",
+                url_name="helloworld",
+                create_time=nowstr(fmt="%Y-%m-%d"),
+                body=body,
+                tags="demo",
+                category=category
+            )
+            db.session.add(category)
+            db.session.add(tag)
+            db.session.add(post)
         db.session.commit()
 
     @app.cli.command()
@@ -181,7 +186,7 @@ def register_commands(app):
         Alembic.clear()
 
 
-async def _global_data():
+def _global_data():
     """全局缓存"""
     global_data = {}
     typ = CacheType.GLOBAL
@@ -215,10 +220,11 @@ async def _global_data():
         c_site_boxes
     ) = caches
 
-    async def _admin():
+    def _admin():
         admin = Admin.query.first()
-        assert admin is not None, AppInitException("no Admin")
-        # data = admin.to_dict()
+        if admin is None:
+            abort(404)
+            raise AppInitException("no Admin")
 
         cache_operate.set(typ, CacheKey.ADMIN, admin)
         return admin
@@ -235,40 +241,43 @@ async def _global_data():
         cache_operate.set(typ, CacheKey.FRIEND_COUNT, friend_count)
         return social, friend_count
 
-    async def _tags():
+    def _tags():
         ts = Tag.query.all()
         cache_operate.set(typ, CacheKey.TAGS, ts)
         return ts
 
-    async def _categories():
+    def _categories():
         cs = Category.query.filter_by(is_show=True).all()
         cache_operate.set(typ, CacheKey.CATEGORIES, cs)
         return cs
 
-    async def _pages():
+    def _pages():
         ps = Page.query.filter_by(show_nav=True).all()
         cache_operate.set(typ, CacheKey.PAGES, ps)
         return ps
 
-    async def _love_me_counts():
+    def _love_me_counts():
         lc = LoveMe.query.first()
-        assert lc is not None, AppInitException("no LoveMe")
+        if lc is None:
+            abort(404)
+            raise AppInitException("no LoveMe")
+
         count = lc.count
         cache_operate.set(typ, CacheKey.LOVE_COUNT, count)
         return count
 
-    async def _posts():
+    def _posts():
         ps = Post.query.filter_by(draft=False).count()
         cache_operate.set(typ, CacheKey.POST_COUNT, ps)
         return ps
 
-    async def _talk():
+    def _talk():
         t = Talk.query.order_by(Talk.timestamp.desc()).first()
         body = t.body_to_html if t else ""
         cache_operate.set(typ, CacheKey.LAST_TALK, body)
         return body
 
-    async def _guest_book():
+    def _guest_book():
         p = Page.query.filter_by(url_name="guest-book").first()
         count = p.comments.filter_by(disabled=True).count() if p and p.comments else 0
         cache_operate.set(typ, CacheKey.GUEST_BOOK_COUNT, count)
@@ -286,24 +295,17 @@ async def _global_data():
         cache_operate.set(typ, CacheKey.SITE_BOXES, site)
         return adv, site
 
-    administrator = c_admin or await _admin()
     social_links, friend_links_counts = _links()
-    tags = c_tags or await _tags()
-    categories = c_categories or await _categories()
-    pages = c_pages or await _pages()
-    love_me_counts = c_love_me_counts or await _love_me_counts()
-    posts = c_posts or await _posts()
-    talk = c_talk or await _talk()
-    guest_book = c_guest_book_count or await _guest_book()
+    guest_book = c_guest_book_count or _guest_book()
     adv_boxes, site_boxes = _boxes()
 
-    global_data[CacheKey.ADMIN] = administrator
-    global_data[CacheKey.TAGS] = tags
-    global_data[CacheKey.CATEGORIES] = categories
-    global_data[CacheKey.PAGES] = pages
-    global_data[CacheKey.LOVE_COUNT] = love_me_counts
-    global_data[CacheKey.POST_COUNT] = posts
-    global_data[CacheKey.LAST_TALK] = talk
+    global_data[CacheKey.ADMIN] = c_admin or _admin()
+    global_data[CacheKey.TAGS] = c_tags or _tags()
+    global_data[CacheKey.CATEGORIES] = c_categories or _categories()
+    global_data[CacheKey.PAGES] = c_pages or _pages()
+    global_data[CacheKey.LOVE_COUNT] = c_love_me_counts or _love_me_counts()
+    global_data[CacheKey.POST_COUNT] = c_posts or _posts()
+    global_data[CacheKey.LAST_TALK] = c_talk or _talk()
     global_data[CacheKey.GUEST_BOOK_COUNT] = guest_book
     global_data[CacheKey.SOCIAL_LINKS] = social_links
     global_data[CacheKey.FRIEND_COUNT] = friend_links_counts
@@ -316,14 +318,12 @@ async def _global_data():
 @main_bp.app_context_processor
 @log_time
 def app_global_data():
-    typ = CacheType.GLOBAL
-    data = cache_operate.get(typ, CacheKey.GLOBAL)
-
-    if not data:
-        data = asyncio.run(_global_data())
-        cache_operate.set(typ, CacheKey.GLOBAL, data, timeout=1)
-
-    return data
+    return cache_operate.getset(
+        CacheType.GLOBAL,
+        CacheKey.GLOBAL,
+        callback=_global_data,
+        timeout=1
+    )
 
 
 @main_bp.before_request
