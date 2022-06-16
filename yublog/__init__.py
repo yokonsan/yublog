@@ -20,8 +20,11 @@ from yublog.models import (
     Talk,
     SideBox,
     Comment,
+    ImagePath,
+    Image,
 )
 from yublog.utils.log import log_time
+from yublog.utils.times import nowstr
 from yublog.views import main_bp, admin_bp, api_bp, column_bp, image_bp
 
 
@@ -133,7 +136,7 @@ def register_commands(app):
             db.session.add(guest_book_page)
         if not Page.query.filter_by(url_name="about").first():
             about_page = Page(
-                title="About",
+                title="关于",
                 url_name="about",
                 enable_comment=False,
                 show_nav=True,
@@ -147,6 +150,28 @@ def register_commands(app):
         db.session.add(love_data)
         db.session.add(talk)
         db.session.add(social_link)
+
+        # hello world 文章
+        path = ImagePath(path="post0")
+        for name in os.listdir(
+                os.path.join(app.config["IMAGE_UPLOAD_PATH"], "post0")
+        ):
+            db.session.add(Image(path="post0", filename=name, image_path=path))
+
+        with open(os.path.join(app.config["UPLOAD_PATH"], "hello-world.md"), "r") as r:
+            body = r.read()
+
+        category = Category(category="demo", is_show=False)
+        post = Post(
+            title="hello world",
+            url_name="helloworld",
+            create_time=nowstr(fmt="%Y-%m-%d"),
+            body=body,
+            tags="demo",
+            category=category
+        )
+        db.session.add(category)
+        db.session.add(post)
         db.session.commit()
 
     @app.cli.command()
