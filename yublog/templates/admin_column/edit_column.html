@@ -7,14 +7,14 @@
         <div class="aticle-data">
             <div class="data-ipt">
                 <p>链接：{{form.url_name(placeholder="url专题名")}}</p>
-                <p>日期：{{form.date(placeholder="使用-连接年月日")}}</p>
+                <p>日期：{{form.create_time(placeholder="使用-连接年月日")}}</p>
                 <p>密码：{{form.password(placeholder="保密文章的密码")}}</p>
                 <p>使用<a href="{{ url_for('image.index') }}" target="_blank">【本地图床】</a></p>
             </div>
         </div>
         <div class="aticle-body">
             <div class="write-body">
-                <p>{{form.column(class="aticle-title",placeholder="专题名")}}</p>
+                <p>{{form.title(class="aticle-title",placeholder="专题名")}}</p>
                 <div>
                     {{form.body(id="editormd",style="display:block;",rows="5",cols="80")}}<br>
                 </div>

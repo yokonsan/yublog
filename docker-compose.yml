@@ -3,6 +3,7 @@ version: '3'
 services:
   web:
     build: .
+    container_name: yublog_web
     networks:
       - frontend
       - backend
@@ -13,8 +14,8 @@ services:
       - MYSQL_HOST=db
       - CACHE_REDIS_HOST=cache
       - TZ=Asia/Shanghai
-      - MYSQL_DATABASE=mydb
-      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
         # admin configuration
       - ADMIN_LOGIN_NAME=yinshi
       - ADMIN_PASSWORD=password
@@ -29,6 +30,7 @@ services:
         # redis configuration
       - CACHE_REDIS_DB=0
       - CHCHE_REDIS_PASSWORD=''
+      - LOG_LEVEL=ERROR
     ports:
       - "9001:9001"
     depends_on:
@@ -38,6 +40,7 @@ services:
 
   db:
     image: mysql:5.7
+    container_name: yublog_db
     restart: always
     volumes:
       - ~/docker/mysql/data:/var/lib/mysql
@@ -56,6 +59,7 @@ services:
 
   cache:
     image: redis:latest
+    container_name: yublog_cache
     networks:
       - backend
     environment:

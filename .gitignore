@@ -1,5 +1,7 @@
 # Python:
+.env
 .idea
+.flaskenv
 .qiniu_pythonsdk_hostscache.json
 dist
 build

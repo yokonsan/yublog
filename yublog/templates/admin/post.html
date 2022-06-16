@@ -1,5 +1,5 @@
 {% extends "admin_base.html" %}
-{% import "_pagination.html" as page %}
+{% import "_admin_pagination.html" as page %}
 {% block tab %}管理文章{% endblock %}
 {% block content %}
 <div class="admin-post">
@@ -7,7 +7,7 @@
         {% for post in posts %}
         <li>
             {{ post.timestamp }}
-            <a class="article-title" href="{{url_for('admin.admin_edit', id=post.id)}}">
+            <a class="article-title" href="{{url_for('admin.edit_post', id=post.id)}}">
                 {{ post.title }}
             </a>
 
@@ -15,7 +15,7 @@
                 删除
             </button>
 
-            <a href="{{url_for('admin.admin_edit', id=post.id)}}">
+            <a href="{{url_for('admin.edit_post', id=post.id)}}">
                 <button class="edit-btn">编辑</button>
             </a>
         </li>
@@ -25,7 +25,7 @@
 
 <div class="post-page site-box">
     <ul class="pages">
-        {{ page.pages(pagination, 'admin.admin_posts') }}
+        {{ page.pages(pagination, 'admin.posts') }}
     </ul>
 </div>
 {% endblock %}

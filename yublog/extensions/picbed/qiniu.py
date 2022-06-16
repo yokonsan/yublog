@@ -9,15 +9,16 @@ class QiniuUpload(object):
     """
     集成七牛云存储操作
     """
-
     def __init__(self, app=None):
         self.app = app
         self.img_suffix = ['jpg', 'jpeg', 'png', 'gif']
         if app: self.init_app(app)
 
     def init_qiniu(self):
-        self.qiniuer = qiniu.Auth(self.app.config.get('QN_ACCESS_KEY', ''),
-                                  self.app.config.get('QN_SECRET_KEY', ''))
+        self.qiniuer = qiniu.Auth(
+            self.app.config.get('QN_ACCESS_KEY', ''),
+            self.app.config.get('QN_SECRET_KEY', '')
+        )
         self.bucket_manager = qiniu.BucketManager(self.qiniuer)
         self.bucket = self.app.config.get('QN_PIC_BUCKET', '')
         self.domain = self.app.config.get('QN_PIC_DOMAIN', '')
@@ -25,7 +26,7 @@ class QiniuUpload(object):
     def init_app(self, app):
         """
         从应用程序设置初始化设置。
-        ：param app：Flask app
+        :param app: Flask app
         """
         self.app = app
         self.init_qiniu()
@@ -102,14 +103,10 @@ class QiniuUpload(object):
         :return: [{'name':'图片名', 'url': '图片url'}, {}]
         """
         images = []
-        # 前缀
         prefix = None
-        # 列举条目
         limit = None
-        # 列举出除'/'的所有文件以及以'/'为分隔的所有前缀
-        delimiter = None
-        # 标记
-        marker = None
+        delimiter = None  # 列举出除'/'的所有文件以及以'/'为分隔的所有前缀
+        marker = None  # 标记
         ret, eof, info = self.bucket_manager.list(self.bucket, prefix, marker, limit, delimiter)
 
         for i in ret.get('items', []):

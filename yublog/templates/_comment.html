@@ -7,7 +7,8 @@
     <form >
         <ol class="comment-list">
             {% if comments %}
-            {% for comment in comments %}
+            {% for _comment in comments %}
+            {% for comment, replies in _comment.items() %}
             <li class="comment" id="{{comment.id}}">
                 <div class="comment-body">
                     <div class="comment-author">
@@ -32,9 +33,9 @@
                         </div>
                     </div>
                 </div>
-                {% if comment.replies %}
+                {% if replies %}
                 <ul class="comment-children">
-                    {% for reply in comment.replies %}
+                    {% for reply in replies %}
                     {% if reply.disabled %}
                     <li id="{{ reply.id }}" class="comment">
                         <div class="comment-body">
@@ -59,32 +60,34 @@
                 {% endif %}
             </li>
             {% endfor %}
+            {% endfor %}
             {% endif %}
         </ol>
     </form>
 
-    <div class="comments-navi">
-        <a {% if not pagination.has_prev %}style="display:none;"{% endif %} class="prev"
-           href="{%if pagination.has_prev%}{%if post%}{{url_for('main.post',year=post.year,month=post.month,post_url=post.url,page=pagination.prev_num)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=pagination.prev_num)}}{%else%}{{url_for('column.article',url=column.url_name,id=article.id,page=p)}}{%endif%}{%else%}#{%endif%}">
-            上一页
-        </a>
-        {% for p in pagination.iter_pages() %}
-            {% if p %}
-                {% if p == pagination.page %}
-                    <a  class="current-page"
-                        href="{%if post%}{{url_for('main.post',year=post.year,month=post.month,post_url=post.url,page=p)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=p)}}{%else%}{{url_for('column.article',url=column.url_name,id=article.id,page=p)}}{%endif%}">{{ p }}</a>
+    {% if max_page != 1 %}
+        <div class="comments-navi">
+            <a {% if cur_page==1 %}style="display:none;"{% endif %} class="prev"
+               href="{%if page!=1%}{%if post%}{{url_for('main.post',year=post.year,month=post.month,post_url=post.url_name,page=cur_page-1)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=cur_page-1)}}{%else%}{{url_for('column.article',url_name=column.url_name,id=article.id,page=cur_page-1)}}{%endif%}{%else%}#{%endif%}">
+                上一页
+            </a>
+            {% for p in pagination %}
+                {% if p %}
+                    {% if p==cur_page %}
+                        <a  class="current-page" href="#">{{ p }}</a>
+                    {% else %}
+                        <a href="{%if post%}{{url_for('main.post',year=post.year,month=post.month,post_url=post.url_name,page=p)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=p)}}{%else%}{{url_for('column.article',url_name=column.url_name,id=article.id,page=p)}}{%endif%}">{{ p }}</a>
+                    {% endif %}
                 {% else %}
-                    <a href="{%if post%}{{url_for('main.post',year=post.year,month=post.month,post_url=post.url,page=p)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=p)}}{%else%}{{url_for('column.article',url=column.url_name,id=article.id,page=p)}}{%endif%}">{{ p }}</a>
+                <a class="disabled" href="#">&hellip;</a>
                 {% endif %}
-            {% else %}
-            <a class="disabled" href="#">&hellip;</a>
-            {% endif %}
-        {% endfor %}
-        <a {%if not pagination.has_next%}style="display:none;"{%endif%}
-           href="{%if pagination.has_next%}{%if post%}{{url_for('main.post',year=post.year,month=post.month,post_url=post.url,page=pagination.next_num)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=pagination.next_num)}}{%else%}{{url_for('column.article',url=column.url_name,id=article.id,page=p)}}{%endif%}{%else%}#{%endif%}">
-            下一页
-        </a>
-    </div>
+            {% endfor %}
+            <a {%if cur_page == max_page%}style="display:none;"{%endif%}
+               href="{%if cur_page != max_page %}{%if post%}{{url_for('main.post',year=post.year,month=post.month,post_url=post.url_name,page=cur_page+1)}}{%elif page%}{{url_for('main.page',page_url=page.url_name,page=cur_page+1)}}{%else%}{{url_for('column.article',url_name=column.url_name,id=article.id,page=cur_page+1)}}{%endif%}{%else%}#{%endif%}">
+                下一页
+            </a>
+        </div>
+    {% endif %}
 
     <div class="comment-send">
         <div class="textarea-container">
