@@ -1,7 +1,7 @@
 bleach==3.3.0
 flask-whooshee==0.4.1
 qiniu==7.2.0
-redis==2.10.6
+redis==4.5.3
 Flask==1.0.2
 Flask-Caching>=1.4
 Flask-Login==0.4.0
